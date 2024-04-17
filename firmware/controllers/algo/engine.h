@@ -55,6 +55,8 @@
 #include "vvt.h"
 #include "trip_odometer.h"
 
+#include <functional>
+
 #ifndef EFI_UNIT_TEST
 #error EFI_UNIT_TEST must be defined!
 #endif
@@ -177,6 +179,7 @@ public:
 	GearControllerBase *gearController;
 #endif
 
+	// todo: boolean sensors should leverage sensor framework #6342
 	SwitchedState clutchUpSwitchedState;
    	SwitchedState brakePedalSwitchedState;
    	SwitchedState acButtonSwitchedState;
@@ -236,6 +239,8 @@ public:
 #endif
 #if EFI_UNIT_TEST
 	TestExecutor executor;
+
+	std::function<void(IgnitionEvent*, bool)> onIgnitionEvent;
 #endif // EFI_UNIT_TEST
 
 #if EFI_ENGINE_CONTROL

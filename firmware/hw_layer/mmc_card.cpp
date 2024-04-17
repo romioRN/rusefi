@@ -35,6 +35,7 @@ static int totalSyncCounter = 0;
 #include "mmc_card.h"
 #include "ff.h"
 #include "mass_storage_init.h"
+#include "hellen_meta.h"
 
 #include "rtc_helper.h"
 
@@ -526,6 +527,21 @@ static THD_WORKING_AREA(mmcThreadStack, 3 * UTILITY_THREAD_STACK_SIZE);		// MMC 
 static THD_FUNCTION(MMCmonThread, arg) {
 	(void)arg;
 	chRegSetThreadName("MMC Card Logger");
+
+#if HW_HELLEN && EFI_PROD_CODE
+  // on mega-module we manage SD card power supply
+  while (!getHellenBoardEnabled()) {
+    // wait until board enables peripheral
+    chThdSleepMilliseconds(100);
+    if (getTimeNowS() > 4 && !isIgnVoltage()) {
+      // looks like vehicle is OFF and we are hooked to USB - turn on peripheral to get Mass Storage Device USB profile
+      efiPrintf("    *** turning board ON to power SD card ***");
+      hellenEnableEn();
+      break;
+    }
+  }
+  chThdSleepMilliseconds(300);
+#endif
 
 	if (!mountMmc()) {
 		// no card present (or mounted via USB), don't do internal logging

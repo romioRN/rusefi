@@ -113,6 +113,13 @@ enum class SensorType : unsigned char {
 
 	DetectedGear,
 
+	RangeInput1,
+	RangeInput2,
+	RangeInput3,
+	RangeInput4,
+	RangeInput5,
+	RangeInput6,
+
 	// analog voltage inputs for Lua
 	AuxAnalog1,
 	AuxAnalog2,
@@ -135,6 +142,7 @@ enum class SensorType : unsigned char {
   IgnKeyVoltage,
 
   DashOverrideRpm,
+  DashOverrideVehicleSpeed,
   DashOverrideClt,
   DashOverrideBatteryVoltage,
 

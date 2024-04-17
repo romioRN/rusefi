@@ -419,6 +419,8 @@ static const LogField fields[] = {
 #if EFI_BOOST_CONTROL
 	{___engine.module<BoostController>()->boostControlTarget, "Boost: Target", "kPa", 1, "Boost Control"},
 #endif
+	{___engine.module<FanControl1>()->tempAlive, "tempAlive", "", 0},
+	{___engine.module<FanControl1>()->tempCode, "tempCode", "", 0},
 	{engine->engineState.lua.fuelAdd, "Lua: Fuel add", "g", 3},
 	{engine->engineState.lua.fuelMult, "Lua: Fuel mult", "", 0},
 	{engine->engineState.sd.tCharge, "Air: Charge temperature estimate", "deg C", 1},
@@ -446,6 +448,8 @@ static const LogField fields[] = {
 	{engine->engineState.fuelingLoad, "Fuel: Load", "", 0},
 	{engine->engineState.ignitionLoad, "Ignition: load", "", 0},
 	{engine->engineState.veTableYAxis, "veTableYAxis", "%", 0},
+	{engine->engineState.overDwellCounter, "overDwellCounter", "", 0},
+	{engine->engineState.overDwellNotScheduledCounter, "overDwellNotScheduledCounter", "", 0},
 #if EFI_SHAFT_POSITION_INPUT
 	{engine->triggerCentral.hwEventCounters[0], "Hardware events since boot 1", "", 0},
 #endif

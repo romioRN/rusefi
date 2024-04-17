@@ -1095,6 +1095,12 @@ float getOutputValueByName(const char *name) {
 // disabledBySpeed
 		case 2105103113:
 			return ___engine.module<FanControl1>()->disabledBySpeed;
+// tempAlive
+		case -1017204596:
+			return ___engine.module<FanControl1>()->tempAlive;
+// tempCode
+		case -291050474:
+			return ___engine.module<FanControl1>()->tempCode;
 // isPrime
 		case -1429286498:
 			return engine->module<FuelPumpController>()->isPrime;
@@ -1227,6 +1233,12 @@ float getOutputValueByName(const char *name) {
 // veTableYAxis
 		case 1568071542:
 			return engine->engineState.veTableYAxis;
+// overDwellCounter
+		case 1513852665:
+			return engine->engineState.overDwellCounter;
+// overDwellNotScheduledCounter
+		case 1629214715:
+			return engine->engineState.overDwellNotScheduledCounter;
 // vvtCamCounter
 #if EFI_SHAFT_POSITION_INPUT
 		case 477303734:

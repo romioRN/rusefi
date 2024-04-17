@@ -77,14 +77,35 @@ static void deInitAuxDigital() {
 }
 
 static LuaOverrideSensor overrideRpm(SensorType::DashOverrideRpm, SensorType::Rpm);
+static LuaOverrideSensor overrideVehicleSpeed(SensorType::DashOverrideVehicleSpeed, SensorType::VehicleSpeed);
 static LuaOverrideSensor overrideClt(SensorType::DashOverrideClt, SensorType::Clt);
 static LuaOverrideSensor overrideBatteryVoltage(SensorType::DashOverrideBatteryVoltage, SensorType::BatteryVoltage);
 
 void initOverrideSensors() {
 	  overrideRpm.Register();
+	  overrideVehicleSpeed.Register();
 	  overrideClt.Register();
 	  overrideBatteryVoltage.Register();
 }
+
+// todo: closer alignment with 'stopSensors'
+static void sensorStartUpOrReconfiguration(bool isFirstTime) {
+	initVbatt();
+	initMap();
+	initTps();
+	initFluidPressure();
+	initThermistors();
+	initVehicleSpeedSensor();
+	initTurbochargerSpeedSensor();
+	initAuxSensors();
+	initAuxSpeedSensors();
+	initInputShaftSpeedSensor();
+#if EFI_TCU
+	initRangeSensors();
+#endif
+	initFlexSensor(isFirstTime);
+}
+
 
 // one-time start-up
 // see also 'reconfigureSensors'
@@ -95,20 +116,12 @@ void initNewSensors() {
 
 	initOverrideSensors();
 
-	initVbatt();
-	initMap();
-	initTps();
-	initFluidPressure();
-	initThermistors();
+  sensorStartUpOrReconfiguration(true);
+  // todo:
 	initLambda();
+	// todo: 'isFirstTime' approach for initEgt vs startEgt
 	initEgt();
-	initFlexSensor(true);
 	initBaro();
-	initAuxSensors();
-	initVehicleSpeedSensor();
-	initTurbochargerSpeedSensor();
-	initAuxSpeedSensors();
-	initInputShaftSpeedSensor();
 
 	#if !EFI_UNIT_TEST
 		initFuelLevel();
@@ -140,11 +153,12 @@ void stopSensors() {
 	deInitAuxDigital();
 	deInitOldAnalogInputs();
 
+	deinitVbatt();
 	deinitTps();
 	deinitFluidPressure();
-	deinitVbatt();
 	deinitThermistors();
 	deInitFlexSensor();
+	deinitAuxSensors();
 	deInitVehicleSpeedSensor();
 	deinitTurbochargerSpeedSensor();
 	deinitAuxSpeedSensors();
@@ -154,16 +168,7 @@ void stopSensors() {
 }
 
 void reconfigureSensors() {
-	initMap();
-	initTps();
-	initFluidPressure();
-	initVbatt();
-	initThermistors();
-	initFlexSensor(false);
-	initVehicleSpeedSensor();
-	initTurbochargerSpeedSensor();
-	initAuxSpeedSensors();
-	initInputShaftSpeedSensor();
+	sensorStartUpOrReconfiguration(false);
 	startEgt();
 
 	initOldAnalogInputs();

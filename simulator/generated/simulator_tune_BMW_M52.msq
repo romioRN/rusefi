@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <msq xmlns="http://www.msefi.com/:msq">
     <page/>
-    <page number="0" size="22400">
+    <page number="0" size="22656">
         <constant name="engineType">"BMW_M52"</constant>
         <constant digits="0" name="startButtonSuppressOnStartUpMs" units="">0.0</constant>
         <constant digits="0" name="sensorSnifferRpmThreshold" units="RPM">2500.0</constant>
@@ -223,7 +223,7 @@
         <constant digits="0" name="boostControlSafeDutyCycle" units="%">0.0</constant>
         <constant name="mafAdcChannel">"Disabled"</constant>
         <constant digits="0" name="acrRevolutions" units="">5.0</constant>
-        <constant digits="0" name="calibrationBirthday" units="">2.0240403E7</constant>
+        <constant digits="0" name="calibrationBirthday" units="">2.0240416E7</constant>
         <constant digits="3" name="adcVcc" units="volts">3.0</constant>
         <constant digits="0" name="mapCamDetectionAnglePosition" units="Deg">0.0</constant>
         <constant name="camInputs1">"NONE"</constant>
@@ -751,7 +751,17 @@
         <constant name="is_enabled_spi_5">"false"</constant>
         <constant name="is_enabled_spi_6">"false"</constant>
         <constant name="enableAemXSeriesEgt">"false"</constant>
+        <constant name="startRequestPinInverted">"Normal"</constant>
+        <constant name="tcu_rangeSensorPulldown">"false"</constant>
         <constant name="skipBoardCanDash">"false"</constant>
+        <constant name="devBit0">"false"</constant>
+        <constant name="devBit1">"false"</constant>
+        <constant name="devBit2">"false"</constant>
+        <constant name="devBit3">"false"</constant>
+        <constant name="devBit4">"false"</constant>
+        <constant name="devBit5">"false"</constant>
+        <constant name="devBit6">"false"</constant>
+        <constant name="devBit7">"false"</constant>
         <constant digits="0" name="afterCrankingIACtaperDuration" units="cycles">200.0</constant>
         <constant digits="0" name="iacByTpsTaper" units="percent">2.0</constant>
         <constant name="auxSerialTxPin">"NONE"</constant>
@@ -1604,29 +1614,17 @@
         <constant name="camSimulatorPin">"NONE"</constant>
         <constant name="camSimulatorPinMode">"default"</constant>
         <constant digits="0" name="anotherCiTest" units="">0.0</constant>
-        <constant cols="1" digits="0" name="unusedOftenChangesDuringFirmwareUpdate" rows="226">
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
-         0.0
+        <constant digits="0" name="device_uid1" units="">0.0</constant>
+        <constant digits="0" name="device_uid2" units="">0.0</constant>
+        <constant digits="0" name="device_uid3" units="">0.0</constant>
+        <constant name="tcu_rangeAnalogInput1">"Disabled"</constant>
+        <constant name="tcu_rangeAnalogInput2">"Disabled"</constant>
+        <constant name="tcu_rangeAnalogInput3">"Disabled"</constant>
+        <constant name="tcu_rangeAnalogInput4">"Disabled"</constant>
+        <constant name="tcu_rangeAnalogInput5">"Disabled"</constant>
+        <constant name="tcu_rangeAnalogInput6">"Disabled"</constant>
+        <constant digits="1" name="tcu_rangeSensorBiasResistor" units="Ohm">0.0</constant>
+        <constant cols="1" digits="0" name="unusedOftenChangesDuringFirmwareUpdate" rows="204">
          0.0
          0.0
          0.0
@@ -3289,7 +3287,7 @@ end</constant>
          1.0
          1.0
 </constant>
-        <constant cols="1" digits="2" name="tcu_pcAirmassBins" rows="8">
+        <constant cols="1" digits="0" name="tcu_pcAirmassBins" rows="8">
          0.0
          0.0
          0.0
@@ -4641,8 +4639,79 @@ end</constant>
          1.0
          1.0
 </constant>
+        <constant cols="1" digits="2" name="tcu_shiftTpsBins" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant cols="1" digits="0" name="tcu_shiftSpeed12" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant cols="1" digits="0" name="tcu_shiftSpeed23" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant cols="1" digits="0" name="tcu_shiftSpeed34" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant cols="1" digits="0" name="tcu_shiftSpeed21" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant cols="1" digits="0" name="tcu_shiftSpeed32" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant cols="1" digits="0" name="tcu_shiftSpeed43" rows="8">
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+         0.0
+</constant>
+        <constant digits="0" name="tcu_shiftTime" units="ms">0.0</constant>
     </page>
-    <versionInfo firmwareInfo="20240402" nPages="1" signature="rusEFI master.2024.04.03.f407-discovery.3731886210" version="5.0"/>
+    <versionInfo firmwareInfo="20240402" nPages="1" signature="rusEFI master.2024.04.17.f407-discovery.2014754836" version="5.0"/>
     <bibliography author="rusEFI 20240402" writeDate="date"/>
     <settings/>
     <userComments/>

@@ -31,10 +31,10 @@ public class ConfigDefinitionTest {
     }
 
     @NotNull
-    public static VariableRegistry readRealConfig() throws IOException {
+    public static VariableRegistry readRealConfig() {
         VariableRegistry variableRegistry = new VariableRegistry();
 
-        variableRegistry.readPrependValues(FIRMWARE + File.separator + "integration/rusefi_config.txt");
+        variableRegistry.readPrependValues(FIRMWARE + File.separator + "integration/rusefi_config.txt", true);
         return variableRegistry;
     }
 }

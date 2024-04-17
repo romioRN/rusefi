@@ -26,11 +26,17 @@ void GearControllerBase::update() {
 	if (transmissionController == NULL) {
 		initTransmissionController();
 	} else if (transmissionController->getMode() != engineConfiguration->transmissionControllerMode) {
+		// TODO de-init here
 		initTransmissionController();
 	}
-	// We are responsible for telling the transmission controller
-	//  what gear we want.
-	transmissionController->update(getDesiredGear());
+
+	// check if it was init'd (it wouldn't be if set to NONE)
+	if (transmissionController != NULL) {
+		// We are responsible for telling the transmission controller
+		//  what gear we want.
+		transmissionController->update(getDesiredGear());
+	}
+
 	// Post state to TS
 	postState();
 }
@@ -65,7 +71,7 @@ void initGearController() {
 	engine->gearController->init();
 }
 
-uint8_t* GearControllerBase::getRangeStateArray(int i) {
+float* GearControllerBase::getRangeStateArray(int i) {
 	switch (i) {
 	case 1 :
 		return config->tcu_rangePlus;

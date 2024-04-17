@@ -1132,9 +1132,39 @@ float getConfigValueByName(const char *name) {
 // enableAemXSeriesEgt
 		case -1196188030:
 			return engineConfiguration->enableAemXSeriesEgt;
+// startRequestPinInverted
+		case 747573348:
+			return engineConfiguration->startRequestPinInverted;
+// tcu_rangeSensorPulldown
+		case -2079591860:
+			return engineConfiguration->tcu_rangeSensorPulldown;
 // skipBoardCanDash
 		case 1878649142:
 			return engineConfiguration->skipBoardCanDash;
+// devBit0
+		case 161953459:
+			return engineConfiguration->devBit0;
+// devBit1
+		case 161953460:
+			return engineConfiguration->devBit1;
+// devBit2
+		case 161953461:
+			return engineConfiguration->devBit2;
+// devBit3
+		case 161953462:
+			return engineConfiguration->devBit3;
+// devBit4
+		case 161953463:
+			return engineConfiguration->devBit4;
+// devBit5
+		case 161953464:
+			return engineConfiguration->devBit5;
+// devBit6
+		case 161953465:
+			return engineConfiguration->devBit6;
+// devBit7
+		case 161953466:
+			return engineConfiguration->devBit7;
 // afterCrankingIACtaperDuration
 		case 671504531:
 			return engineConfiguration->afterCrankingIACtaperDuration;
@@ -1798,6 +1828,12 @@ float getConfigValueByName(const char *name) {
 // anotherCiTest
 		case -283215870:
 			return engineConfiguration->anotherCiTest;
+// tcu_rangeSensorBiasResistor
+		case -1480283119:
+			return engineConfiguration->tcu_rangeSensorBiasResistor;
+// tcu_shiftTime
+		case -1658957891:
+			return config->tcu_shiftTime;
 	}
 	return EFI_ERROR_CODE;
 }
@@ -3684,9 +3720,59 @@ bool setConfigValueByName(const char *name, float value) {
 		engineConfiguration->enableAemXSeriesEgt = (int)value;
 		return 1;
 	}
+		case 747573348:
+	{
+		engineConfiguration->startRequestPinInverted = (int)value;
+		return 1;
+	}
+		case -2079591860:
+	{
+		engineConfiguration->tcu_rangeSensorPulldown = (int)value;
+		return 1;
+	}
 		case 1878649142:
 	{
 		engineConfiguration->skipBoardCanDash = (int)value;
+		return 1;
+	}
+		case 161953459:
+	{
+		engineConfiguration->devBit0 = (int)value;
+		return 1;
+	}
+		case 161953460:
+	{
+		engineConfiguration->devBit1 = (int)value;
+		return 1;
+	}
+		case 161953461:
+	{
+		engineConfiguration->devBit2 = (int)value;
+		return 1;
+	}
+		case 161953462:
+	{
+		engineConfiguration->devBit3 = (int)value;
+		return 1;
+	}
+		case 161953463:
+	{
+		engineConfiguration->devBit4 = (int)value;
+		return 1;
+	}
+		case 161953464:
+	{
+		engineConfiguration->devBit5 = (int)value;
+		return 1;
+	}
+		case 161953465:
+	{
+		engineConfiguration->devBit6 = (int)value;
+		return 1;
+	}
+		case 161953466:
+	{
+		engineConfiguration->devBit7 = (int)value;
 		return 1;
 	}
 		case 671504531:
@@ -4792,6 +4878,16 @@ bool setConfigValueByName(const char *name, float value) {
 		case -283215870:
 	{
 		engineConfiguration->anotherCiTest = (int)value;
+		return 1;
+	}
+		case -1480283119:
+	{
+		engineConfiguration->tcu_rangeSensorBiasResistor = value;
+		return 1;
+	}
+		case -1658957891:
+	{
+		config->tcu_shiftTime = value;
 		return 1;
 	}
 	}

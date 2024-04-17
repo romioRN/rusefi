@@ -106,7 +106,7 @@ expected<percent_t> BoostController::getOpenLoop(float target) {
 
 	efiAssert(ObdCode::OBD_PCM_Processor_Fault, m_openLoopMap != nullptr, "boost open loop", unexpected);
 
-	float openLoop = luaOpenLoopAdd + m_openLoopMap->getValue(rpm, driverIntent.Value);
+	percent_t openLoop = luaOpenLoopAdd + m_openLoopMap->getValue(rpm, driverIntent.Value);
 
 #if EFI_ENGINE_CONTROL
 	// Add any blends if configured
@@ -171,7 +171,8 @@ expected<percent_t> BoostController::getClosedLoop(float target, float manifoldP
 }
 
 void BoostController::setOutput(expected<float> output) {
-	boostOutput = output.value_or(engineConfiguration->boostControlSafeDutyCycle);
+	// this clamping is just for happier gauge #6339
+	boostOutput = clampPercentValue(output.value_or(engineConfiguration->boostControlSafeDutyCycle));
 
 	if (!engineConfiguration->isBoostControlEnabled) {
 		// If not enabled, force 0% output

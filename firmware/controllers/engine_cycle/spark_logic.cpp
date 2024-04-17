@@ -176,10 +176,17 @@ static void overFireSparkAndPrepareNextSchedule(IgnitionEvent *event) {
 #if SPARK_EXTREME_LOGGING
 	efiPrintf("overFireSparkAndPrepareNextSchedule %s", event->outputs[0]->getName());
 #endif /* SPARK_EXTREME_LOGGING */
+  engine->engineState.overDwellCounter++;
 	fireSparkAndPrepareNextSchedule(event);
 }
 
 void fireSparkAndPrepareNextSchedule(IgnitionEvent *event) {
+#if EFI_UNIT_TEST
+	if (engine->onIgnitionEvent) {
+		engine->onIgnitionEvent(event, false);
+	}
+#endif
+
 	for (int i = 0; i< MAX_OUTPUTS_FOR_IGNITION;i++) {
 		IgnitionOutputPin *output = event->outputs[i];
 
@@ -242,7 +249,7 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 #endif /* SPARK_EXTREME_LOGGING */
 
 		// We can schedule both of these right away, since we're going for "asap" not "particular angle"
-		engine->executor.scheduleByTimestampNt("dwell", &event->dwellStartTimer, nextDwellStart, { &turnSparkPinHigh, event });
+		engine->executor.scheduleByTimestampNt("dwell", &event->dwellStartTimer, nextDwellStart, { &turnSparkPinHighStartCharging, event });
 		engine->executor.scheduleByTimestampNt("firing", &event->sparkEvent.scheduling, nextFiring, { fireSparkAndPrepareNextSchedule, event });
 	} else {
 		if (engineConfiguration->enableTrailingSparks) {
@@ -294,10 +301,16 @@ static void startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutput
 	output->setHigh();
 }
 
-void turnSparkPinHigh(IgnitionEvent *event) {
+void turnSparkPinHighStartCharging(IgnitionEvent *event) {
 	event->actualStartOfDwellNt = getTimeNowLowerNt();
 
 	efitick_t nowNt = getTimeNowNt();
+
+#if EFI_UNIT_TEST
+	if (engine->onIgnitionEvent) {
+		engine->onIgnitionEvent(event, true);
+	}
+#endif
 
 #if EFI_TOOTH_LOGGER
 	LogTriggerCoilState(nowNt, true);
@@ -319,6 +332,12 @@ void turnSparkPinHigh(IgnitionEvent *event) {
 		);
 	}
 }
+
+#if EFI_PROD_CODE
+  #define ENABLE_OVERDWELL_PROTECTION (true)
+#else
+  #define ENABLE_OVERDWELL_PROTECTION (engine->enableOverdwellProtection)
+#endif
 
 static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 		int rpm, efitick_t edgeTimestamp, float currentPhase, float nextPhase) {
@@ -362,7 +381,7 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 		 * This way we make sure that coil dwell started while spark was enabled would fire and not burn
 		 * the coil.
 		 */
-		chargeTime = scheduleByAngle(&event->dwellStartTimer, edgeTimestamp, angleOffset, { &turnSparkPinHigh, event });
+		chargeTime = scheduleByAngle(&event->dwellStartTimer, edgeTimestamp, angleOffset, { &turnSparkPinHighStartCharging, event });
 
 		event->sparksRemaining = engine->engineState.multispark.count;
 	} else {
@@ -377,25 +396,29 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 	efiAssertVoid(ObdCode::CUSTOM_ERR_6591, !cisnan(sparkAngle), "findAngle#4");
 	assertAngleRange(sparkAngle, "findAngle#a5", ObdCode::CUSTOM_ERR_6549);
 
-	bool scheduled = engine->module<TriggerScheduler>()->scheduleOrQueue(
+	bool isTimeScheduled = engine->module<TriggerScheduler>()->scheduleOrQueue(
 			"spark",
 		&event->sparkEvent, edgeTimestamp, sparkAngle,
 		{ fireSparkAndPrepareNextSchedule, event },
 		currentPhase, nextPhase);
 
-	if (scheduled) {
+	if (isTimeScheduled) {
+	  // event was scheduled by time, we expect it to happen reliably
 #if SPARK_EXTREME_LOGGING
 		efiPrintf("scheduling sparkDown %d %s now=%d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter);
 #endif /* FUEL_MATH_EXTREME_LOGGING */
 	} else {
+	  // event was queued in relation to some expected tooth event in the future which might just never come so we shall protect from over-dwell
 #if SPARK_EXTREME_LOGGING
 		efiPrintf("to queue sparkDown %d %s now=%d for id=%d angle=%.1f", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter, sparkAngle);
 #endif /* SPARK_EXTREME_LOGGING */
 
-		if (!limitedSpark && engine->enableOverdwellProtection) {
+		if (!limitedSpark && ENABLE_OVERDWELL_PROTECTION) {
 			// auto fire spark at 1.5x nominal dwell
 			efitick_t fireTime = chargeTime + MSF2NT(1.5f * dwellMs);
 			engine->executor.scheduleByTimestampNt("overdwell", &event->sparkEvent.scheduling, fireTime, { overFireSparkAndPrepareNextSchedule, event });
+		} else {
+		  engine->engineState.overDwellNotScheduledCounter++;
 		}
 	}
 

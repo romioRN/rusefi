@@ -34,6 +34,9 @@ Release template (copy/paste this for new release):
  - second CAN WBO channel detailed logging #6306
  - Make sure TUNERSTUDIO IS DISCONNECTED FROM ECU #6325
  - 1_6_5_10_2_7_3_8_4_9 firing order BMW S85, also Audi 5.2 R8 and huracan GDI
+ - boost duty gauge is now clamped to match actuator #6339
+ - "MAP estimate table" is only available in speed density mode #6344
+ - 1-8-6-2-7-3-4-5 Ferrari-Maserati F136 firing order
 
 ### Fixed
  - ETB traction control drop is affected by not-highlighted cell #5952
@@ -45,9 +48,13 @@ Release template (copy/paste this for new release):
  - HPFP control on cam with variable timing #6245
  - Negative timing is not displayed correctly fix #5250
  - update-ts-cacerts work-around is no longer needed #6327
+ - uaEFI board knock configuration #6338
+ - Fix a scenario where noisy trigger can cause overdwell #6349
 
 ### Breaking Changes
  - wrong trigger naming for missing teeth #6258
+ - flipping timing_offset_cylinder direction #6095
+ - clutch and flex inputs inverted options renamed #2808
 
 ## March 2024 "Day 740"
 
