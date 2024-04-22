@@ -16,28 +16,43 @@ if [ -n "${USER}" -a -n "$PASS" -a -n "${HOST}" ]; then
    echo "$SCRIPT_NAME: BUNDLE_FILE_NAME argument not specified"
    exit 1
  fi
+ if [ -n "${bundle_upload_folder}" ]; then
+   echo "$SCRIPT_NAME: bundle_upload_folder is ${bundle_upload_folder}"
+ else
+   bundle_upload_folder="build_server"
+   echo "$SCRIPT_NAME: bundle_upload_folder env variable was not specified using default ${bundle_upload_folder}"
+ fi
+
  # technical debt: more than one file uses magic 'rusefi_bundle_' constant, can we extract constant?
  FULL_BUNDLE_FILE="rusefi_bundle_${BUNDLE_FILE_NAME}.zip"
  UPDATE_BUNDLE_FILE="rusefi_bundle_${BUNDLE_FILE_NAME}_autoupdate.zip"
 
+     # sftp does not support -p flag on mkdir :(
+     sshpass -p $PASS sftp -o StrictHostKeyChecking=no ${USER}@${HOST} <<SSHCMD
+mkdir ${bundle_upload_folder}
+SSHCMD
+
  RET=0
  if [ "$LTS" == "true" -a -n "$REF" ]; then
-   DESTINATION_FOLDER="build_server/lts/${REF}"
+   DESTINATION_FOLDER="${bundle_upload_folder}/lts/${REF}"
+     # sftp does not support -p flag on mkdir :(
+     sshpass -p $PASS sftp -o StrictHostKeyChecking=no ${USER}@${HOST} <<SSHCMD
+mkdir ${bundle_upload_folder}/lts
+mkdir ${DESTINATION_FOLDER}
+SSHCMD
  else
-   DESTINATION_FOLDER="build_server"
+   DESTINATION_FOLDER="${bundle_upload_folder}"
  fi
- tar -czf - $FULL_BUNDLE_FILE    | sshpass -p $PASS ssh -o StrictHostKeyChecking=no ${USER}@${HOST} "mkdir -p ${DESTINATION_FOLDER};            tar -xzf - -C ${DESTINATION_FOLDER}"
- RET=$((RET+$?+PIPESTATUS))
- if [ -f $UPDATE_BUNDLE_FILE ]; then
-   tar -czf - $UPDATE_BUNDLE_FILE  | sshpass -p $PASS ssh -o StrictHostKeyChecking=no ${USER}@${HOST} "mkdir -p ${DESTINATION_FOLDER}/autoupdate; tar -xzf - -C ${DESTINATION_FOLDER}/autoupdate"
-   RET=$((RET+$?+PIPESTATUS))
- else
-    echo "File $UPDATE_BUNDLE_FILE does not exist."
- fi
- if [ $RET -ne 0 ]; then
-  echo "$SCRIPT_NAME: Bundle upload failed"
-  exit 1
- fi
+
+     # sftp does not support -p flag on mkdir :(
+     sshpass -p $PASS sftp -o StrictHostKeyChecking=no ${USER}@${HOST} <<SSHCMD
+cd ${DESTINATION_FOLDER}
+put $FULL_BUNDLE_FILE
+mkdir autoupdate
+cd autoupdate
+put $UPDATE_BUNDLE_FILE
+SSHCMD
+ echo "$SCRIPT_NAME: DONE $FULL_BUNDLE_FILE"
 else
  echo "$SCRIPT_NAME: Upload not configured"
 fi

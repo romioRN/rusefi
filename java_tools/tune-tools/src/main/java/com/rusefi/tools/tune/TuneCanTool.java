@@ -6,6 +6,7 @@ import com.opensr5.ini.IniFileModel;
 import com.rusefi.*;
 import com.rusefi.core.preferences.storage.Node;
 import com.rusefi.enums.engine_type_e;
+import com.rusefi.output.ConfigStructure;
 import com.rusefi.parse.TypesHelper;
 import com.rusefi.tune.xml.Constant;
 import com.rusefi.tune.xml.Msq;
@@ -213,7 +214,7 @@ public class TuneCanTool implements TuneCanToolConstants {
                 log.info("Not found " + fieldName);
                 continue;
             }
-            if (TypesHelper.isFloat(cf.getType()) && !cf.isArray()) {
+            if (TypesHelper.isFloat(cf.getTypeName()) && !cf.isArray()) {
                 float floatDefaultValue = Float.parseFloat(defaultValue.getValue());
                 float floatCustomValue = Float.parseFloat(customValue.getValue());
                 if (floatCustomValue != 0 && Math.abs(floatDefaultValue / floatCustomValue - 1) < 0.001) {
@@ -227,24 +228,22 @@ public class TuneCanTool implements TuneCanToolConstants {
                 continue;
             }
 
-            if (cf.getType().equals("boolean")) {
+            if (cf.getTypeName().equals("boolean")) {
                 sb.append(TuneTools.getAssignmentCode(defaultValue, cName, unquote(customValue.getValue())));
                 continue;
             }
 
             if (cf.isArray()) {
                 String parentReference;
-                if (cf.getParent().getName().equals("engine_configuration_s")) {
+                if (cf.getParentStructureType().getName().equals("engine_configuration_s")) {
                     parentReference = "engineConfiguration->";
-                } else if (cf.getParent().getName().equals("persistent_config_s")) {
+                } else if (cf.getParentStructureType().getName().equals("persistent_config_s")) {
                     parentReference = "config->";
                 } else {
-                    // todo: for instance map.samplingAngle
-                    //throw new IllegalStateException("Unexpected " + cf.getParent());
-                    log.info(" " + cf);
-                    continue;
+                    // todo: unit test?
+                    String path = getPath(cf.getParentStructureType());
+                    parentReference = "engineConfiguration->" + path + ".";
                 }
-
 
                 if (cf.getArraySizes().length == 2) {
                     TableData tableData = TableData.readTable(customTuneFileName, fieldName, ini);
@@ -254,9 +253,11 @@ public class TuneCanTool implements TuneCanToolConstants {
                     }
                     log.info("Handling table " + fieldName + " with " + cf.autoscaleSpecPair());
 
+                    String customContent = tableData.getCsourceMethod(parentReference, methodNamePrefix);
                     if (defaultTuneFileName != null) {
                         TableData defaultTableData = TableData.readTable(defaultTuneFileName, fieldName, ini);
-                        if (defaultTableData.getCsourceMethod(parentReference, methodNamePrefix).equals(tableData.getCsourceMethod(parentReference, methodNamePrefix))) {
+                        String defaultContent = defaultTableData.getCsourceMethod(parentReference, methodNamePrefix);
+                        if (defaultContent.equals(customContent)) {
                             log.info("Table " + fieldName + " matches default content");
                             continue;
                         }
@@ -264,7 +265,7 @@ public class TuneCanTool implements TuneCanToolConstants {
                     log.info("Custom content in table " + fieldName);
 
 
-                    methods.append(tableData.getCsourceMethod(parentReference, methodNamePrefix));
+                    methods.append(customContent);
                     invokeMethods.append(tableData.getCinvokeMethod(methodNamePrefix));
                     continue;
                 }
@@ -273,16 +274,18 @@ public class TuneCanTool implements TuneCanToolConstants {
                 if (data == null)
                     continue;
 
+                String customContent = data.getCsourceMethod(parentReference, methodNamePrefix);
                 if (defaultTuneFileName != null) {
                     CurveData defaultCurveData = CurveData.valueOf(defaultTuneFileName, fieldName, ini);
-                    if (defaultCurveData.getCinvokeMethod(methodNamePrefix).equals(data.getCinvokeMethod(methodNamePrefix))) {
+                    String defaultContent = defaultCurveData.getCsourceMethod(parentReference, methodNamePrefix);
+                    if (defaultContent.equals(customContent)) {
                         log.info("Curve " + fieldName + " matches default content");
                         continue;
                     }
                 }
                 log.info("Custom content in curve " + fieldName);
 
-                methods.append(data.getCsourceMethod(parentReference, methodNamePrefix));
+                methods.append(customContent);
                 invokeMethods.append(data.getCinvokeMethod(methodNamePrefix));
 
                 continue;
@@ -291,7 +294,7 @@ public class TuneCanTool implements TuneCanToolConstants {
             if (!Node.isNumeric(customValue.getValue())) {
                 // todo: smarter logic for enums
 
-                String type = cf.getType();
+                String type = cf.getTypeName();
                 if (isHardwareEnum(type)) {
                     continue;
                 }
@@ -330,6 +333,11 @@ public class TuneCanTool implements TuneCanToolConstants {
         sb.append("\n\n").append(invokeMethods);
 
         return sb;
+    }
+
+    private static String getPath(ConfigStructure parentType) {
+        String parentTypeName = parentType.getName();
+        return parentType.getParent().getCurrentInstance().get(parentTypeName).getName();
     }
 
     private final static Set<String> HARDWARE_PROPERTIES = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);

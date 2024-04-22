@@ -28,13 +28,13 @@ static const char *prevSparkName = nullptr;
 
 static void fireSparkBySettingPinLow(IgnitionEvent *event, IgnitionOutputPin *output) {
 #if SPARK_EXTREME_LOGGING
-	efiPrintf("spark goes low  %d %s %d current=%d cnt=%d id=%d", getRevolutionCounter(), output->getName(), (int)getTimeNowUs(),
-			output->currentLogicValue, output->outOfOrder, event->sparkCounter);
+	efiPrintf("spark goes low  revolution=%d [%s] %d current=%d id=%d", getRevolutionCounter(), output->getName(), (int)getTimeNowUs(),
+			output->currentLogicValue, event->sparkCounter);
 #endif /* SPARK_EXTREME_LOGGING */
 
 	/**
 	 * there are two kinds of 'out-of-order'
-	 * 1) low goes before high, everything is fine after words
+	 * 1) low goes before high, everything is fine afterwards
 	 *
 	 * 2) we have an un-matched low followed by legit pairs
 	 */
@@ -42,8 +42,10 @@ static void fireSparkBySettingPinLow(IgnitionEvent *event, IgnitionOutputPin *ou
 	output->signalFallSparkId = event->sparkCounter;
 
 	if (!output->currentLogicValue && !event->wasSparkLimited) {
+#if SPARK_EXTREME_LOGGING
+		printf("out-of-order coil off %s", output->getName());
+#endif /* SPARK_EXTREME_LOGGING */
 		warning(ObdCode::CUSTOM_OUT_OF_ORDER_COIL, "out-of-order coil off %s", output->getName());
-		output->outOfOrder = true;
 	}
 	output->setLow();
 }
@@ -229,7 +231,7 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 
 	}
 #endif /* EFI_UNIT_TEST */
-	// now that we've jdwellAngleDurationust fired a coil let's prepare the new schedule for the next engine revolution
+	// now that we've just fired a coil let's prepare the new schedule for the next engine revolution
 
 	angle_t dwellAngleDuration = engine->ignitionState.dwellDurationAngle;
 	floatms_t sparkDwell = engine->ignitionState.sparkDwell;
@@ -271,14 +273,14 @@ if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
 	engine->onSparkFireKnockSense(event->coilIndex, nowNt);
 }
 
-static void startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutputPin *output) {
+static bool startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutputPin *output) {
 	// todo: no reason for this to be disabled in unit_test mode?!
 #if ! EFI_UNIT_TEST
 
 	if (Sensor::getOrZero(SensorType::Rpm) > 2 * engineConfiguration->cranking.rpm) {
 		const char *outputName = output->getName();
 		if (prevSparkName == outputName && getCurrentIgnitionMode() != IM_ONE_COIL) {
-			warning(ObdCode::CUSTOM_OBD_SKIPPED_SPARK, "looks like skipped spark event %d %s", getRevolutionCounter(), outputName);
+			warning(ObdCode::CUSTOM_OBD_SKIPPED_SPARK, "looks like skipped spark event revolution=%d [%s]", getRevolutionCounter(), outputName);
 		}
 		prevSparkName = outputName;
 	}
@@ -286,19 +288,30 @@ static void startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutput
 
 
 #if SPARK_EXTREME_LOGGING
-	efiPrintf("spark goes high %d %s %d current=%d cnt=%d id=%d", getRevolutionCounter(), output->getName(), (int)getTimeNowUs(),
-			output->currentLogicValue, output->outOfOrder, event->sparkCounter);
+	efiPrintf("spark goes high revolution=%d [%s] %d current=%d id=%d", getRevolutionCounter(), output->getName(), (int)getTimeNowUs(),
+			output->currentLogicValue, event->sparkCounter);
 #endif /* SPARK_EXTREME_LOGGING */
 
-	if (output->outOfOrder) {
-		output->outOfOrder = false;
-		if (output->signalFallSparkId == event->sparkCounter) {
-			// let's save this coil if things do not look right
-			return;
-		}
+	if (output->signalFallSparkId >= event->sparkCounter) {
+	  /**
+	   * fact: we schedule both start of dwell and spark firing using a combination of time and trigger event domain
+	   * in case of bad/noisy signal we can get unexpected trigger events and a small time delay for spark firing before
+	   * we even start dwell if it scheduled with a longer time-only delay with fewer trigger events
+	   *
+	   * here we are detecting such out-of-order processing and choose the safer route of not even starting dwell
+	   * [tag] #6349
+	   */
+
+#if SPARK_EXTREME_LOGGING
+		efiPrintf("[%s] bail spark dwell\n", output->getName());
+#endif /* SPARK_EXTREME_LOGGING */
+		// let's save this coil if things do not look right
+		engine->engineState.sparkOutOfOrderCounter++;
+		return true;
 	}
 
 	output->setHigh();
+	return false;
 }
 
 void turnSparkPinHighStartCharging(IgnitionEvent *event) {
@@ -306,22 +319,32 @@ void turnSparkPinHighStartCharging(IgnitionEvent *event) {
 
 	efitick_t nowNt = getTimeNowNt();
 
-#if EFI_UNIT_TEST
-	if (engine->onIgnitionEvent) {
-		engine->onIgnitionEvent(event, true);
-	}
-#endif
-
-#if EFI_TOOTH_LOGGER
-	LogTriggerCoilState(nowNt, true);
-#endif // EFI_TOOTH_LOGGER
-
+  bool skippedDwellDueToTriggerNoised = false;
 	for (int i = 0; i< MAX_OUTPUTS_FOR_IGNITION;i++) {
 		IgnitionOutputPin *output = event->outputs[i];
 		if (output != NULL) {
-			startDwellByTurningSparkPinHigh(event, output);
+			skippedDwellDueToTriggerNoised |= startDwellByTurningSparkPinHigh(event, output);
 		}
 	}
+
+#if EFI_UNIT_TEST
+  event->bailedOnDwell = skippedDwellDueToTriggerNoised;
+#endif
+
+
+  if (!skippedDwellDueToTriggerNoised) {
+
+#if EFI_UNIT_TEST
+  	if (engine->onIgnitionEvent) {
+  		engine->onIgnitionEvent(event, true);
+	  }
+#endif
+
+#if EFI_TOOTH_LOGGER
+	  LogTriggerCoilState(nowNt, true);
+#endif // EFI_TOOTH_LOGGER
+  }
+
 
 	if (engineConfiguration->enableTrailingSparks) {
 		IgnitionOutputPin *output = &enginePins.trailingCoils[event->coilIndex];
@@ -371,12 +394,12 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 	 */
 	if (!limitedSpark) {
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("scheduling sparkUp %d %s now=%d %d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), (int)angleOffset,
+		efiPrintf("scheduling sparkUp revolution=%d [%s] now=%d %d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), (int)angleOffset,
 				event->sparkCounter);
 #endif /* SPARK_EXTREME_LOGGING */
 
 
-	/**
+		/**
 		 * Note how we do not check if spark is limited or not while scheduling 'spark down'
 		 * This way we make sure that coil dwell started while spark was enabled would fire and not burn
 		 * the coil.
@@ -405,17 +428,27 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 	if (isTimeScheduled) {
 	  // event was scheduled by time, we expect it to happen reliably
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("scheduling sparkDown %d %s now=%d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter);
+		efiPrintf("scheduling sparkDown revolution=%d [%s] now=%d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter);
 #endif /* FUEL_MATH_EXTREME_LOGGING */
 	} else {
 	  // event was queued in relation to some expected tooth event in the future which might just never come so we shall protect from over-dwell
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("to queue sparkDown %d %s now=%d for id=%d angle=%.1f", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter, sparkAngle);
+		efiPrintf("to queue sparkDown revolution=%d [%s] now=%d for id=%d angle=%.1f", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter, sparkAngle);
 #endif /* SPARK_EXTREME_LOGGING */
 
 		if (!limitedSpark && ENABLE_OVERDWELL_PROTECTION) {
 			// auto fire spark at 1.5x nominal dwell
 			efitick_t fireTime = chargeTime + MSF2NT(1.5f * dwellMs);
+
+#if SPARK_EXTREME_LOGGING
+		efiPrintf("scheduling overdwell sparkDown revolution=%d [%s] for %d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), fireTime);
+#endif /* SPARK_EXTREME_LOGGING */
+
+      /**
+       * todo one: explicit unit test for this mechanism see https://github.com/rusefi/rusefi/issues/6373
+       * todo two: can we please comprehend/document how this even works? we seem to be reusing 'sparkEvent.scheduling' instance
+       * and it looks like current (smart?) re-queuing is effectively cancelling out the overdwell? is that the way this was intended to work?
+       */
 			engine->executor.scheduleByTimestampNt("overdwell", &event->sparkEvent.scheduling, fireTime, { overFireSparkAndPrepareNextSchedule, event });
 		} else {
 		  engine->engineState.overDwellNotScheduledCounter++;
@@ -424,8 +457,9 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 
 #if EFI_UNIT_TEST
 	if (verboseMode) {
-		printf("spark dwell@ %.1f spark@ %.2f id=%d\r\n", event->dwellAngle,
+		printf("spark dwell@ %.1f spark@ %.2f id=%d sparkCounter=%d\r\n", event->dwellAngle,
 			event->sparkEvent.getAngle(),
+			event->coilIndex,
 			event->sparkCounter);
 	}
 #endif

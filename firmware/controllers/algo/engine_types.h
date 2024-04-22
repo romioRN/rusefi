@@ -54,7 +54,7 @@ enum class engine_type_e : uint16_t {
 	FORD_ESCORT_GT = 14,
 	FUEL_BENCH = 15,
 	MITSUBISHI_4G93 = 16,
-	UNUSED17 = 17,
+	TCU_4R70W = 17,
 
 	TEST_33816 = 18,
 
@@ -319,8 +319,8 @@ enum class trigger_type_e : uint32_t {
 	TT_HALF_MOON = 18,
 
 	TT_DODGE_RAM = 19,
-	//  * It looks like this is the VR shape if you have your wires flipped
-	TT_60_2_VW = 20,
+	// keeping for compatibility with M73 PnP harnesses which until 2023 were build with VR wires flipped
+	TT_60_2_WRONG_POLARITY = 20,
 	TT_BENELLI_TRE = 21,
 	TT_DODGE_STRATUS = 22,
         // Subaru but also Mazda RX-8, we suspect that it's VR

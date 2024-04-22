@@ -59,6 +59,7 @@
 
 #include "nissan_primera.h"
 #include "nissan_vq.h"
+#include "tc_4l6x.h"
 
 #include "mazda_miata.h"
 #include "mazda_miata_1_6.h"
@@ -731,6 +732,12 @@ void resetConfigurationExt(configuration_callback_t boardCallback, engine_type_e
 	  break;
 #endif // EFI_UNIT_TEST
 
+#if EFI_TCU
+	case engine_type_e::TCU_4R70W:
+		configureTcu4R70W();
+		break;
+#endif //EFI_TCU
+
 #if HW_MICRO_RUSEFI || HW_PROTEUS
 	case engine_type_e::MERCEDES_M111:
 		setMercedesM111EngineConfiguration();
@@ -804,11 +811,14 @@ void resetConfigurationExt(configuration_callback_t boardCallback, engine_type_e
 		break;
 #endif
 
-#if HW_PROTEUS
+#if HW_PROTEUS || HW_HELLEN
 	case engine_type_e::POLARIS_RZR:
 	case engine_type_e::MAVERICK_X3:
 	    setMaverickX3();
 		break;
+#endif
+
+#if HW_PROTEUS
 	case engine_type_e::ME17_9_MISC:
 	    setSlingshot();
 		break;

@@ -332,6 +332,12 @@ float getOutputValueByName(const char *name) {
 // rawPpsSecondary
 		case -1798336054:
 			return engine->outputChannels.rawPpsSecondary;
+// rawRawPpsPrimary
+		case 347493808:
+			return engine->outputChannels.rawRawPpsPrimary;
+// rawRawPpsSecondary
+		case -1318050732:
+			return engine->outputChannels.rawRawPpsSecondary;
 // idlePositionSensor
 		case 782384530:
 			return engine->outputChannels.idlePositionSensor;
@@ -1239,6 +1245,9 @@ float getOutputValueByName(const char *name) {
 // overDwellNotScheduledCounter
 		case 1629214715:
 			return engine->engineState.overDwellNotScheduledCounter;
+// sparkOutOfOrderCounter
+		case -1595596945:
+			return engine->engineState.sparkOutOfOrderCounter;
 // vvtCamCounter
 #if EFI_SHAFT_POSITION_INPUT
 		case 477303734:

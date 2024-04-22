@@ -1,6 +1,6 @@
 package com.rusefi.config.generated;
 
-// this file was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Tue Apr 16 23:39:17 UTC 2024
+// this file was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Mon Apr 22 01:06:27 UTC 2024
 
 // by class com.rusefi.output.FileJavaFieldsConsumer
 import com.rusefi.config.*;
@@ -220,7 +220,6 @@ public class Fields {
 	public static final int cranking_parameters_s_size = 8;
 	public static final int CRITICAL_BUFFER_SIZE = 120;
 	public static final String CRITICAL_PREFIX = "CRITICAL";
-	public static final int cyl_trim_s_size = 16;
 	public static final int DAC_OUTPUT_COUNT = 2;
 	public static final int dc_function_e_DC_IdleValve = 3;
 	public static final int dc_function_e_DC_None = 0;
@@ -396,6 +395,7 @@ public class Fields {
 	public static final int engine_type_e_SACHS = 29;
 	public static final int engine_type_e_SIMULATOR_CONFIG = 92;
 	public static final int engine_type_e_SUBARU_EG33 = 70;
+	public static final int engine_type_e_TCU_4R70W = 17;
 	public static final int engine_type_e_TEST_100 = 100;
 	public static final int engine_type_e_TEST_101 = 101;
 	public static final int engine_type_e_TEST_33816 = 18;
@@ -409,7 +409,6 @@ public class Fields {
 	public static final int engine_type_e_TOYOTA_1NZ_FE = 13;
 	public static final int engine_type_e_TOYOTA_2JZ_GTE_VVTi = 44;
 	public static final int engine_type_e_UNUSED102 = 102;
-	public static final int engine_type_e_UNUSED17 = 17;
 	public static final int engine_type_e_UNUSED47 = 47;
 	public static final int engine_type_e_UNUSED67 = 67;
 	public static final int engine_type_e_UNUSED93 = 93;
@@ -424,12 +423,14 @@ public class Fields {
 	public static final int ETB_HW_MAX_FREQUENCY = 3000;
 	public static final int FANCY_OPTIONS_COUNT = 16;
 	public static final int FLASH_DATA_VERSION = 20016;
+	public static final int fuel_cyl_trim_s_size = 16;
 	public static final int FUEL_LEVEL_TABLE_COUNT = 8;
 	public static final int FUEL_LOAD_COUNT = 16;
 	public static final int fuel_pressure_sensor_mode_e_FPM_Absolute = 0;
 	public static final int fuel_pressure_sensor_mode_e_FPM_Differential = 2;
 	public static final int fuel_pressure_sensor_mode_e_FPM_Gauge = 1;
 	public static final int FUEL_RPM_COUNT = 16;
+	public static final int FUEL_TRIM_SIZE = 4;
 	public static final int GAP_TRACKING_LENGTH = 18;
 	public static final String GAUGE_CATEGORY_BOOST_CONTROL = "Boost Control";
 	public static final String GAUGE_CATEGORY_ETB = "ETB more";
@@ -543,7 +544,15 @@ public class Fields {
 	public static final String GAUGE_NAME_KNOCK_RETARD = "Knock: Retard";
 	public static final String GAUGE_NAME_LAMBDA = "Lambda";
 	public static final String GAUGE_NAME_LAMBDA2 = "Lambda 2";
-	public static final String GAUGE_NAME_LAST_ERROR = "Last error";
+	public static final String GAUGE_NAME_LAST_ERROR = "Warning: last";
+	public static final String GAUGE_NAME_LUA_0 = "Lua Gauge 1";
+	public static final String GAUGE_NAME_LUA_1 = "Lua Gauge 2";
+	public static final String GAUGE_NAME_LUA_2 = "Lua Gauge 3";
+	public static final String GAUGE_NAME_LUA_3 = "Lua Gauge 4";
+	public static final String GAUGE_NAME_LUA_4 = "Lua Gauge 5";
+	public static final String GAUGE_NAME_LUA_5 = "Lua Gauge 6";
+	public static final String GAUGE_NAME_LUA_6 = "Lua Gauge 7";
+	public static final String GAUGE_NAME_LUA_7 = "Lua Gauge 8";
 	public static final String GAUGE_NAME_MAF = "MAF";
 	public static final String GAUGE_NAME_MAP = "MAP";
 	public static final String GAUGE_NAME_OIL_PRESSURE = "Oil Pressure";
@@ -586,8 +595,9 @@ public class Fields {
 	public static final int gear_e_GEAR_4 = 4;
 	public static final int gear_e_NEUTRAL = 0;
 	public static final int gear_e_REVERSE = -1;
+	public static final int GearControllerMode_Automatic = 2;
 	public static final int GearControllerMode_ButtonShift = 1;
-	public static final int GearControllerMode_Generic = 2;
+	public static final int GearControllerMode_Generic = 3;
 	public static final int GearControllerMode_None = 0;
 	public static final int Gpio_A0 = 2;
 	public static final int Gpio_A1 = 3;
@@ -961,8 +971,10 @@ public class Fields {
 	public static final int idle_state_e_TPS_THRESHOLD = 1;
 	public static final int IDLE_VE_SIZE = 4;
 	public static final int IGN_BLEND_COUNT = 4;
+	public static final int ign_cyl_trim_s_size = 16;
 	public static final int IGN_LOAD_COUNT = 16;
 	public static final int IGN_RPM_COUNT = 16;
+	public static final int IGN_TRIM_SIZE = 4;
 	public static final int ignition_mode_e_IM_INDIVIDUAL_COILS = 1;
 	public static final int ignition_mode_e_IM_ONE_COIL = 0;
 	public static final int ignition_mode_e_IM_TWO_COILS = 3;
@@ -1032,6 +1044,15 @@ public class Fields {
 	public static final int mc33810maxDwellTimer_e_DWELL_8MS = 2;
 	public static final int MLQ_FIELD_HEADER_SIZE = 89;
 	public static final int MLQ_HEADER_SIZE = 24;
+	public static final int MsIoBox_config_s_size = 4;
+	public static final int MsIoBoxId_ID200 = 1;
+	public static final int MsIoBoxId_ID220 = 2;
+	public static final int MsIoBoxId_ID240 = 3;
+	public static final int MsIoBoxId_OFF = 0;
+	public static final int MsIoBoxVss_ALL1234 = 3;
+	public static final int MsIoBoxVss_HALL34 = 2;
+	public static final int MsIoBoxVss_OFF = 0;
+	public static final int MsIoBoxVss_VR12 = 1;
 	public static final int operation_mode_e_FOUR_STROKE_CAM_SENSOR = 2;
 	public static final int operation_mode_e_FOUR_STROKE_CRANK_SENSOR = 1;
 	public static final int operation_mode_e_FOUR_STROKE_SIX_TIMES_CRANK_SENSOR = 7;
@@ -1125,7 +1146,6 @@ public class Fields {
 	public static final int SentEtbType_FORD_TYPE_1 = 2;
 	public static final int SentEtbType_GM_TYPE_1 = 1;
 	public static final int SentEtbType_NONE = 0;
-	public static final int SIGNATURE_HASH = 2014754836;
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME = "generated/simulator_tune_image.bin";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX = "generated/simulator_tune_image";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX = ".bin";
@@ -1178,7 +1198,8 @@ public class Fields {
 	public static final int TPS_TPS_ACCEL_CLT_CORR_TABLE = 4;
 	public static final int TPS_TPS_ACCEL_TABLE = 8;
 	public static final int TRACTION_CONTROL_ETB_DROP_SIZE = 6;
-	public static final int TransmissionControllerMode_Gm4l6x = 2;
+	public static final int TransmissionControllerMode_Generic4 = 2;
+	public static final int TransmissionControllerMode_Gm4l6x = 3;
 	public static final int TransmissionControllerMode_None = 0;
 	public static final int TransmissionControllerMode_SimpleTransmissionController = 1;
 	public static final String TRIGGER_COMMENT = "#";
@@ -1203,7 +1224,7 @@ public class Fields {
 	public static final int trigger_type_e_TT_3_1_CAM = 31;
 	public static final int trigger_type_e_TT_3_TOOTH_CRANK = 72;
 	public static final int trigger_type_e_TT_60_2_2_F3R = 75;
-	public static final int trigger_type_e_TT_60_2_VW = 20;
+	public static final int trigger_type_e_TT_60_2_WRONG_POLARITY = 20;
 	public static final int trigger_type_e_TT_60DEG_TOOTH = 77;
 	public static final int trigger_type_e_TT_6_TOOTH_CRANK = 80;
 	public static final int trigger_type_e_TT_BENELLI_TRE = 21;
@@ -1281,7 +1302,6 @@ public class Fields {
 	public static final String TRIGGERS_FILE_NAME = "triggers.txt";
 	public static final int TriggerWheel_T_PRIMARY = 0;
 	public static final int TriggerWheel_T_SECONDARY = 1;
-	public static final int TRIM_SIZE = 4;
 	public static final int ts_14_command_TS_14_0 = 0;
 	public static final int ts_14_command_TS_14_1 = 1;
 	public static final int ts_14_command_TS_14_4 = 4;
@@ -1377,11 +1397,11 @@ public class Fields {
 	public static final int TS_RESPONSE_UNDERRUN = 0x80;
 	public static final int TS_RESPONSE_UNRECOGNIZED_COMMAND = 0x83;
 	public static final char TS_SET_LOGGER_SWITCH = 'l';
-	public static final String TS_SIGNATURE = "rusEFI master.2024.04.17.f407-discovery.2014754836";
+	public static final String TS_SIGNATURE = "rusEFI master.2024.04.22.f407-discovery.3300691955";
 	public static final char TS_SIMULATE_CAN = '>';
 	public static final char TS_SINGLE_WRITE_COMMAND = 'W';
 	public static final char TS_TEST_COMMAND = 't';
-	public static final int TS_TOTAL_OUTPUT_SIZE = 1724;
+	public static final int TS_TOTAL_OUTPUT_SIZE = 1736;
 	public static final String TS_TRIGGER_SCOPE_CHANNEL_1_NAME = "Channel 1";
 	public static final String TS_TRIGGER_SCOPE_CHANNEL_2_NAME = "Channel 2";
 	public static final int TS_TRIGGER_SCOPE_DISABLE = 5;
@@ -1596,7 +1616,7 @@ public class Fields {
 	public static final Field TPS2_1ADCCHANNEL = Field.create("TPS2_1ADCCHANNEL", 511, FieldType.INT8, adc_channel_e).setScale(1.0).setBaseOffset(0);
 	public static final Field IDLE_DERIVATIVEFILTERLOSS = Field.create("IDLE_DERIVATIVEFILTERLOSS", 512, FieldType.FLOAT).setBaseOffset(0);
 	public static final Field TRAILINGSPARKANGLE = Field.create("TRAILINGSPARKANGLE", 516, FieldType.INT).setScale(1.0).setBaseOffset(0);
-	public static final String[] trigger_type_e = {"custom toothed wheel", "Ford Aspire", "Dodge Neon 1995", "Miata NA", "INVALID", "GM_7X", "Daihatsu 3 cylinder", "Mazda SOHC 4", "60-2", "36-1", "Mercedes Two Segment", "Single Tooth", "EZ30", "INVALID", "Dodge Neon 2003", "Mazda DOHC 1+4", "1+1", "INVALID", "Half Moon", "Dodge Ram 1+16", "60-2 VW", "Benelli Tre", "Dodge Stratus", "36_2_2_2", "Nissan Primera", "dev 2JZ 3/34 simulator", "Rover K", "GM 24x 5 degree", "Honda CBR 600 Cam", "Mitsubishi 4G92/93/94 Cam 29", "Honda CBR 600 custom", "3-1 skipped", "Dodge Neon 2003 crank", "Miata NB", "Mitsubishi 4G63 Cam 34", "INVALID", "Subaru 7+6", "Jeep 18-2-2-2", "12crank/24cam", "Dodge Neon 1995 crank only", "Jeep XJ 4 cyl", "FiatIAQ_P8", "Mazda Z5", "INVALID", "Renix 44-2-2", "Renix 66-2-2-2", "Honda K 12+1", "INVALID", "36-2", "Subaru SVX", "1+16", "Subaru 7 without 6", "INVALID", "INVALID", "GM 60-2-2-2", "Skoda Favorit", "Barra 3+1 Cam", "Kawa KX450F", "Nissan VQ35", "INVALID", "Nissan VQ30", "Nissan QR25", "INVALID", "Subaru SVX Crank 1", "Subaru SVX Cam VVT", "Ford PIP", "Suzuki G13B", "Honda K 4+1", "Nissan MR18 Crank", "32-2", "36-2-1", "36-2-1-1", "3-0", "INVALID", "GM 24x 3 degree", "60-2-2 F3R", "Mitsu 4G63 Crank", "x2 30 Deg camshaft BTDC", "INVALID", "Mitsu 6G72 Cam", "6-0", "Daihatsu 4 cylinder", "trg82", "trg83"};
+	public static final String[] trigger_type_e = {"custom toothed wheel", "Ford Aspire", "Dodge Neon 1995", "Miata NA", "INVALID", "GM_7X", "Daihatsu 3 cylinder", "Mazda SOHC 4", "60-2", "36-1", "Mercedes Two Segment", "Single Tooth", "EZ30", "INVALID", "Dodge Neon 2003", "Mazda DOHC 1+4", "1+1", "INVALID", "Half Moon", "Dodge Ram 1+16", "60-2 Wrong Polarity", "Benelli Tre", "Dodge Stratus", "36_2_2_2", "Nissan Primera", "dev 2JZ 3/34 simulator", "Rover K", "GM 24x 5 degree", "Honda CBR 600 Cam", "Mitsubishi 4G92/93/94 Cam 29", "Honda CBR 600 custom", "3-1 skipped", "Dodge Neon 2003 crank", "Miata NB", "Mitsubishi 4G63 Cam 34", "INVALID", "Subaru 7+6", "Jeep 18-2-2-2", "12crank/24cam", "Dodge Neon 1995 crank only", "Jeep XJ 4 cyl", "FiatIAQ_P8", "Mazda Z5", "INVALID", "Renix 44-2-2", "Renix 66-2-2-2", "Honda K 12+1", "INVALID", "36-2", "Subaru SVX", "1+16", "Subaru 7 without 6", "INVALID", "INVALID", "GM 60-2-2-2", "Skoda Favorit", "Barra 3+1 Cam", "Kawa KX450F", "Nissan VQ35", "INVALID", "Nissan VQ30", "Nissan QR25", "INVALID", "Subaru SVX Crank 1", "Subaru SVX Cam VVT", "Ford PIP", "Suzuki G13B", "Honda K 4+1", "Nissan MR18 Crank", "32-2", "36-2-1", "36-2-1-1", "3-0", "INVALID", "GM 24x 3 degree", "60-2-2 F3R", "Mitsu 4G63 Crank", "x2 30 Deg camshaft BTDC", "INVALID", "Mitsu 6G72 Cam", "6-0", "Daihatsu 4 cylinder", "trg82", "trg83"};
 	public static final Field TRIGGER_TYPE = Field.create("TRIGGER_TYPE", 520, FieldType.INT, trigger_type_e).setScale(1.0).setBaseOffset(0);
 	public static final Field TRIGGER_CUSTOMTOTALTOOTHCOUNT = Field.create("TRIGGER_CUSTOMTOTALTOOTHCOUNT", 524, FieldType.INT).setScale(1.0).setBaseOffset(0);
 	public static final Field TRIGGER_CUSTOMSKIPPEDTOOTHCOUNT = Field.create("TRIGGER_CUSTOMSKIPPEDTOOTHCOUNT", 528, FieldType.INT).setScale(1.0).setBaseOffset(0);
@@ -2807,7 +2827,12 @@ public class Fields {
 	public static final Field TCU_RANGEANALOGINPUT6 = Field.create("TCU_RANGEANALOGINPUT6", 4009, FieldType.INT8, adc_channel_e).setScale(1.0).setBaseOffset(0);
 	public static final Field ALIGNMENTFILL_AT_4010 = Field.create("ALIGNMENTFILL_AT_4010", 4010, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field TCU_RANGESENSORBIASRESISTOR = Field.create("TCU_RANGESENSORBIASRESISTOR", 4012, FieldType.FLOAT).setBaseOffset(0);
-	public static final Field UNUSEDOFTENCHANGESDURINGFIRMWAREUPDATE = Field.create("UNUSEDOFTENCHANGESDURINGFIRMWAREUPDATE", 4016, FieldType.INT8).setScale(1.0).setBaseOffset(0);
+	public static final String[] MsIoBoxId = {"Off", "ID1 (0x200)", "ID2 (0x220)", "ID3 (0x240)"};
+	public static final Field MSIOBOX0_ID = Field.create("MSIOBOX0_ID", 4016, FieldType.INT8, MsIoBoxId).setScale(1.0).setBaseOffset(0);
+	public static final String[] MsIoBoxVss = {"Off", "VR speed in (1, 2)", "Hall speed in (3, 4)", "All (1, 2, 3, 4)"};
+	public static final Field MSIOBOX0_VSS = Field.create("MSIOBOX0_VSS", 4017, FieldType.INT8, MsIoBoxVss).setScale(1.0).setBaseOffset(0);
+	public static final Field MSIOBOX0_ALIGNMENTFILL_AT_2 = Field.create("MSIOBOX0_ALIGNMENTFILL_AT_2", 4018, FieldType.INT8).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDOFTENCHANGESDURINGFIRMWAREUPDATE = Field.create("UNUSEDOFTENCHANGESDURINGFIRMWAREUPDATE", 4020, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field ETBBIASBINS = Field.create("ETBBIASBINS", 4220, FieldType.FLOAT).setBaseOffset(0);
 	public static final Field ETBBIASVALUES = Field.create("ETBBIASVALUES", 4252, FieldType.FLOAT).setBaseOffset(0);
 	public static final Field IACPIDMULTTABLE = Field.create("IACPIDMULTTABLE", 4284, FieldType.INT8).setScale(0.05).setBaseOffset(0);
@@ -4469,6 +4494,9 @@ public class Fields {
 	TCU_RANGEANALOGINPUT6,
 	ALIGNMENTFILL_AT_4010,
 	TCU_RANGESENSORBIASRESISTOR,
+	MSIOBOX0_ID,
+	MSIOBOX0_VSS,
+	MSIOBOX0_ALIGNMENTFILL_AT_2,
 	UNUSEDOFTENCHANGESDURINGFIRMWAREUPDATE,
 	ETBBIASBINS,
 	ETBBIASVALUES,

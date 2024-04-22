@@ -26,7 +26,13 @@ Release template (copy/paste this for new release):
 
 # Changelog
 
+### Breaking Changes
+ - "60/2 VW" trigger wheel renamed to "60-2 Wrong Polarity" #988
+
+
 ## Unreleased
+
+## April 2024 "Day 785"
 
 ### Added
  - Boost Open Loop gear-based modifier takes negative values #6189
@@ -50,6 +56,7 @@ Release template (copy/paste this for new release):
  - update-ts-cacerts work-around is no longer needed #6327
  - uaEFI board knock configuration #6338
  - Fix a scenario where noisy trigger can cause overdwell #6349
+ - knock retard calibration lookup #6370
 
 ### Breaking Changes
  - wrong trigger naming for missing teeth #6258

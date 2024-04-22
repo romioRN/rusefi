@@ -20,6 +20,7 @@ struct TpsConfig {
 
 class FuncSensPair {
 public:
+AdcSubscriptionEntry *adc = nullptr;
 	FuncSensPair(float divideInput, SensorType type)
 		: m_func(divideInput)
 		, m_sens(type, MS2NT(10))
@@ -33,7 +34,8 @@ public:
 			return false;
 		}
 
-		AdcSubscription::SubscribeSensor(m_sens, cfg.channel, 200);
+    float lowpassCutoffHz = engineConfiguration->magicNumberAvailableForDevTricks > 3 ? engineConfiguration->magicNumberAvailableForDevTricks : 200;
+		adc = AdcSubscription::SubscribeSensor(m_sens, cfg.channel, lowpassCutoffHz);
 
 		return m_sens.Register();
 	}
@@ -150,6 +152,11 @@ printf("init m_redund.Register() %s\n", getSensorType(m_redund.type()));
 
 	}
 
+	void updateUnfilteredRawValues() {
+	  engine->outputChannels.rawRawPpsPrimary = m_pri.adc == nullptr ? 0 : m_pri.adc->sensorVolts;
+	  engine->outputChannels.rawRawPpsSecondary = m_sec.adc == nullptr ? 0 : m_sec.adc->sensorVolts;
+	}
+
 private:
 	FuncSensPair& m_pri;
 	FuncSensPair& m_sec;
@@ -177,6 +184,10 @@ static RedundantFordTps fordPps(SensorType::AcceleratorPedal, SensorType::Accele
 static FuncSensPair pedalPrimary(1, SensorType::AcceleratorPedalPrimary);
 static FuncSensPair pedalSecondary(1, SensorType::AcceleratorPedalSecondary);
 static RedundantPair pedal(pedalPrimary, pedalSecondary, SensorType::AcceleratorPedal);
+
+void updateUnfilteredRawPedal() {
+  pedal.updateUnfilteredRawValues();
+}
 
 // This sensor indicates the driver's throttle intent - Pedal if we have one, TPS if not.
 static ProxySensor driverIntent(SensorType::DriverThrottleIntent);
