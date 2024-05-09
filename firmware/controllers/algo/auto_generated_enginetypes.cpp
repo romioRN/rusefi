@@ -1,6 +1,6 @@
 #include "global.h"
 #include "engine_types.h"
-// was generated automatically by rusEFI tool  from engine_types.h // by enum_to_string.jar tool on Sun Apr 21 03:27:09 UTC 2024
+// was generated automatically by rusEFI tool  from engine_types.h // by enum_to_string.jar tool on Wed May 08 11:59:23 UTC 2024
 // see also gen_config_and_enums.bat
 
 
@@ -363,6 +363,8 @@ case engine_type_e::TEST_ISSUE_366_BOTH:
   return "TEST_ISSUE_366_BOTH";
 case engine_type_e::TEST_ISSUE_366_RISE:
   return "TEST_ISSUE_366_RISE";
+case engine_type_e::TEST_ISSUE_6451:
+  return "TEST_ISSUE_6451";
 case engine_type_e::TEST_ROTARY:
   return "TEST_ROTARY";
 case engine_type_e::TOYOTA_1NZ_FE:
@@ -375,8 +377,6 @@ case engine_type_e::UNUSED47:
   return "UNUSED47";
 case engine_type_e::UNUSED67:
   return "UNUSED67";
-case engine_type_e::UNUSED93:
-  return "UNUSED93";
 case engine_type_e::UNUSED94:
   return "UNUSED94";
 case engine_type_e::UNUSED_65:
@@ -394,8 +394,6 @@ const char *getTrigger_type_e(trigger_type_e value){
 switch(value) {
 case trigger_type_e::TT_12_TOOTH_CRANK:
   return "TT_12_TOOTH_CRANK";
-case trigger_type_e::TT_1_16:
-  return "TT_1_16";
 case trigger_type_e::TT_2JZ_3_34_SIMULATION_ONLY:
   return "TT_2JZ_3_34_SIMULATION_ONLY";
 case trigger_type_e::TT_36_2_1:
@@ -536,6 +534,8 @@ case trigger_type_e::TT_TRI_TACH:
   return "TT_TRI_TACH";
 case trigger_type_e::TT_UNUSED:
   return "TT_UNUSED";
+case trigger_type_e::TT_UNUSED_50:
+  return "TT_UNUSED_50";
 case trigger_type_e::TT_VVT_BARRA_3_PLUS_1:
   return "TT_VVT_BARRA_3_PLUS_1";
 case trigger_type_e::TT_VVT_BOSCH_QUICK_START:

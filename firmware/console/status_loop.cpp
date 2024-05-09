@@ -66,7 +66,7 @@
 #include "periodic_task.h"
 #endif /* EFI_PROD_CODE */
 
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 #include "flash_main.h"
 #endif
 
@@ -274,8 +274,6 @@ class CommunicationBlinkingTask : public PeriodicTimerController {
 	void PeriodicTask() override {
 		counter++;
 
-		bool lowVBatt = Sensor::getOrZero(SensorType::BatteryVoltage) < LOW_VBATT;
-
 		if (counter == 1) {
 			// first invocation of BlinkingTask
 			setAllLeds(1);
@@ -291,9 +289,7 @@ extern int totalLoggedBytes;
 			}
 #endif // HW_CHECK_SD
 
-			if (!lowVBatt) {
-				enginePins.warningLedPin.setValue(0);
-			}
+			enginePins.warningLedPin.setValue(0);
 		} else {
 #define BLINKING_PERIOD_MS 33
 
@@ -306,10 +302,10 @@ extern int totalLoggedBytes;
 			} else if (consoleByteArrived) {
 				offTimeMs = 100;
 				onTimeMs = 33;
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 			} else if (getNeedToWriteConfiguration()) {
 				offTimeMs = onTimeMs = 500;
-#endif /* (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE) */
+#endif /* EFI_CONFIGURATION_STORAGE */
 			} else {
 				onTimeMs =
 #if EFI_USB_SERIAL
@@ -327,7 +323,7 @@ extern int totalLoggedBytes;
 //#endif // HW_CHECK_MODE
 
 	#if EFI_ENGINE_CONTROL
-			if (lowVBatt || isTriggerErrorNow()) {
+			if (isTriggerErrorNow()) {
 				// todo: at the moment warning codes do not affect warning LED?!
 				enginePins.warningLedPin.setValue(1);
 			}
@@ -609,9 +605,9 @@ static void updateFlags() {
 	engine->outputChannels.isTriggerError = isTriggerErrorNow();
 #endif // EFI_PROD_CODE
 
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 	engine->outputChannels.needBurn = getNeedToWriteConfiguration();
-#endif /* (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE) */
+#endif /* EFI_CONFIGURATION_STORAGE */
 }
 
 static void updateWarningCodes() {
@@ -685,8 +681,7 @@ void updateTunerStudioState() {
 	tsOutputChannels->injectorDutyCycleStage2 = getInjectorDutyCycleStage2(rpm);
 #endif
 
-	efitimesec_t timeSeconds = getTimeNowS();
-	tsOutputChannels->seconds = timeSeconds;
+	tsOutputChannels->seconds = getTimeNowS();
 
 	tsOutputChannels->engineMode = packEngineMode();
 	tsOutputChannels->firmwareVersion = getRusEfiVersion();

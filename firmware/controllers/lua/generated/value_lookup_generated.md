@@ -248,7 +248,7 @@ Pull-up resistor value on your board
 value '6' for 8MHz hw osc\nread hip9011 datasheet for details\ntodo split into two bit fields
 
 ### knockBandCustom
-We calculate knock band based of cylinderBore\n Use this to override - kHz knock band override\nRequires power cycling to effect
+Use any online calculator and input your bore.\nReminder that in some cases double frequency works better!
 
 ### displacement
 Engine displacement in litres
@@ -493,9 +493,6 @@ Allows disabling the ETB when the engine is stopped. You may not like the power 
 ### pauseEtbControl
 Disable the electronic throttle motor and DC idle motor for testing.\nThis mode is for testing ETB/DC idle position sensors, etc without actually driving the throttle.
 
-### alignEngineSnifferAtTDC
-
-
 ### verboseKLine
 
 
@@ -605,7 +602,7 @@ If enabled, adjust at a constant rate instead of a rate proportional to the curr
 Verbose info in console below engineSnifferRpmThreshold\nenable vvt_details
 
 ### invertCamVVTSignal
-get invertCamVVTSignal
+
 
 ### alphaNUseIat
 In Alpha-N mode, compensate for air temperature.
@@ -693,12 +690,6 @@ Launch disabled above this speed if setting is above zero
 
 ### launchRpmWindow
 Starting Launch RPM window to activate (subtracts from Launch RPM)
-
-### launchSparkSkipPercent
-Spark Skip Transition Target
-
-### launchBoostDuty
-Duty Cycle for the Boost Solenoid
 
 ### magicNumberAvailableForDevTricks
 null
@@ -887,7 +878,7 @@ Usually if we have no trigger events that means engine is stopped\nUnless we are
 This is needed if your coils are individually wired (COP) and you wish to use batch ignition (Wasted Spark).
 
 ### useFixedBaroCorrFromMap
-
+Read MAP sensor on ECU start-up to use as baro value.
 
 ### useSeparateAdvanceForCranking
 In Constant mode, timing is automatically tapered to running as RPM increases.\nIn Table mode, the "Cranking ignition advance" table is used directly.
@@ -1157,6 +1148,15 @@ AEM X-Series EGT gauge kit or rusEFI EGT sensor from Wideband controller
 
 
 ### devBit7
+
+
+### skipADC12bitAssert
+
+
+### invertExhaustCamVVTSignal
+
+
+### enableKnockSpectrogram
 
 
 ### afterCrankingIACtaperDuration
@@ -1661,9 +1661,6 @@ null
 
 
 ### ALSSkipRatio
-
-
-### ALSMaxDriverThrottleIntent
 
 
 ### tpsSecondaryMaximum

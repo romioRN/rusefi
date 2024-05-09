@@ -14,6 +14,10 @@
 #include "efi_scaled_channel.h"
 #include <rusefi/interpolation.h>
 
+#if EFI_UNIT_TEST
+#include <stdexcept>
+#endif
+
 // popular left edge of CLT-based correction curves
 #define CLT_CURVE_RANGE_FROM -40
 
@@ -29,6 +33,9 @@ public:
 template<int TColNum, int TRowNum, typename TValue, typename TXColumn, typename TRow>
 class Map3D : public ValueProvider3D {
 public:
+  Map3D(const char *name) {
+    m_name = name;
+  }
 	template <typename TValueInit, typename TXColumnInit, typename TRowInit>
 	void initTable(TValueInit (&table)[TRowNum][TColNum],
 				  const TXColumnInit (&columnBins)[TColNum], const TRowInit (&rowBins)[TRowNum]) {
@@ -42,7 +49,7 @@ public:
   // RPM is usually X/Column
 	float getValue(float xColumn, float yRow) const final {
 		if (!m_values) {
-			// not initialized, return 0
+			criticalError("Access to uninitialized table: %s", m_name);
 			return 0;
 		}
 
@@ -117,15 +124,11 @@ private:
 	float m_rowMult = 1;
 	float m_colMult = 1;
 	float m_valueMult = 1;
+	const char *m_name;
 };
 
-typedef Map3D<FUEL_RPM_COUNT, FUEL_LOAD_COUNT, uint8_t, uint16_t, uint16_t> lambda_Map3D_t;
 typedef Map3D<FUEL_RPM_COUNT, FUEL_LOAD_COUNT, uint16_t, uint16_t, uint16_t> fuel_Map3D_t;
-typedef Map3D<BARO_CORR_SIZE, BARO_CORR_SIZE, float, float, float> baroCorr_Map3D_t;
 typedef Map3D<PEDAL_TO_TPS_SIZE, PEDAL_TO_TPS_SIZE, uint8_t, uint8_t, uint8_t> pedal2tps_t;
-typedef Map3D<BOOST_RPM_COUNT, BOOST_LOAD_COUNT, uint8_t, uint8_t, uint8_t> boostOpenLoop_Map3D_t;
-typedef Map3D<BOOST_RPM_COUNT, BOOST_LOAD_COUNT, uint8_t, uint8_t, uint8_t> boostClosedLoop_Map3D_t;
-typedef Map3D<GPPWM_RPM_COUNT, GPPWM_LOAD_COUNT, uint8_t, int16_t, int16_t> gppwm_Map3D_t;
 typedef Map3D<FUEL_RPM_COUNT, FUEL_LOAD_COUNT, uint16_t, uint16_t, uint16_t> mapEstimate_Map3D_t;
 
 /**

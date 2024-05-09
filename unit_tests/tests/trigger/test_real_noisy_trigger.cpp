@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "logicdata_csv_reader.h"
 
-static void testNoOverdwell(const char* file, bool instantRpm) {
+static void testNoOverdwell(const char* file, bool instantRpm, const int expectedBailedOnDwellCount) {
 	CsvReader reader(1, /* vvtCount */ 0);
 
 	reader.open(file);
@@ -31,7 +31,7 @@ static void testNoOverdwell(const char* file, bool instantRpm) {
 	std::vector<efitick_t> coilStartTimes(12);
 
 	engine->onIgnitionEvent = [&](IgnitionEvent* event, bool state) {
-    efitick_t startTime = coilStartTimes[event->coilIndex];
+	    efitick_t startTime = coilStartTimes[event->coilIndex];
 
 		if (state) {
 			coilStartTimes[event->coilIndex] = getTimeNowNt();
@@ -49,29 +49,40 @@ static void testNoOverdwell(const char* file, bool instantRpm) {
 		reader.processLine(&eth);
 	}
 
-	// nothing to check here, just that no coils got stuck on
+	ASSERT_EQ(expectedBailedOnDwellCount, engine->getBailedOnDwellCount())
+		<< "Please check if our dwell algorithm have really got better.";
+}
+
+// noisy-trigger-min.csv contains lines 53-61 from noisy-trigger-1.csv - minimal subset to reproduce the single
+// bailed-on dwell
+TEST(RealNoisyTrigger, AvoidOverdwellMinNoInstant) {
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-min.csv", false, 1);
+}
+
+TEST(RealNoisyTrigger, AvoidOverdwellMinWithInstant) {
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-min.csv", true, 1);
 }
 
 TEST(RealNoisyTrigger, AvoidOverdwell1NoInstant) {
-	testNoOverdwell("tests/trigger/resources/noisy-trigger-1.csv", false);
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-1.csv", false, 25);
 }
 
 TEST(RealNoisyTrigger, AvoidOverdwell1WithInstant) {
-	testNoOverdwell("tests/trigger/resources/noisy-trigger-1.csv", true);
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-1.csv", true, 23);
 }
 
 TEST(RealNoisyTrigger, AvoidOverdwell2NoInstant) {
-	testNoOverdwell("tests/trigger/resources/noisy-trigger-2.csv", false);
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-2.csv", false, 89);
 }
 
 TEST(RealNoisyTrigger, AvoidOverdwell2WithInstant) {
-	testNoOverdwell("tests/trigger/resources/noisy-trigger-2.csv", true);
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-2.csv", true, 85);
 }
 
 TEST(RealNoisyTrigger, AvoidOverdwell3NoInstant) {
-	testNoOverdwell("tests/trigger/resources/noisy-trigger-3.csv", false);
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-3.csv", false, 25);
 }
 
 TEST(RealNoisyTrigger, AvoidOverdwell3WithInstant) {
-	testNoOverdwell("tests/trigger/resources/noisy-trigger-3.csv", true);
+	testNoOverdwell("tests/trigger/resources/noisy-trigger-3.csv", true, 22);
 }

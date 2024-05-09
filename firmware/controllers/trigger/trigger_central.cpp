@@ -131,7 +131,7 @@ static bool vvtWithRealDecoder(vvt_mode_e vvtMode) {
 			&& vvtMode != VVT_SINGLE_TOOTH;
 }
 
-angle_t TriggerCentral::syncAndReport(int divider, int remainder) {
+angle_t TriggerCentral::syncEnginePhaseAndReport(int divider, int remainder) {
 	angle_t engineCycle = getEngineCycle(getEngineRotationState()->getOperationMode());
 
 	angle_t totalShift = triggerState.syncEnginePhase(divider, remainder, engineCycle);
@@ -183,7 +183,7 @@ static angle_t adjustCrankPhase(int camIndex) {
 	case VVT_MAP_V_TWIN:
 	case VVT_MITSUBISHI_4G63:
 	case VVT_MITSUBISHI_4G9x:
-		return tc->syncAndReport(crankDivider, 1);
+		return tc->syncEnginePhaseAndReport(crankDivider, 1);
 	case VVT_SINGLE_TOOTH:
 	case VVT_NISSAN_VQ:
 	case VVT_BOSCH_QUICK_START:
@@ -201,7 +201,7 @@ static angle_t adjustCrankPhase(int camIndex) {
 	case VVT_MITSUBISHI_6G75:
 	case VVT_HONDA_K_EXHAUST:
 	case VVT_HONDA_CBR_600:
-		return tc->syncAndReport(crankDivider, 0);
+		return tc->syncEnginePhaseAndReport(crankDivider, 0);
 	case VVT_HONDA_K_INTAKE:
 	    // with 4 evenly spaced tooth we cannot use this wheel for engine sync
         criticalError("Honda K Intake is not suitable for engine sync");
@@ -744,6 +744,24 @@ bool TriggerCentral::isToothExpectedNow(efitick_t timestamp) {
 
 BOARD_WEAK bool boardAllowTriggerActions() { return true; }
 
+angle_t TriggerCentral::findNextTriggerToothAngle(int p_currentToothIndex) {
+  int currentToothIndex = p_currentToothIndex;
+		// TODO: is this logic to compute next trigger tooth angle correct?
+		angle_t nextPhase = 0;
+
+		int loopAllowance = 2 * engineCycleEventCount + 1000;
+		do {
+			// I don't love this.
+			currentToothIndex = (currentToothIndex + 1) % engineCycleEventCount;
+			nextPhase = getTriggerCentral()->triggerFormDetails.eventAngles[currentToothIndex] - tdcPosition();
+			wrapAngle(nextPhase, "nextEnginePhase", ObdCode::CUSTOM_ERR_6555);
+		} while (nextPhase == currentEngineDecodedPhase && --loopAllowance > 0);
+		if (nextPhase != 0 && loopAllowance == 0) {
+			firmwareError(ObdCode::CUSTOM_ERR_TRIGGER_ZERO, "handleShaftSignal unexpected loop end %d %d %f", p_currentToothIndex, engineCycleEventCount, nextPhase);
+		}
+		return nextPhase;
+}
+
 /**
  * This method is NOT invoked for VR falls.
  */
@@ -828,7 +846,7 @@ void TriggerCentral::handleShaftSignal(trigger_event_e signal, efitick_t timesta
 		}
 
 #if TRIGGER_EXTREME_LOGGING
-	efiPrintf("trigger %d %d %d", triggerIndexForListeners, getRevolutionCounter(), (int)getTimeNowUs());
+	efiPrintf("trigger %d %d %d", triggerIndexForListeners, getRevolutionCounter(), time2print(getTimeNowUs()));
 #endif /* TRIGGER_EXTREME_LOGGING */
 
 		// Update engine RPM
@@ -847,20 +865,7 @@ void TriggerCentral::handleShaftSignal(trigger_event_e signal, efitick_t timesta
 		waTriggerEventListener(signal, triggerIndexForListeners, timestamp);
 #endif
 
-		// TODO: is this logic to compute next trigger tooth angle correct?
-		auto nextToothIndex = triggerIndexForListeners;
-		angle_t nextPhase = 0;
-
-		int loopAllowance = 2 * engineCycleEventCount + 1000;
-		do {
-			// I don't love this.
-			nextToothIndex = (nextToothIndex + 1) % engineCycleEventCount;
-			nextPhase = getTriggerCentral()->triggerFormDetails.eventAngles[nextToothIndex] - tdcPosition();
-			wrapAngle(nextPhase, "nextEnginePhase", ObdCode::CUSTOM_ERR_6555);
-		} while (nextPhase == currentEngineDecodedPhase && --loopAllowance > 0);
-		if (nextPhase != 0 && loopAllowance == 0) {
-			firmwareError(ObdCode::CUSTOM_ERR_TRIGGER_ZERO, "handleShaftSignal unexpected loop end");
-		}
+		angle_t nextPhase = findNextTriggerToothAngle(triggerIndexForListeners);
 
 		float expectNextPhase = nextPhase + tdcPosition();
 		wrapAngle(expectNextPhase, "nextEnginePhase", ObdCode::CUSTOM_ERR_6555);
@@ -1206,7 +1211,7 @@ bool TriggerCentral::isTriggerConfigChanged() {
 
 void validateTriggerInputs() {
 	if (!isBrainPinValid(engineConfiguration->triggerInputPins[0]) && isBrainPinValid(engineConfiguration->triggerInputPins[1])) {
-		criticalError("First trigger channel is missing");
+		criticalError("First trigger channel not configured while second one is.");
 	}
 
 	if (!isBrainPinValid(engineConfiguration->camInputs[0]) && isBrainPinValid(engineConfiguration->camInputs[2])) {

@@ -191,7 +191,7 @@ enum class engine_type_e : uint16_t {
 
 	SIMULATOR_CONFIG = 92,
 
-	UNUSED93 = 93,
+	TEST_ISSUE_6451 = 93,
 
   UNUSED94 = 94,
 
@@ -308,7 +308,7 @@ enum class trigger_type_e : uint32_t {
 	TT_MAZDA_DOHC_1_4 = 15,
 	//  * "1+1" - one tooth on primary channel, one tooth on secondary channel
 	//  * Note: this trigger is used only by unit tests
-	//  * see also TT_ONE a bit below
+	//  * see also TT_HALF_MOON a bit below
 	TT_ONE_PLUS_ONE = 16,
 	/**
 	 * VVT for 2JZ
@@ -367,7 +367,7 @@ enum class trigger_type_e : uint32_t {
 	TT_VVT_BOSCH_QUICK_START = 47,
 	TT_TOOTHED_WHEEL_36_2 = 48,
 	TT_SUBARU_SVX = 49,
-	TT_1_16 = 50,
+	TT_UNUSED_50 = 50,
 	// todo: remove this trigger once we have https://github.com/rusefi/rusefi/issues/2073
 	TT_SUBARU_7_WITHOUT_6 = 51,
 	TT_NISSAN_MR18_CAM_VVT = 52,

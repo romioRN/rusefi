@@ -35,6 +35,8 @@ void setProteusHitachiEtbDefaults();
 
 void etbAutocal(size_t throttleIndex);
 
+float getSanitizedPedal();
+
 class DcMotor;
 struct pid_s;
 class ValueProvider3D;
@@ -50,7 +52,7 @@ public:
 	virtual void setWastegatePosition(percent_t pos) = 0;
 	virtual void update() = 0;
 	virtual void autoCalibrateTps() = 0;
-	virtual bool isEtbMode() = 0;
+	virtual bool isEtbMode() const = 0;
 
 	virtual const pid_state_s& getPidState() const = 0;
 

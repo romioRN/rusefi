@@ -1,5 +1,6 @@
 /*
- * @file global_execution_queue.h
+ * @file test_executor.h
+ * implementation of ExecutorInterface used by unit tests
  *
  *  Created on: Jan 9, 2019
  * @author Andrey Belomutskiy, (c) 2012-2020
@@ -20,7 +21,7 @@ public:
 	void cancel(scheduling_s* scheduling) override;
 
 	void clear();
-	int executeAll(efitick_t now);
+	int executeAll(efitimeus_t nowUs);
 	int size();
 	scheduling_s * getHead();
 	scheduling_s * getForUnitTest(int index);

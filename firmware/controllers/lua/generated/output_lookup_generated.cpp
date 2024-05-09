@@ -314,9 +314,6 @@ float getOutputValueByName(const char *name) {
 // rawTps1Primary
 		case -1051397637:
 			return engine->outputChannels.rawTps1Primary;
-// rawPpsPrimary
-		case -347083354:
-			return engine->outputChannels.rawPpsPrimary;
 // rawClt
 		case 417946098:
 			return engine->outputChannels.rawClt;
@@ -329,6 +326,9 @@ float getOutputValueByName(const char *name) {
 // fuelClosedLoopBinIdx
 		case 1342844099:
 			return engine->outputChannels.fuelClosedLoopBinIdx;
+// rawPpsPrimary
+		case -347083354:
+			return engine->outputChannels.rawPpsPrimary;
 // rawPpsSecondary
 		case -1798336054:
 			return engine->outputChannels.rawPpsSecondary;
@@ -740,6 +740,21 @@ float getOutputValueByName(const char *name) {
 // injectorDutyCycleStage2
 		case -1337459841:
 			return engine->outputChannels.injectorDutyCycleStage2;
+// adc13bitCounter
+		case 1866067408:
+			return engine->outputChannels.adc13bitCounter;
+// fastAdcErrorsCount
+		case -805019103:
+			return engine->outputChannels.fastAdcErrorsCount;
+// deviceUid
+		case 540029591:
+			return engine->outputChannels.deviceUid;
+// unexpectedAdcSample
+		case 605344036:
+			return engine->outputChannels.unexpectedAdcSample;
+// sadDwellRatioCounter
+		case -2146292012:
+			return engine->outputChannels.sadDwellRatioCounter;
 // totalFuelCorrection
 #if EFI_ENGINE_CONTROL
 		case -1779658835:
@@ -879,6 +894,9 @@ float getOutputValueByName(const char *name) {
 // m_maximumRetard
 		case 164334513:
 			return ___engine.module<KnockController>()->m_maximumRetard;
+// m_knockFrequency
+		case -249826215:
+			return ___engine.module<KnockController>()->m_knockFrequency;
 // m_deadtime
 #if EFI_PROD_CODE && EFI_IDLE_CONTROL
 		case -1167844818:
@@ -1297,6 +1315,11 @@ float getOutputValueByName(const char *name) {
 #if EFI_SHAFT_POSITION_INPUT
 		case 756216589:
 			return engine->triggerCentral.isDecodingMapCam;
+#endif
+// triggerElapsedUs
+#if EFI_SHAFT_POSITION_INPUT
+		case 767689023:
+			return engine->triggerCentral.triggerElapsedUs;
 #endif
 // idleState
 #if EFI_PROD_CODE && EFI_IDLE_CONTROL

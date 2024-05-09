@@ -31,9 +31,9 @@
 #include "electronic_throttle.h"
 #endif // EFI_ELECTRONIC_THROTTLE_BODY
 
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 #include "flash_main.h"
-#endif /* (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE) */
+#endif // EFI_CONFIGURATION_STORAGE
 
 #if EFI_ENGINE_SNIFFER
 #include "engine_sniffer.h"
@@ -125,10 +125,6 @@ void printConfiguration() {
 	efiPrintf("map_avg=%s/wa=%s",
 			boolToString(engineConfiguration->isMapAveragingEnabled),
 			boolToString(engineConfiguration->isWaveAnalyzerEnabled));
-
-	efiPrintf("isManualSpinningMode=%s/isCylinderCleanupEnabled=%s",
-			boolToString(engineConfiguration->isManualSpinningMode),
-			boolToString(engineConfiguration->isCylinderCleanupEnabled));
 
 	efiPrintf("clutchUp@%s: %s", hwPortname(engineConfiguration->clutchUpPin),
 			boolToString(engine->engineState.clutchUpState));
@@ -680,8 +676,6 @@ static void getValue(const char *paramStr) {
 		efiPrintf("is_enabled_spi_2=%s", boolToString(engineConfiguration->is_enabled_spi_2));
 	} else if (strEqualCaseInsensitive(paramStr, "is_enabled_spi_3")) {
 		efiPrintf("is_enabled_spi_3=%s", boolToString(engineConfiguration->is_enabled_spi_3));
-	} else if (strEqualCaseInsensitive(paramStr, "invertCamVVTSignal")) {
-		efiPrintf("invertCamVVTSignal=%s", boolToString(engineConfiguration->invertCamVVTSignal));
 	} else if (strEqualCaseInsensitive(paramStr, "isHip9011Enabled")) {
 		efiPrintf("isHip9011Enabled=%d", engineConfiguration->isHip9011Enabled);
 	} else if (strEqualCaseInsensitive(paramStr, CMD_DATE)) {
@@ -957,11 +951,11 @@ void setEngineType(int value, bool isWriteToFlash) {
 		resetConfigurationExt((engine_type_e)value);
 		engine->resetEngineSnifferIfInTestMode();
 
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 		if (isWriteToFlash) {
 			writeToFlashNow();
 		}
-#endif /* (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE) */
+#endif /* EFI_CONFIGURATION_STORAGE */
 	}
 	incrementGlobalConfigurationVersion("engineType");
 #if EFI_ENGINE_CONTROL && ! EFI_UNIT_TEST

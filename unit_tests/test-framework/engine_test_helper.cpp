@@ -16,13 +16,13 @@
 #include "logicdata.h"
 #include "hardware.h"
 
+bool unitTestBusyWaitHack;
+
 #if EFI_ENGINE_SNIFFER
 #include "engine_sniffer.h"
 extern WaveChart waveChart;
 #endif /* EFI_ENGINE_SNIFFER */
 
-
-extern int timeNowUs;
 extern WarningCodeState unitTestWarningCodeState;
 extern engine_configuration_s & activeConfiguration;
 extern bool printTriggerDebug;
@@ -32,8 +32,10 @@ extern int minCrankingRpm;
 
 EngineTestHelperBase::EngineTestHelperBase(Engine * eng, engine_configuration_s * econfig, persistent_config_s * pers) {
 	// todo: make this not a global variable, we need currentTimeProvider interface on engine
-	timeNowUs = 0;
+	setTimeNowUs(0);
 	minCrankingRpm = 0;
+	ButtonDebounce::resetForUnitTests();
+	unitTestBusyWaitHack = false;
 	EnableToothLogger();
 	if (engine || engineConfiguration || config) {
 		firmwareError(ObdCode::OBD_PCM_Processor_Fault,
@@ -227,7 +229,7 @@ void EngineTestHelper::clearQueue() {
 }
 
 int EngineTestHelper::executeActions() {
-	return engine.executor.executeAll(timeNowUs);
+	return engine.executor.executeAll(getTimeNowUs());
 }
 
 void EngineTestHelper::moveTimeForwardMs(float deltaTimeMs) {
@@ -242,7 +244,7 @@ void EngineTestHelper::moveTimeForwardUs(int deltaTimeUs) {
 	if (printTriggerDebug || printFuelDebug) {
 		printf("moveTimeForwardUs %.1fms\r\n", deltaTimeUs / 1000.0);
 	}
-	timeNowUs += deltaTimeUs;
+	advanceTimeUs(deltaTimeUs);
 }
 
 void EngineTestHelper::moveTimeForwardAndInvokeEventsSec(int deltaTimeSeconds) {
@@ -256,44 +258,42 @@ void EngineTestHelper::moveTimeForwardAndInvokeEventsUs(int deltaTimeUs) {
 	if (printTriggerDebug || printFuelDebug) {
 		printf("moveTimeForwardAndInvokeEventsUs %.1fms\r\n", deltaTimeUs / 1000.0);
 	}
-	setTimeAndInvokeEventsUs(timeNowUs + deltaTimeUs);
+	setTimeAndInvokeEventsUs(getTimeNowUs() + deltaTimeUs);
 }
 
-void EngineTestHelper::setTimeAndInvokeEventsUs(int targetTime) {
+void EngineTestHelper::setTimeAndInvokeEventsUs(int targetTimeUs) {
+	int counter = 0;
 	while (true) {
+	  criticalAssertVoid(counter++ < 100'000, "EngineTestHelper: failing to setTimeAndInvokeEventsUs");
 		scheduling_s* nextScheduledEvent = engine.executor.getHead();
 		if (nextScheduledEvent == nullptr) {
 			// nothing pending - we are done here
 			break;
 		}
-		int nextEventTime = nextScheduledEvent->momentX;
-		if (nextEventTime > targetTime) {
+		int nextEventTime = nextScheduledEvent->getMomentUs();
+		if (nextEventTime > targetTimeUs) {
 			// next event is too far in the future
 			break;
 		}
-		timeNowUs = nextEventTime;
-		engine.executor.executeAll(timeNowUs);
+		setTimeNowUs(nextEventTime);
+		engine.executor.executeAll(getTimeNowUs());
 	}
 
-	timeNowUs = targetTime;
-}
-
-efitimeus_t EngineTestHelper::getTimeNowUs() {
-	return timeNowUs;
+	setTimeNowUs(targetTimeUs);
 }
 
 void EngineTestHelper::fireTriggerEvents(int count) {
 	fireTriggerEvents2(count, 5); // 5ms
 }
 
-void EngineTestHelper::assertInjectorUpEvent(const char *msg, int eventIndex, efitimeus_t momentX, long injectorIndex) {
+void EngineTestHelper::assertInjectorUpEvent(const char *msg, int eventIndex, efitimeus_t momentUs, long injectorIndex) {
 	InjectionEvent *event = &engine.injectionEvents.elements[injectorIndex];
-	assertEvent(msg, eventIndex, (void*)turnInjectionPinHigh, momentX, event);
+	assertEvent(msg, eventIndex, (void*)turnInjectionPinHigh, momentUs, event);
 }
 
-void EngineTestHelper::assertInjectorDownEvent(const char *msg, int eventIndex, efitimeus_t momentX, long injectorIndex) {
+void EngineTestHelper::assertInjectorDownEvent(const char *msg, int eventIndex, efitimeus_t momentUs, long injectorIndex) {
 	InjectionEvent *event = &engine.injectionEvents.elements[injectorIndex];
-	assertEvent(msg, eventIndex, (void*)turnInjectionPinLow, momentX, event);
+	assertEvent(msg, eventIndex, (void*)turnInjectionPinLow, momentUs, event);
 }
 
 scheduling_s * EngineTestHelper::assertEvent5(const char *msg, int index, void *callback, efitimeus_t expectedTimestamp) {
@@ -302,7 +302,7 @@ scheduling_s * EngineTestHelper::assertEvent5(const char *msg, int index, void *
 	scheduling_s *event = executor->getForUnitTest(index);
 	assertEqualsM4(msg, " callback up/down", (void*)event->action.getCallback() == (void*) callback, 1);
 	efitimeus_t start = getTimeNowUs();
-	assertEqualsM2(msg, expectedTimestamp, event->momentX - start, /*3us precision to address rounding etc*/3);
+	assertEqualsM2(msg, expectedTimestamp, event->getMomentUs() - start, /*3us precision to address rounding etc*/3);
 	return event;
 }
 
@@ -329,8 +329,8 @@ scheduling_s * EngineTestHelper::assertScheduling(const char *msg, int index, sc
 	return actual;
 }
 
-void EngineTestHelper::assertEvent(const char *msg, int index, void *callback, efitimeus_t momentX, InjectionEvent *expectedEvent) {
-	scheduling_s *event = assertEvent5(msg, index, callback, momentX);
+void EngineTestHelper::assertEvent(const char *msg, int index, void *callback, efitimeus_t momentUs, InjectionEvent *expectedEvent) {
+	scheduling_s *event = assertEvent5(msg, index, callback, momentUs);
 
 	InjectionEvent *actualEvent = (InjectionEvent *)event->action.getArgument();
 
@@ -373,16 +373,6 @@ void EngineTestHelper::setTriggerType(trigger_type_e trigger) {
 	incrementGlobalConfigurationVersion();
 	ASSERT_EQ( 1, engine.triggerCentral.isTriggerConfigChanged()) << "trigger #2";
 	applyTriggerWaveform();
-}
-
-void EngineTestHelper::executeUntil(int timeUs) {
-	scheduling_s *head;
-	while ((head = engine.executor.getHead()) != nullptr) {
-		if (head->momentX > timeUs) {
-			break;
-		}
-		setTimeAndInvokeEventsUs(head->momentX);
-	}
 }
 
 void setupSimpleTestEngineWithMafAndTT_ONE_trigger(EngineTestHelper *eth, injection_mode_e injectionMode) {

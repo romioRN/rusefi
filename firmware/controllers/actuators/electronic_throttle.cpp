@@ -78,9 +78,9 @@
 #define ETB_MAX_COUNT 2
 #endif /* ETB_MAX_COUNT */
 
-static pedal2tps_t pedal2tpsMap;
-static Map3D<ETB2_TRIM_SIZE, ETB2_TRIM_SIZE, int8_t, uint8_t, uint8_t> throttle2TrimTable;
-static Map3D<TRACTION_CONTROL_ETB_DROP_SIZE, TRACTION_CONTROL_ETB_DROP_SIZE, int8_t, uint16_t, uint8_t> tcEtbDropTable;
+static pedal2tps_t pedal2tpsMap{"p2t"};
+static Map3D<ETB2_TRIM_SIZE, ETB2_TRIM_SIZE, int8_t, uint8_t, uint8_t> throttle2TrimTable{"t2t"};
+static Map3D<TRACTION_CONTROL_ETB_DROP_SIZE, TRACTION_CONTROL_ETB_DROP_SIZE, int8_t, uint16_t, uint8_t> tcEtbDropTable{"tce"};
 
 constexpr float etbPeriodSeconds = 1.0f / ETB_LOOP_FREQUENCY;
 
@@ -283,6 +283,14 @@ expected<percent_t> EtbController::getSetpointWastegate() const {
 	return clampPercentValue(m_wastegatePosition);
 }
 
+float getSanitizedPedal() {
+	auto pedalPosition = Sensor::get(SensorType::AcceleratorPedal);
+	// If the pedal has failed, just use 0 position.
+	// This is safer than disabling throttle control - we can at least push the throttle closed
+	// and let the engine idle.
+	return clampPercentValue(pedalPosition.value_or(0));
+}
+
 expected<percent_t> EtbController::getSetpointEtb() {
 	// Autotune runs with 50% target position
 	if (m_isAutotune) {
@@ -299,12 +307,7 @@ expected<percent_t> EtbController::getSetpointEtb() {
 		return unexpected;
 	}
 
-	auto pedalPosition = Sensor::get(SensorType::AcceleratorPedal);
-
-	// If the pedal has failed, just use 0 position.
-	// This is safer than disabling throttle control - we can at least push the throttle closed
-	// and let the engine idle.
-	float sanitizedPedal = clampPercentValue(pedalPosition.value_or(0));
+  float sanitizedPedal = getSanitizedPedal();
 
 	float rpm = Sensor::getOrZero(SensorType::Rpm);
 	etbCurrentTarget = m_pedalMap->getValue(rpm, sanitizedPedal);
@@ -413,8 +416,7 @@ expected<percent_t> EtbController::getClosedLoopAutotune(percent_t target, perce
 		efitick_t now = getTimeNowNt();
 
 		// Determine period
-		float tu = NT2US((float)(now - m_cycleStartTime)) / 1e6;
-		m_cycleStartTime = now;
+		float tu = m_autotuneCycleStart.getElapsedSecondsAndReset(now);
 
 		// Determine amplitude
 		float a = m_maxCycleTps - m_minCycleTps;
@@ -600,14 +602,18 @@ bool EtbController::checkStatus() {
 		etbPpsErrorCounter = 0;
 	}
 
+#ifndef ETB_INTERMITTENT_LIMIT
+#define ETB_INTERMITTENT_LIMIT 50
+#endif
+
 	TpsState localReason = TpsState::None;
-	if (etbTpsErrorCounter > 50) {
+	if (etbTpsErrorCounter > ETB_INTERMITTENT_LIMIT) {
 		localReason = TpsState::IntermittentTps;
 #if EFI_SHAFT_POSITION_INPUT
 	} else if (engineConfiguration->disableEtbWhenEngineStopped && !engine->triggerCentral.engineMovedRecently()) {
 		localReason = TpsState::EngineStopped;
 #endif // EFI_SHAFT_POSITION_INPUT
-	} else if (etbPpsErrorCounter > 50) {
+	} else if (etbPpsErrorCounter > ETB_INTERMITTENT_LIMIT) {
 		localReason = TpsState::IntermittentPps;
 	} else if (engine->engineState.lua.luaDisableEtb) {
 		localReason = TpsState::Lua;
@@ -936,6 +942,10 @@ static pid_s* getPidForDcFunction(dc_function_e function) {
 	}
 }
 
+BOARD_WEAK ValueProvider3D* pedal2TpsProvider() {
+  return &pedal2tpsMap;
+}
+
 void doInitElectronicThrottle() {
 	bool hasPedal = Sensor::hasSensor(SensorType::AcceleratorPedalPrimary);
 
@@ -963,7 +973,7 @@ void doInitElectronicThrottle() {
 
 		auto pid = getPidForDcFunction(func);
 
-		bool dcConfigured = controller->init(func, motor, pid, &pedal2tpsMap, hasPedal);
+		bool dcConfigured = controller->init(func, motor, pid, pedal2TpsProvider(), hasPedal);
 		bool etbConfigured = dcConfigured && controller->isEtbMode();
 		if (i == 0) {
 		    engineConfiguration->etb1configured = etbConfigured;

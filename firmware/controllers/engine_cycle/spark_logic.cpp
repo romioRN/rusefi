@@ -28,7 +28,7 @@ static const char *prevSparkName = nullptr;
 
 static void fireSparkBySettingPinLow(IgnitionEvent *event, IgnitionOutputPin *output) {
 #if SPARK_EXTREME_LOGGING
-	efiPrintf("spark goes low  revolution=%d [%s] %d current=%d id=%d", getRevolutionCounter(), output->getName(), (int)getTimeNowUs(),
+	efiPrintf("spark goes low  revolution=%d [%s] %d current=%d id=%d", getRevolutionCounter(), output->getName(), time2print(getTimeNowUs()),
 			output->currentLogicValue, event->sparkCounter);
 #endif /* SPARK_EXTREME_LOGGING */
 
@@ -38,7 +38,6 @@ static void fireSparkBySettingPinLow(IgnitionEvent *event, IgnitionOutputPin *ou
 	 *
 	 * 2) we have an un-matched low followed by legit pairs
 	 */
-
 	output->signalFallSparkId = event->sparkCounter;
 
 	if (!output->currentLogicValue && !event->wasSparkLimited) {
@@ -182,6 +181,9 @@ static void overFireSparkAndPrepareNextSchedule(IgnitionEvent *event) {
 	fireSparkAndPrepareNextSchedule(event);
 }
 
+/**
+ * TL,DR: each IgnitionEvent is in charge of it's own scheduling forever, we plant next event while finishing handling of the current one
+ */
 void fireSparkAndPrepareNextSchedule(IgnitionEvent *event) {
 #if EFI_UNIT_TEST
 	if (engine->onIgnitionEvent) {
@@ -203,15 +205,18 @@ void fireSparkAndPrepareNextSchedule(IgnitionEvent *event) {
 	LogTriggerCoilState(nowNt, false);
 #endif // EFI_TOOTH_LOGGER
 
-#if !EFI_UNIT_TEST
-if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
-#if EFI_TUNER_STUDIO
-	uint32_t actualDwellDurationNt = getTimeNowLowerNt() - event->actualStartOfDwellNt;
+	float actualDwellMs = event->actualDwellTimer.getElapsedSeconds(nowNt) * 1e3;
 	/**
 	 * ratio of desired dwell duration to actual dwell duration gives us some idea of how good is input trigger jitter
 	 */
-	float ratio = NT2US(actualDwellDurationNt) / 1000.0 / event->sparkDwell;
+	float ratio = actualDwellMs / event->sparkDwell;
+	if (ratio < 0.8 || ratio > 1.2) {
+    engine->outputChannels.sadDwellRatioCounter++;
+	}
 
+#if !EFI_UNIT_TEST
+if (engineConfiguration->debugMode == DBG_DWELL_METRIC) {
+#if EFI_TUNER_STUDIO
 	// todo: smarted solution for index to field mapping
 	switch (event->cylinderIndex) {
 	case 0:
@@ -288,7 +293,7 @@ static bool startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutput
 
 
 #if SPARK_EXTREME_LOGGING
-	efiPrintf("spark goes high revolution=%d [%s] %d current=%d id=%d", getRevolutionCounter(), output->getName(), (int)getTimeNowUs(),
+	efiPrintf("spark goes high revolution=%d [%s] %d current=%d id=%d", getRevolutionCounter(), output->getName(), time2print(getTimeNowUs()),
 			output->currentLogicValue, event->sparkCounter);
 #endif /* SPARK_EXTREME_LOGGING */
 
@@ -315,20 +320,24 @@ static bool startDwellByTurningSparkPinHigh(IgnitionEvent *event, IgnitionOutput
 }
 
 void turnSparkPinHighStartCharging(IgnitionEvent *event) {
-	event->actualStartOfDwellNt = getTimeNowLowerNt();
-
 	efitick_t nowNt = getTimeNowNt();
+
+	event->actualDwellTimer.reset(nowNt);
 
   bool skippedDwellDueToTriggerNoised = false;
 	for (int i = 0; i< MAX_OUTPUTS_FOR_IGNITION;i++) {
 		IgnitionOutputPin *output = event->outputs[i];
 		if (output != NULL) {
+		  // at the moment we have a funny xor as if outputs could have different destiny. That's probably an over exaggeration,
+		  // realistically it should be enough to check the sequencing of only the first output but that would be less elegant
+		  //
+		  // maybe it would have need nicer if instead of an array of outputs we had a linked list of outputs? but that's just daydreaming.
 			skippedDwellDueToTriggerNoised |= startDwellByTurningSparkPinHigh(event, output);
 		}
 	}
 
 #if EFI_UNIT_TEST
-  event->bailedOnDwell = skippedDwellDueToTriggerNoised;
+  engine->incrementBailedOnDwellCount();
 #endif
 
 
@@ -337,11 +346,11 @@ void turnSparkPinHighStartCharging(IgnitionEvent *event) {
 #if EFI_UNIT_TEST
   	if (engine->onIgnitionEvent) {
   		engine->onIgnitionEvent(event, true);
-	  }
+  	}
 #endif
 
 #if EFI_TOOTH_LOGGER
-	  LogTriggerCoilState(nowNt, true);
+  	LogTriggerCoilState(nowNt, true);
 #endif // EFI_TOOTH_LOGGER
   }
 
@@ -394,7 +403,7 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 	 */
 	if (!limitedSpark) {
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("scheduling sparkUp revolution=%d [%s] now=%d %d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), (int)angleOffset,
+		efiPrintf("scheduling sparkUp revolution=%d [%s] %d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)angleOffset,
 				event->sparkCounter);
 #endif /* SPARK_EXTREME_LOGGING */
 
@@ -405,6 +414,16 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 		 * the coil.
 		 */
 		chargeTime = scheduleByAngle(&event->dwellStartTimer, edgeTimestamp, angleOffset, { &turnSparkPinHighStartCharging, event });
+
+#if EFI_UNIT_TEST
+		engine->onScheduleTurnSparkPinHighStartCharging(*event, edgeTimestamp, angleOffset, chargeTime);
+#endif
+
+#if SPARK_EXTREME_LOGGING
+		efiPrintf("sparkUp revolution scheduled=%d for %d ticks [%s] %d later id=%d", getRevolutionCounter(), time2print(chargeTime), event->getOutputForLoggins()->getName(), (int)angleOffset,
+				event->sparkCounter);
+#endif /* SPARK_EXTREME_LOGGING */
+
 
 		event->sparksRemaining = engine->engineState.multispark.count;
 	} else {
@@ -428,12 +447,12 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 	if (isTimeScheduled) {
 	  // event was scheduled by time, we expect it to happen reliably
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("scheduling sparkDown revolution=%d [%s] now=%d later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter);
+		efiPrintf("scheduling sparkDown revolution=%d [%s] later id=%d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), event->sparkCounter);
 #endif /* FUEL_MATH_EXTREME_LOGGING */
 	} else {
 	  // event was queued in relation to some expected tooth event in the future which might just never come so we shall protect from over-dwell
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("to queue sparkDown revolution=%d [%s] now=%d for id=%d angle=%.1f", getRevolutionCounter(), event->getOutputForLoggins()->getName(), (int)getTimeNowUs(), event->sparkCounter, sparkAngle);
+		efiPrintf("to queue sparkDown revolution=%d [%s] for id=%d angle=%.1f", getRevolutionCounter(), event->getOutputForLoggins()->getName(), event->sparkCounter, sparkAngle);
 #endif /* SPARK_EXTREME_LOGGING */
 
 		if (!limitedSpark && ENABLE_OVERDWELL_PROTECTION) {
@@ -441,7 +460,7 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
 			efitick_t fireTime = chargeTime + MSF2NT(1.5f * dwellMs);
 
 #if SPARK_EXTREME_LOGGING
-		efiPrintf("scheduling overdwell sparkDown revolution=%d [%s] for %d", getRevolutionCounter(), event->getOutputForLoggins()->getName(), fireTime);
+		efiPrintf("scheduling overdwell sparkDown revolution=%d [%s] for id=%d for %d ticks", getRevolutionCounter(), event->getOutputForLoggins()->getName(), event->sparkCounter, fireTime);
 #endif /* SPARK_EXTREME_LOGGING */
 
       /**
@@ -450,6 +469,10 @@ static void scheduleSparkEvent(bool limitedSpark, IgnitionEvent *event,
        * and it looks like current (smart?) re-queuing is effectively cancelling out the overdwell? is that the way this was intended to work?
        */
 			engine->executor.scheduleByTimestampNt("overdwell", &event->sparkEvent.scheduling, fireTime, { overFireSparkAndPrepareNextSchedule, event });
+
+#if EFI_UNIT_TEST
+			engine->onScheduleOverFireSparkAndPrepareNextSchedule(*event, fireTime);
+#endif
 		} else {
 		  engine->engineState.overDwellNotScheduledCounter++;
 		}
@@ -563,6 +586,7 @@ void onTriggerEventSparkLogic(int rpm, efitick_t edgeTimestamp, float currentPha
 #endif // EFI_LAUNCH_CONTROL
 
 #if EFI_ANTILAG_SYSTEM && EFI_LAUNCH_CONTROL
+/*
        if (engine->antilagController.isAntilagCondition) {
 			if (engine->ALSsoftSparkLimiter.shouldSkip()) {
 				continue;
@@ -577,6 +601,7 @@ void onTriggerEventSparkLogic(int rpm, efitick_t edgeTimestamp, float currentPha
 
 			auto ALSSkipRatio = engine->antilagController.timingALSSkip;
             engine->ALSsoftSparkLimiter.setTargetSkipRatio(ALSSkipRatio/100);
+*/
 #endif // EFI_ANTILAG_SYSTEM
 
 			scheduleSparkEvent(limitedSpark, event, rpm, edgeTimestamp, currentPhase, nextPhase);

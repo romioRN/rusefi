@@ -104,7 +104,7 @@ bool WaveChart::isStartedTooLongAgo() const {
 	 * engineChartSize/20 is the longest meaningful chart.
 	 *
 	 */
-	efitick_t chartDurationNt = getTimeNowNt() - startTimeNt;
+	efidur_t chartDurationNt = getTimeNowNt() - startTimeNt;
 	return startTimeNt != 0 && NT2US(chartDurationNt) > engineConfiguration->engineChartSize * 1000000 / 20;
 }
 
@@ -169,8 +169,6 @@ void WaveChart::addEvent3(const char *name, const char * msg) {
 	if (skipUntilEngineCycle != 0 && getRevolutionCounter() < skipUntilEngineCycle)
 		return;
 #if EFI_SIMULATOR
-	// todo: add UI control to enable this for firmware if desired
-	// engineConfiguration->alignEngineSnifferAtTDC &&
 	if (!collectingData) {
 		return;
 	}

@@ -541,9 +541,8 @@ struct LuaPid final {
 
 	float get(float target, float input) {
 #if EFI_UNIT_TEST
-		extern int timeNowUs;
 		// this is how we avoid zero dt
-		timeNowUs += 1000;
+		advanceTimeUs(1000);
 #endif
 
 		float dt = m_lastUpdate.getElapsedSecondsAndReset(getTimeNowNt());
@@ -587,9 +586,8 @@ struct LuaIndustrialPid final {
 
 	float get(float target, float input) {
 #if EFI_UNIT_TEST
-		extern int timeNowUs;
 		// this is how we avoid zero dt
-		timeNowUs += 1000;
+		advanceTimeUs(1000);
 #endif
 
 		float dt = m_lastUpdate.getElapsedSecondsAndReset(getTimeNowNt());
@@ -1103,11 +1101,11 @@ void configureRusefiLuaHooks(lua_State* lState) {
 
 #if EFI_PROD_CODE && HW_HELLEN
 	lua_register(lState, "hellenEnablePower", [](lua_State*) {
-		hellenEnableEn();
+		hellenEnableEn("Lua");
 		return 0;
 	});
 	lua_register(lState, "hellenDisablePower", [](lua_State*) {
-		hellenDisableEn();
+		hellenDisableEn("Lua");
 		return 0;
 	});
 #endif // HW_HELLEN

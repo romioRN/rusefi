@@ -9,6 +9,8 @@ using ::testing::_;
 TEST(OddFireRunningMode, hd) {
   // basic engine setup
 	EngineTestHelper eth(engine_type_e::HARLEY);
+	extern bool unitTestBusyWaitHack;
+	unitTestBusyWaitHack = true;
 	engineConfiguration->cranking.rpm = 100;
 	engineConfiguration->vvtMode[0] = VVT_SINGLE_TOOTH; // need to avoid engine phase sync requirement
 	// let's pretend to have a 32 degree V odd fire engine.
@@ -54,7 +56,7 @@ TEST(OddFireRunningMode, hd) {
 
 	eth.assertRpm( 500, "spinning-RPM#1");
 
-	engine->executor.executeAll(eth.getTimeNowUs() + MS2US(1000000));
+	engine->executor.executeAll(getTimeNowUs() + MS2US(1000000));
 
 	eth.fireTriggerEvents2(2 /* count */ , 60 /* ms */);
 	ASSERT_EQ(IM_SEQUENTIAL, getCurrentInjectionMode());
@@ -65,4 +67,6 @@ TEST(OddFireRunningMode, hd) {
 	eth.assertEvent5("spark down2#3", 3, (void*)fireSparkAndPrepareNextSchedule, eth.angleToTimeUs(-180 + cylinderTwo - timing));
 	eth.assertEvent5("fuel down2#6", 6, (void*)turnInjectionPinLow, eth.angleToTimeUs(540 + PORT_INJECTION_OFFSET + cylinderTwo));
 	eth.assertEvent5("spark down2#7", 7, (void*)fireSparkAndPrepareNextSchedule, eth.angleToTimeUs(180 + cylinderOne - timing));
+
+	ASSERT_EQ(2, engine->getBailedOnDwellCount()) << "Please check if our dwell algorithm have really got better.";
 }

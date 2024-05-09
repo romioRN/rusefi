@@ -26,9 +26,17 @@ Release template (copy/paste this for new release):
 
 # Changelog
 
+### Added
+ - new rusEFI console tab: Knock analyzer #6467
+
+### Fixed
+ - knock logic not activated until any configuration change via TS #6462
+
 ### Breaking Changes
  - "60/2 VW" trigger wheel renamed to "60-2 Wrong Polarity" #988
-
+ - exhaust VVTs now use it's onw Edge Select setting
+ - removing weird 1+16 trigger wheel #6418
+ - critical error in case of unneeded second channel #6419
 
 ## Unreleased
 

@@ -4,6 +4,7 @@ TESTS_SRC_CPP = \
 	tests/trigger/test_symmetrical_crank.cpp \
 	tests/trigger/test_trigger_decoder.cpp \
 	tests/trigger/test_trigger_decoder_2.cpp \
+	tests/trigger/test_coil.cpp \
 	tests/trigger/test_trigger_noiseless.cpp \
 	tests/trigger/test_trigger_multi_sync.cpp \
 	tests/trigger/test_trigger_input_adc.cpp \
@@ -19,6 +20,7 @@ TESTS_SRC_CPP = \
 	tests/trigger/test_trigger_skipped_wheel.cpp \
 	tests/trigger/test_real_4b11.cpp \
 	tests/trigger/test_real_4g93.cpp \
+	tests/trigger/test_real_ford_coyote.cpp \
 	tests/trigger/test_real_volkswagen.cpp \
 	tests/trigger/test_real_nb2_cranking.cpp \
 	tests/trigger/test_real_gm_24x.cpp \
@@ -82,7 +84,7 @@ TESTS_SRC_CPP = \
 	tests/test_tunerstudio.cpp \
 	tests/test_pwm_generator.cpp \
 	tests/test_log_buffer.cpp \
-	tests/test_signal_executor.cpp \
+	tests/test_event_queue.cpp \
 	tests/test_cpp_memory_layout.cpp \
 	tests/test_pid.cpp \
 	tests/test_accel_enrichment.cpp \

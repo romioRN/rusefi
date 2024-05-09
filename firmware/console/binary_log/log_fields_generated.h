@@ -93,11 +93,11 @@ static const LogField fields[] = {
 	{engine->outputChannels.egt[6], "EGT 7", "deg C", 2},
 	{engine->outputChannels.egt[7], "EGT 8", "deg C", 2},
 	{engine->outputChannels.rawTps1Primary, "rawTps1Primary", "V", 3},
-	{engine->outputChannels.rawPpsPrimary, "rawPpsPrimary", "V", 3},
 	{engine->outputChannels.rawClt, "rawClt", "V", 3},
 	{engine->outputChannels.rawIat, "rawIat", "V", 3},
 	{engine->outputChannels.rawOilPressure, "rawOilPressure", "V", 3},
 	{engine->outputChannels.fuelClosedLoopBinIdx, "fuelClosedLoopBinIdx", "", 0},
+	{engine->outputChannels.rawPpsPrimary, "rawPpsPrimary", "V", 3},
 	{engine->outputChannels.rawPpsSecondary, "rawPpsSecondary", "V", 3},
 	{engine->outputChannels.rawRawPpsPrimary, "rawRawPpsPrimary", "V", 3},
 	{engine->outputChannels.rawRawPpsSecondary, "rawRawPpsSecondary", "V", 3},
@@ -311,6 +311,23 @@ static const LogField fields[] = {
 	{engine->outputChannels.injectorDiagnostic[11], "injectorDiagnostic 12", "", 0},
 	{engine->outputChannels.actualLastInjectionStage2, "Fuel: Last inj pulse width stg 2", "ms", 3},
 	{engine->outputChannels.injectorDutyCycleStage2, "Fuel: injector duty cycle stage 2", "%", 0},
+	{engine->outputChannels.adc13bitCounter, "adc13bitCounter", "", 0},
+	{engine->outputChannels.fastAdcErrorsCount, "fastAdcErrorsCount", "", 0},
+	{engine->outputChannels.deviceUid, "deviceUid", "", 0},
+	{engine->outputChannels.unexpectedAdcSample, "unexpectedAdcSample", "", 0},
+	{engine->outputChannels.sadDwellRatioCounter, "sadDwellRatioCounter", "", 0},
+	{engine->outputChannels.startOfDwellAngle[0], "startOfDwellAngle 1", "", 0},
+	{engine->outputChannels.startOfDwellAngle[1], "startOfDwellAngle 2", "", 0},
+	{engine->outputChannels.startOfDwellAngle[2], "startOfDwellAngle 3", "", 0},
+	{engine->outputChannels.startOfDwellAngle[3], "startOfDwellAngle 4", "", 0},
+	{engine->outputChannels.startOfDwellAngle[4], "startOfDwellAngle 5", "", 0},
+	{engine->outputChannels.startOfDwellAngle[5], "startOfDwellAngle 6", "", 0},
+	{engine->outputChannels.endOfDwellAngle[0], "endOfDwellAngle 1", "", 0},
+	{engine->outputChannels.endOfDwellAngle[1], "endOfDwellAngle 2", "", 0},
+	{engine->outputChannels.endOfDwellAngle[2], "endOfDwellAngle 3", "", 0},
+	{engine->outputChannels.endOfDwellAngle[3], "endOfDwellAngle 4", "", 0},
+	{engine->outputChannels.endOfDwellAngle[4], "endOfDwellAngle 5", "", 0},
+	{engine->outputChannels.endOfDwellAngle[5], "endOfDwellAngle 6", "", 0},
 #if EFI_ENGINE_CONTROL
 	{engine->fuelComputer.totalFuelCorrection, "Fuel: Total correction", "mult", 2, "Fuel: math"},
 #endif
@@ -388,6 +405,7 @@ static const LogField fields[] = {
 	{___engine.module<KnockController>()->m_knockThreshold, "Knock: Threshold", "", 0},
 	{___engine.module<KnockController>()->m_knockCount, "Knock: Count", "", 0},
 	{___engine.module<KnockController>()->m_maximumRetard, "Knock: Max retard", "", 0},
+	{___engine.module<KnockController>()->m_knockFrequency, "knock: frequency", "Hz", 2},
 #if EFI_PROD_CODE && EFI_IDLE_CONTROL
 	{___engine.module<InjectorModelPrimary>()->m_deadtime, "Fuel: injector lag", "ms", 3},
 #endif
@@ -497,6 +515,9 @@ static const LogField fields[] = {
 #endif
 #if EFI_SHAFT_POSITION_INPUT
 	{engine->triggerCentral.mapCamPrevToothAngle, "Sync: MAP: prev angle", "deg", 2},
+#endif
+#if EFI_SHAFT_POSITION_INPUT
+	{engine->triggerCentral.triggerElapsedUs, "triggerElapsedUs", "", 0},
 #endif
 #if EFI_PROD_CODE && EFI_IDLE_CONTROL
 	{___engine.module<IdleController>().unmock().currentIdlePosition, "Idle: Position", "%", 1},

@@ -19,6 +19,10 @@
 #include "port_mpu_util.h"
 #endif
 
+inline int time2print(int64_t time) {
+  return static_cast<int>(time);
+}
+
 // microseconds to ticks
 // since only about 20 seconds of ticks fit in 32 bits this macro is casting parameter into 64 bits 'efitick_t' type
 // please note that int64 <-> float is a heavy operation thus we have 'USF2NT' below
@@ -48,3 +52,8 @@ efitimems_t getTimeNowMs();
  * @brief   Current system time in seconds (32 bits)
  */
 efitimesec_t getTimeNowS();
+
+#if EFI_UNIT_TEST
+void setTimeNowUs(int us);
+void advanceTimeUs(int us);
+#endif

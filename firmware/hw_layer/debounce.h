@@ -25,9 +25,14 @@ public:
     static void startConfigurationList();
     static void debug();
     bool getPhysicalState();
+#if EFI_UNIT_TEST
+    static void resetForUnitTests() {
+      s_firstDebounce = nullptr;
+    }
+#endif
 private:
     const char* const m_name;
-    efitick_t m_threshold;
+    efidur_t m_threshold;
     Timer timeLast;
     brain_pin_e *m_pin;
     brain_pin_e active_pin = Gpio::Unassigned;

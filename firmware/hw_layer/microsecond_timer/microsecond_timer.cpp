@@ -22,7 +22,7 @@
 // Just in case we have a mechanism to validate that hardware timer is clocked right and all the
 // conversions between wall clock and hardware frequencies are done right
 // delay in milliseconds
-#define TEST_CALLBACK_DELAY 10
+#define TEST_CALLBACK_DELAY_MS 10
 // if hardware timer is 20% off we throw a critical error and call it a day
 // maybe this threshold should be 5%? 10%?
 #define TIMER_PRECISION_THRESHOLD 0.2
@@ -38,8 +38,6 @@ static bool isTimerPending = false;
 
 static int timerCallbackCounter = 0;
 static int timerRestartCounter = 0;
-
-static const char * msg;
 
 static int timerFreezeCounter = 0;
 static int setHwTimerCounter = 0;
@@ -112,7 +110,7 @@ class MicrosecondTimerWatchdogController : public PeriodicTimerController {
 			return;
 		}
 
-		msg = isTimerPending ? "No_cb too long" : "Timer not awhile";
+		const char* msg = isTimerPending ? "No_cb too long" : "Timer not awhile";
 		// 2 seconds of inactivity would not look right
 		efiAssertVoid(ObdCode::CUSTOM_TIMER_WATCHDOG, nowNt < lastSetTimerTimeNt + 2 * CORE_CLOCK, msg);
 	}
@@ -136,14 +134,14 @@ static void watchDogBuddyCallback(void*) {
 }
 
 static volatile bool testSchedulingHappened = false;
-static efitimems_t testSchedulingStart;
+static Timer testScheduling;
 
 static void timerValidationCallback(void*) {
 	testSchedulingHappened = true;
-	efitimems_t actualTimeSinceScheduling = (getTimeNowMs() - testSchedulingStart);
-	
-	if (absI(actualTimeSinceScheduling - TEST_CALLBACK_DELAY) > TEST_CALLBACK_DELAY * TIMER_PRECISION_THRESHOLD) {
-		firmwareError(ObdCode::CUSTOM_ERR_TIMER_TEST_CALLBACK_WRONG_TIME, "hwTimer broken precision: %ld ms", actualTimeSinceScheduling);
+	efitimems_t actualTimeSinceSchedulingMs = 1e3 * testScheduling.getElapsedSeconds();
+
+	if (absI(actualTimeSinceSchedulingMs - TEST_CALLBACK_DELAY_MS) > TEST_CALLBACK_DELAY_MS * TIMER_PRECISION_THRESHOLD) {
+		firmwareError(ObdCode::CUSTOM_ERR_TIMER_TEST_CALLBACK_WRONG_TIME, "hwTimer broken precision: %ld ms", actualTimeSinceSchedulingMs);
 	}
 }
 
@@ -155,12 +153,12 @@ static void validateHardwareTimer() {
 	if (hasFirmwareError()) {
 		return;
 	}
-	testSchedulingStart = getTimeNowMs();
+	testScheduling.reset();
 
 	// to save RAM let's use 'watchDogBuddy' here once before we enable watchdog
-	engine->executor.scheduleForLater("hw-validate", &watchDogBuddy, MS2US(TEST_CALLBACK_DELAY), timerValidationCallback);
+	engine->executor.scheduleForLater("hw-validate", &watchDogBuddy, MS2US(TEST_CALLBACK_DELAY_MS), timerValidationCallback);
 
-	chThdSleepMilliseconds(TEST_CALLBACK_DELAY + 2);
+	chThdSleepMilliseconds(TEST_CALLBACK_DELAY_MS + 2);
 	if (!testSchedulingHappened) {
 		firmwareError(ObdCode::CUSTOM_ERR_TIMER_TEST_CALLBACK_NOT_HAPPENED, "hwTimer not alive");
 	}

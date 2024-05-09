@@ -208,8 +208,6 @@ TEST(idle_v2, runningOpenLoopTpsTaper) {
 	EXPECT_FLOAT_EQ(50, dut.getRunningOpenLoop(IIdleController::Phase::Cranking, 0, 0, 20));
 }
 
-extern int timeNowUs;
-
 TEST(idle_v2, runningOpenLoopTpsTaperWithDashpot) {
 	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
 	IdleController dut;
@@ -227,48 +225,25 @@ TEST(idle_v2, runningOpenLoopTpsTaperWithDashpot) {
 	engineConfiguration->iacByTpsDecayTime = 10;	// 10 secs
 
 	// save the lastTimeRunningUs time - let it be the start of the hold phase
-	timeNowUs += 5'000'000;
+	advanceTimeUs(5'000'000);
 	// full throttle = max.iac
 	EXPECT_FLOAT_EQ(50, dut.getRunningOpenLoop(ICP::Running, 0, 0, 100));
 
 	// jump to the end of the 'hold' phase of dashpot
-	timeNowUs += 10'000'000;
+	advanceTimeUs(10'000'000);
 
 	// change the state to idle (release the pedal) - but still 100% max.iac!
     EXPECT_FLOAT_EQ(50, dut.getRunningOpenLoop(ICP::Idling, 0, 0, 0));
     // now we're in the middle of decay
-    timeNowUs += 5'000'000;
+    advanceTimeUs(5'000'000);
     // 50% decay (50% of 50 is 25)
     EXPECT_FLOAT_EQ(25, dut.getRunningOpenLoop(ICP::Idling, 0, 0, 0));
     // now the decay is finished
-    timeNowUs += 5'000'000;
+    advanceTimeUs(5'000'000);
     // no correction
     EXPECT_FLOAT_EQ(0, dut.getRunningOpenLoop(ICP::Idling, 0, 0, 0));
     // still react to the pedal
     EXPECT_FLOAT_EQ(50, dut.getRunningOpenLoop(ICP::Idling, 0, 0, 10));
-}
-
-TEST(idle_v2, runningOpenLoopRpmTaper) {
-	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
-	IdleController dut;
-
-	// Zero out base tempco table
-	setArrayValues(config->cltIdleCorr, 0.0f);
-
-	// Add 50% idle position
-	engineConfiguration->airByRpmTaper = 50;
-	// At 2000 RPM
-	engineConfiguration->airTaperRpmRange = 500;
-	engineConfiguration->idlePidRpmUpperLimit = 1500;
-
-	// Check in-bounds points
-	EXPECT_FLOAT_EQ(0, dut.getRunningOpenLoop(IIdleController::Phase::Cranking, 1500, 0, 0));
-	EXPECT_FLOAT_EQ(25, dut.getRunningOpenLoop(IIdleController::Phase::Cranking, 1750, 0, 0));
-	EXPECT_FLOAT_EQ(50, dut.getRunningOpenLoop(IIdleController::Phase::Cranking, 2000, 0, 0));
-
-	// Check out of bounds - shouldn't leave the interval [1500, 2000]
-	EXPECT_FLOAT_EQ(0, dut.getRunningOpenLoop(IIdleController::Phase::Cranking, 200, 0, 0));
-	EXPECT_FLOAT_EQ(50, dut.getRunningOpenLoop(IIdleController::Phase::Cranking, 3000, 0, 0));
 }
 
 struct MockOpenLoopIdler : public IdleController {
@@ -356,8 +331,6 @@ TEST(idle_v2, openLoopCoastingTable) {
 	EXPECT_FLOAT_EQ(75, dut.getOpenLoop(ICP::Coasting, 1500, 0, 0, 2));
 }
 
-extern int timeNowUs;
-
 TEST(idle_v2, closedLoopBasic) {
 	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
 	IdleController dut;
@@ -376,7 +349,7 @@ TEST(idle_v2, closedLoopBasic) {
 
 	// burn one update then advance time 5 seconds to avoid difficulty from wasResetPid
 	dut.getClosedLoop(ICP::Idling, 0, 900, 900);
-	timeNowUs += 5'000'000;
+	advanceTimeUs(5'000'000);
 
 	// Test above target, should return negative
 	EXPECT_FLOAT_EQ(-25, dut.getClosedLoop(ICP::Idling, 0, /*rpm*/ 950, /*tgt*/ 900));
@@ -404,7 +377,7 @@ TEST(idle_v2, closedLoopDeadzone) {
 
 	// burn one then advance time 5 seconds to avoid difficulty from wasResetPid
 	dut.getClosedLoop(ICP::Idling, 0, 900, 900);
-	timeNowUs += 5'000'000;
+	advanceTimeUs(5'000'000);
 
 	// Test above target, should return negative
 	EXPECT_FLOAT_EQ(-25, dut.getClosedLoop(ICP::Idling, 0, /*rpm*/ 950, /*tgt*/ 900));

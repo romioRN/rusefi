@@ -22,7 +22,7 @@ public:
 	void onFastCallback() override;
 
 	// onKnockSenseCompleted is the callback from the knock sense driver to report a sensed knock level
-	bool onKnockSenseCompleted(uint8_t cylinderNumber, float dbv, efitick_t lastKnockTime);
+	bool onKnockSenseCompleted(uint8_t cylinderNumber, float dbv, float frequency, efitick_t lastKnockTime);
 
 	float getKnockRetard() const;
 	uint32_t getKnockCount() const;
@@ -38,15 +38,6 @@ private:
 
 class KnockController : public KnockControllerBase {
 public:
-	KnockController()
-	{
-	}
-
-	void onConfigurationChange(engine_configuration_s const * /*previousConfig*/) override;
-
 	float getKnockThreshold() const override;
 	float getMaximumRetard() const override;
-
-private:
-	Map3D<6, 6, uint8_t, uint8_t, uint8_t> m_maxRetardTable;
 };

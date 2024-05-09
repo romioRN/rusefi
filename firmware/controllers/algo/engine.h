@@ -31,6 +31,7 @@
 #include "injector_model.h"
 #include "launch_control.h"
 #include "antilag_system.h"
+#include "start_stop.h"
 #include "trigger_scheduler.h"
 #include "fuel_pump.h"
 #include "main_relay.h"
@@ -89,6 +90,8 @@ class IEtbController;
 class Engine final : public TriggerStateListener {
 public:
 	Engine();
+
+	StartStopState startStopState;
 
 	// todo: technical debt: enableOverdwellProtection #3553
 	bool enableOverdwellProtection = true;
@@ -197,7 +200,7 @@ public:
 #endif // EFI_ANTILAG_SYSTEM
 
 #if EFI_ANTILAG_SYSTEM
-	SoftSparkLimiter ALSsoftSparkLimiter;
+//	SoftSparkLimiter ALSsoftSparkLimiter;
 #endif /* EFI_ANTILAG_SYSTEM */
 
 #if EFI_SHAFT_POSITION_INPUT
@@ -206,8 +209,6 @@ public:
 
 	IgnitionState ignitionState;
 	void resetLua();
-
-	Timer startStopStateLastPush;
 
 #if EFI_SHAFT_POSITION_INPUT
 	void OnTriggerStateProperState(efitick_t nowNt) override;
@@ -223,8 +224,12 @@ public:
 
 #if EFI_UNIT_TEST
 	bool needTdcCallback = true;
+private:
+	int bailedOnDwellCount = 0;
+public:
+	int getBailedOnDwellCount() const { return bailedOnDwellCount; }
+	void incrementBailedOnDwellCount() { bailedOnDwellCount++; }
 #endif /* EFI_UNIT_TEST */
-
 
 	int getGlobalConfigurationVersion(void) const;
 
@@ -232,15 +237,21 @@ public:
 	// a pointer with interface type would make this code nicer but would carry extra runtime
 	// cost to resolve pointer, we use instances as a micro optimization
 #if EFI_SIGNAL_EXECUTOR_ONE_TIMER
+  // while theoretically PROD could be using EFI_SIGNAL_EXECUTOR_SLEEP, as of 2024 all PROD uses SingleTimerExecutor
 	SingleTimerExecutor executor;
 #endif
 #if EFI_SIGNAL_EXECUTOR_SLEEP
+  // at the moment this one is used exclusively by x86 simulator it should theoretically be possible to make it available in embedded if needed
 	SleepExecutor executor;
 #endif
 #if EFI_UNIT_TEST
 	TestExecutor executor;
 
 	std::function<void(IgnitionEvent*, bool)> onIgnitionEvent;
+	std::function<void(const IgnitionEvent&, efitick_t, angle_t, efitick_t)> onScheduleTurnSparkPinHighStartCharging
+			= [](const IgnitionEvent&, efitick_t, angle_t, efitick_t) -> void {};
+	std::function<void(const IgnitionEvent&, efitick_t)> onScheduleOverFireSparkAndPrepareNextSchedule
+			= [](const IgnitionEvent&, efitick_t) -> void {};
 #endif // EFI_UNIT_TEST
 
 #if EFI_ENGINE_CONTROL

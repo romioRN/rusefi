@@ -110,32 +110,33 @@ TEST(nissan, vq_vvt) {
 				/* timeScale */ vvtTimeScale,
 				cyclesCount / 6, true,
 				/* vvtBankIndex */1,
-				/* vvtOffset */ testVvtOffset + NISSAN_VQ_CAM_OFFSET,
+				/* vvtOffset, making it positive */ 720 + testVvtOffset + NISSAN_VQ_CAM_OFFSET,
 				ptrs);
 	}
 
-	eth.executeUntil(1473000);
+	eth.setTimeAndInvokeEventsUs(1473000);
 	ASSERT_EQ(167, round(Sensor::getOrZero(SensorType::Rpm)));
 
-	eth.executeUntil(1475000);
+	eth.setTimeAndInvokeEventsUs(1475000);
 	ASSERT_EQ(167, round(Sensor::getOrZero(SensorType::Rpm)));
 	TriggerCentral *tc = &engine->triggerCentral;
 
-	eth.executeUntil(3593000);
+	eth.setTimeAndInvokeEventsUs(3593000);
 	ASSERT_TRUE(tc->vvtState[0][0].getShaftSynchronized());
 
 	scheduling_s *head;
 
 	int queueIndex = 0;
 	while ((head = engine->executor.getHead()) != nullptr) {
-		eth.setTimeAndInvokeEventsUs(head->momentX);
+		// todo: what shall we change here once we migrate unit_tests to NT?
+		eth.setTimeAndInvokeEventsUs(head->getMomentUs());
 
 		ASSERT_TRUE(tc->vvtState[0][0].getShaftSynchronized());
 		// let's celebrate that vvtPosition stays the same
 		ASSERT_NEAR(34, tc->vvtPosition[0][0], EPS2D) << "queueIndex=" << queueIndex;
     	queueIndex++;
 	}
-	ASSERT_TRUE(queueIndex == 422) << "Total queueIndex=" << queueIndex;
+	ASSERT_EQ(queueIndex, 432) << "Total queueIndex=" << queueIndex;
 
 	ASSERT_TRUE(tc->vvtState[1][0].getShaftSynchronized());
 

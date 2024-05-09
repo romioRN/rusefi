@@ -1,6 +1,6 @@
 package com.rusefi.config.generated;
 
-// this file was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Mon Apr 22 01:06:27 UTC 2024
+// this file was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Thu May 09 02:55:15 UTC 2024
 
 // by class com.rusefi.output.FileJavaFieldsConsumer
 import com.rusefi.config.*;
@@ -32,6 +32,14 @@ public class Fields {
 	public static final int adc_channel_e_EFI_ADC_3 = 4;
 	public static final int adc_channel_e_EFI_ADC_30 = 31;
 	public static final int adc_channel_e_EFI_ADC_31 = 32;
+	public static final int adc_channel_e_EFI_ADC_32 = 33;
+	public static final int adc_channel_e_EFI_ADC_33 = 34;
+	public static final int adc_channel_e_EFI_ADC_34 = 35;
+	public static final int adc_channel_e_EFI_ADC_35 = 36;
+	public static final int adc_channel_e_EFI_ADC_36 = 37;
+	public static final int adc_channel_e_EFI_ADC_37 = 38;
+	public static final int adc_channel_e_EFI_ADC_38 = 39;
+	public static final int adc_channel_e_EFI_ADC_39 = 40;
 	public static final int adc_channel_e_EFI_ADC_4 = 5;
 	public static final int adc_channel_e_EFI_ADC_5 = 6;
 	public static final int adc_channel_e_EFI_ADC_6 = 7;
@@ -39,8 +47,8 @@ public class Fields {
 	public static final int adc_channel_e_EFI_ADC_8 = 9;
 	public static final int adc_channel_e_EFI_ADC_9 = 10;
 	public static final int adc_channel_e_EFI_ADC_ERROR = 50;
-	public static final int adc_channel_e_EFI_ADC_LAST_CHANNEL = 33;
 	public static final int adc_channel_e_EFI_ADC_NONE = 0;
+	public static final int adc_channel_e_EFI_ADC_TOTAL_CHANNELS = 41;
 	public static final int ADC_CHANNEL_NONE = 0;
 	public static final int afr_sensor_s_size = 20;
 	public static final int air_pressure_sensor_config_s_size = 12;
@@ -161,6 +169,7 @@ public class Fields {
 	public static final int CLT_CURVE_SIZE = 16;
 	public static final int CLT_LIMITER_CURVE_SIZE = 4;
 	public static final int CLT_TIMING_CURVE_SIZE = 8;
+	public static final int CLT_UPPER_LIMIT = 250;
 	public static final String CMD_AC_RELAY_BENCH = "acrelaybench";
 	public static final String CMD_ALTERNATOR_PIN = "set_alternator_pin";
 	public static final String CMD_BOOST_PIN = "set_boost_pin";
@@ -292,6 +301,7 @@ public class Fields {
 	public static final int ego_sensor_e_ES_Innovate_MTX_L = 1;
 	public static final int ego_sensor_e_ES_PLX = 4;
 	public static final int EGT_CHANNEL_COUNT = 8;
+	public static final int END_OF_CALIBRATION_PADDING = 200;
 	public static final int engine_configuration_s_size = 4220;
 	public static final int engine_load_mode_e_LM_ALPHA_N = 2;
 	public static final int engine_load_mode_e_LM_LUA = 3;
@@ -405,13 +415,13 @@ public class Fields {
 	public static final int engine_type_e_TEST_ENGINE_VVT = 45;
 	public static final int engine_type_e_TEST_ISSUE_366_BOTH = 52;
 	public static final int engine_type_e_TEST_ISSUE_366_RISE = 53;
+	public static final int engine_type_e_TEST_ISSUE_6451 = 93;
 	public static final int engine_type_e_TEST_ROTARY = 19;
 	public static final int engine_type_e_TOYOTA_1NZ_FE = 13;
 	public static final int engine_type_e_TOYOTA_2JZ_GTE_VVTi = 44;
 	public static final int engine_type_e_UNUSED102 = 102;
 	public static final int engine_type_e_UNUSED47 = 47;
 	public static final int engine_type_e_UNUSED67 = 67;
-	public static final int engine_type_e_UNUSED93 = 93;
 	public static final int engine_type_e_UNUSED94 = 94;
 	public static final int engine_type_e_UNUSED_65 = 65;
 	public static final int engine_type_e_UNUSED_97 = 97;
@@ -421,7 +431,6 @@ public class Fields {
 	public static final int ETB_BIAS_CURVE_LENGTH = 8;
 	public static final int ETB_COUNT = 2;
 	public static final int ETB_HW_MAX_FREQUENCY = 3000;
-	public static final int FANCY_OPTIONS_COUNT = 16;
 	public static final int FLASH_DATA_VERSION = 20016;
 	public static final int fuel_cyl_trim_s_size = 16;
 	public static final int FUEL_LEVEL_TABLE_COUNT = 8;
@@ -438,6 +447,22 @@ public class Fields {
 	public static final String GAUGE_CATEGORY_SYNC = "Sync";
 	public static final String GAUGE_CATEGORY_TIMING = "Timing";
 	public static final String GAUGE_COIL_DWELL_TIME = "Ignition: coil charge time";
+	public static final int GAUGE_LUA_FROM_0 = -30000;
+	public static final int GAUGE_LUA_FROM_1 = -30000;
+	public static final int GAUGE_LUA_FROM_2 = -30000;
+	public static final int GAUGE_LUA_FROM_3 = -30000;
+	public static final int GAUGE_LUA_FROM_4 = -30000;
+	public static final int GAUGE_LUA_FROM_5 = -30000;
+	public static final int GAUGE_LUA_FROM_6 = -30000;
+	public static final int GAUGE_LUA_FROM_7 = -30000;
+	public static final int GAUGE_LUA_TO_0 = 30000;
+	public static final int GAUGE_LUA_TO_1 = 30000;
+	public static final int GAUGE_LUA_TO_2 = 30000;
+	public static final int GAUGE_LUA_TO_3 = 30000;
+	public static final int GAUGE_LUA_TO_4 = 30000;
+	public static final int GAUGE_LUA_TO_5 = 30000;
+	public static final int GAUGE_LUA_TO_6 = 30000;
+	public static final int GAUGE_LUA_TO_7 = 30000;
 	public static final String GAUGE_NAME_ACCEL_LAT = "Accel: Lateral";
 	public static final String GAUGE_NAME_ACCEL_LON = "Accel: Longitudinal";
 	public static final String GAUGE_NAME_ACCEL_ROLL = "Acceleration: Roll";
@@ -540,6 +565,7 @@ public class Fields {
 	public static final String GAUGE_NAME_KNOCK_8 = "knock 8";
 	public static final String GAUGE_NAME_KNOCK_9 = "knock 9";
 	public static final String GAUGE_NAME_KNOCK_COUNTER = "Knock: Count";
+	public static final String GAUGE_NAME_KNOCK_FREQ = "knock: frequency";
 	public static final String GAUGE_NAME_KNOCK_LEVEL = "Knock: Current level";
 	public static final String GAUGE_NAME_KNOCK_RETARD = "Knock: Retard";
 	public static final String GAUGE_NAME_LAMBDA = "Lambda";
@@ -824,6 +850,20 @@ public class Fields {
 	public static final int Gpio_MC33972_PIN_7 = 152;
 	public static final int Gpio_MC33972_PIN_8 = 153;
 	public static final int Gpio_MC33972_PIN_9 = 154;
+	public static final int Gpio_MSIOBOX_0_OUT_1 = 324;
+	public static final int Gpio_MSIOBOX_0_OUT_2 = 325;
+	public static final int Gpio_MSIOBOX_0_OUT_3 = 326;
+	public static final int Gpio_MSIOBOX_0_OUT_4 = 327;
+	public static final int Gpio_MSIOBOX_0_OUT_5 = 328;
+	public static final int Gpio_MSIOBOX_0_OUT_6 = 329;
+	public static final int Gpio_MSIOBOX_0_OUT_7 = 330;
+	public static final int Gpio_MSIOBOX_0_SW_1 = 336;
+	public static final int Gpio_MSIOBOX_0_SW_2 = 337;
+	public static final int Gpio_MSIOBOX_0_SW_3 = 338;
+	public static final int Gpio_MSIOBOX_0_VSS_1 = 332;
+	public static final int Gpio_MSIOBOX_0_VSS_2 = 333;
+	public static final int Gpio_MSIOBOX_0_VSS_3 = 334;
+	public static final int Gpio_MSIOBOX_0_VSS_4 = 335;
 	public static final int Gpio_PROTECTED_PIN_0 = 257;
 	public static final int Gpio_PROTECTED_PIN_1 = 258;
 	public static final int Gpio_PROTECTED_PIN_10 = 267;
@@ -912,6 +952,10 @@ public class Fields {
 	public static final int Gpio_TLE9104_5_OUT_2 = 322;
 	public static final int Gpio_TLE9104_5_OUT_3 = 323;
 	public static final int Gpio_Unassigned = 0;
+	public static final String GPPWM_1_NAME = "General Purpose PWM 1";
+	public static final String GPPWM_2_NAME = "General Purpose PWM 2";
+	public static final String GPPWM_3_NAME = "General Purpose PWM 3";
+	public static final String GPPWM_4_NAME = "General Purpose PWM 4";
 	public static final int gppwm_channel_e_GPPWM_AccelPedal = 9;
 	public static final int gppwm_channel_e_GPPWM_AuxLinear1 = 16;
 	public static final int gppwm_channel_e_GPPWM_AuxLinear2 = 17;
@@ -1009,6 +1053,7 @@ public class Fields {
 	public static final int InjectorNonlinearMode_INJ_FordModel = 2;
 	public static final int InjectorNonlinearMode_INJ_None = 0;
 	public static final int InjectorNonlinearMode_INJ_PolynomialAdder = 1;
+	public static final int KNOCK_TABLE_SIZE = 6;
 	public static final int launchActivationMode_e_ALWAYS_ACTIVE_LAUNCH = 2;
 	public static final int launchActivationMode_e_CLUTCH_INPUT_LAUNCH = 1;
 	public static final int launchActivationMode_e_STOP_INPUT_LAUNCH = 3;
@@ -1036,6 +1081,7 @@ public class Fields {
 	public static final int MAP_sensor_config_s_size = 140;
 	public static final int MAP_WINDOW_SIZE = 8;
 	public static final int MAX_CYLINDER_COUNT = 12;
+	public static final int MAX_TPS_PPS_DISCREPANCY = 5;
 	public static final int mc33810maxDwellTimer_e_DWELL_16MS = 3;
 	public static final int mc33810maxDwellTimer_e_DWELL_2MS = 0;
 	public static final int mc33810maxDwellTimer_e_DWELL_32MS = 4;
@@ -1089,6 +1135,7 @@ public class Fields {
 	public static final int pin_output_mode_e_OM_INVERTED = 1;
 	public static final int pin_output_mode_e_OM_OPENDRAIN = 2;
 	public static final int pin_output_mode_e_OM_OPENDRAIN_INVERTED = 3;
+	public static final int POOR_MAN_MAX_CYLINDER_COUNT = 6;
 	public static final int PRIME_CURVE_COUNT = 8;
 	public static final String PROTOCOL_ACR_NAME = "acr";
 	public static final String PROTOCOL_ANALOG_CHART = "analog_chart";
@@ -1103,6 +1150,7 @@ public class Fields {
 	public static final String PROTOCOL_HPFP_NAME = "hpfp";
 	public static final String PROTOCOL_INJ1_SHORT_NAME = "i1";
 	public static final String PROTOCOL_INJ1_STAGE2_SHORT_NAME = "j1";
+	public static final String PROTOCOL_KNOCK_SPECTROGRAMM = "knock_spectrogram";
 	public static final String PROTOCOL_MSG = "msg";
 	public static final String PROTOCOL_OUTPIN = "outpin";
 	public static final String PROTOCOL_SIGNATURE_PREFIX = "rusEFI ";
@@ -1146,6 +1194,7 @@ public class Fields {
 	public static final int SentEtbType_FORD_TYPE_1 = 2;
 	public static final int SentEtbType_GM_TYPE_1 = 1;
 	public static final int SentEtbType_NONE = 0;
+	public static final int SIGNATURE_HASH = 975069237;
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME = "generated/simulator_tune_image.bin";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX = "generated/simulator_tune_image";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX = ".bin";
@@ -1195,6 +1244,8 @@ public class Fields {
 	public static final int TORQUE_CURVE_SIZE = 6;
 	public static final int TOTAL_CONFIG_SIZE = 22656;
 	public static final int TPS_2_BYTE_PACKING_MULT = 100;
+	public static final int TPS_PPS_TOO_HIGH_THRESHOLD = 110;
+	public static final int TPS_PPS_TOO_LOW_THRESHOLD = -10;
 	public static final int TPS_TPS_ACCEL_CLT_CORR_TABLE = 4;
 	public static final int TPS_TPS_ACCEL_TABLE = 8;
 	public static final int TRACTION_CONTROL_ETB_DROP_SIZE = 6;
@@ -1216,7 +1267,6 @@ public class Fields {
 	public static final int TRIGGER_SIMULATOR_PIN_COUNT = 2;
 	public static final String TRIGGER_SYNC_EDGE = "syncEdge";
 	public static final int trigger_type_e_TT_12_TOOTH_CRANK = 38;
-	public static final int trigger_type_e_TT_1_16 = 50;
 	public static final int trigger_type_e_TT_2JZ_3_34_SIMULATION_ONLY = 25;
 	public static final int trigger_type_e_TT_36_2_1 = 70;
 	public static final int trigger_type_e_TT_36_2_1_1 = 71;
@@ -1287,6 +1337,7 @@ public class Fields {
 	public static final int trigger_type_e_TT_TOOTHED_WHEEL_60_2 = 8;
 	public static final int trigger_type_e_TT_TRI_TACH = 53;
 	public static final int trigger_type_e_TT_UNUSED = 82;
+	public static final int trigger_type_e_TT_UNUSED_50 = 50;
 	public static final int trigger_type_e_TT_VVT_BARRA_3_PLUS_1 = 56;
 	public static final int trigger_type_e_TT_VVT_BOSCH_QUICK_START = 47;
 	public static final int trigger_type_e_TT_VVT_FORD_COYOTE = 4;
@@ -1377,6 +1428,8 @@ public class Fields {
 	public static final char TS_GET_TEXT = 'G';
 	public static final char TS_HELLO_COMMAND = 'S';
 	public static final char TS_IO_TEST_COMMAND = 'Z';
+	public static final char TS_KNOCK_SPECTROGRAM_DISABLE = 'n';
+	public static final char TS_KNOCK_SPECTROGRAM_ENABLE = 'm';
 	public static final char TS_ONLINE_PROTOCOL = 'z';
 	public static final char TS_OUTPUT_COMMAND = 'O';
 	public static final char TS_PAGE_COMMAND = 'P';
@@ -1397,11 +1450,11 @@ public class Fields {
 	public static final int TS_RESPONSE_UNDERRUN = 0x80;
 	public static final int TS_RESPONSE_UNRECOGNIZED_COMMAND = 0x83;
 	public static final char TS_SET_LOGGER_SWITCH = 'l';
-	public static final String TS_SIGNATURE = "rusEFI master.2024.04.22.f407-discovery.3300691955";
+	public static final String TS_SIGNATURE = "rusEFI master.2024.05.09.f407-discovery.975069237";
 	public static final char TS_SIMULATE_CAN = '>';
 	public static final char TS_SINGLE_WRITE_COMMAND = 'W';
 	public static final char TS_TEST_COMMAND = 't';
-	public static final int TS_TOTAL_OUTPUT_SIZE = 1736;
+	public static final int TS_TOTAL_OUTPUT_SIZE = 1748;
 	public static final String TS_TRIGGER_SCOPE_CHANNEL_1_NAME = "Channel 1";
 	public static final String TS_TRIGGER_SCOPE_CHANNEL_2_NAME = "Channel 2";
 	public static final int TS_TRIGGER_SCOPE_DISABLE = 5;
@@ -1775,7 +1828,6 @@ public class Fields {
 	public static final Field DISABLEETBWHENENGINESTOPPED = Field.create("DISABLEETBWHENENGINESTOPPED", 752, FieldType.BIT, 24).setBaseOffset(0);
 	public static final Field IS_ENABLED_SPI_4 = Field.create("IS_ENABLED_SPI_4", 752, FieldType.BIT, 25).setBaseOffset(0);
 	public static final Field PAUSEETBCONTROL = Field.create("PAUSEETBCONTROL", 752, FieldType.BIT, 26).setBaseOffset(0);
-	public static final Field ALIGNENGINESNIFFERATTDC = Field.create("ALIGNENGINESNIFFERATTDC", 752, FieldType.BIT, 27).setBaseOffset(0);
 	public static final Field VERBOSEKLINE = Field.create("VERBOSEKLINE", 752, FieldType.BIT, 28).setBaseOffset(0);
 	public static final Field IDLEINCREMENTALPIDCIC = Field.create("IDLEINCREMENTALPIDCIC", 752, FieldType.BIT, 29).setBaseOffset(0);
 	public static final Field ENABLEAEMXSERIES = Field.create("ENABLEAEMXSERIES", 752, FieldType.BIT, 30).setBaseOffset(0);
@@ -1792,8 +1844,8 @@ public class Fields {
 	public static final Field VERBOSECANBASEADDRESS = Field.create("VERBOSECANBASEADDRESS", 772, FieldType.INT).setScale(1.0).setBaseOffset(0);
 	public static final Field MC33_HVOLT = Field.create("MC33_HVOLT", 776, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field MINIMUMBOOSTCLOSEDLOOPMAP = Field.create("MINIMUMBOOSTCLOSEDLOOPMAP", 777, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field ACFANPIN = Field.create("ACFANPIN", 778, FieldType.INT16, output_pin_e).setScale(1.0).setBaseOffset(0);
-	public static final Field ACFANPINMODE = Field.create("ACFANPINMODE", 780, FieldType.INT8, pin_output_mode_e).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDACFANPIN = Field.create("UNUSEDACFANPIN", 778, FieldType.INT16).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDACFANPINMODE = Field.create("UNUSEDACFANPINMODE", 780, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field L9779SPIDEVICE = Field.create("L9779SPIDEVICE", 781, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field IMUTYPE = Field.create("IMUTYPE", 782, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field ALIGNMENTFILL_AT_783 = Field.create("ALIGNMENTFILL_AT_783", 783, FieldType.INT8).setScale(1.0).setBaseOffset(0);
@@ -1823,7 +1875,7 @@ public class Fields {
 	public static final Field SDCARDLOGFREQUENCY = Field.create("SDCARDLOGFREQUENCY", 824, FieldType.INT16).setScale(1.0).setBaseOffset(0);
 	public static final Field IDLEPOSITIONCHANNEL = Field.create("IDLEPOSITIONCHANNEL", 826, FieldType.INT8, adc_channel_e).setScale(1.0).setBaseOffset(0);
 	public static final Field ALIGNMENTFILL_AT_827 = Field.create("ALIGNMENTFILL_AT_827", 827, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field DEBUGMAPAVERAGING = Field.create("DEBUGMAPAVERAGING", 828, FieldType.INT16, Gpio).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDHERE = Field.create("UNUSEDHERE", 828, FieldType.INT16).setScale(1.0).setBaseOffset(0);
 	public static final Field STARTERRELAYDISABLEPIN = Field.create("STARTERRELAYDISABLEPIN", 830, FieldType.INT16, output_pin_e).setScale(1.0).setBaseOffset(0);
 	public static final Field STARTERRELAYDISABLEPINMODE = Field.create("STARTERRELAYDISABLEPINMODE", 832, FieldType.INT8, pin_output_mode_e).setScale(1.0).setBaseOffset(0);
 	public static final Field ALIGNMENTFILL_AT_833 = Field.create("ALIGNMENTFILL_AT_833", 833, FieldType.INT8).setScale(1.0).setBaseOffset(0);
@@ -1932,8 +1984,8 @@ public class Fields {
 	public static final Field NOFUELTRIMAFTERDFCOTIME = Field.create("NOFUELTRIMAFTERDFCOTIME", 979, FieldType.INT8).setScale(0.1).setBaseOffset(0);
 	public static final Field LAUNCHSPEEDTHRESHOLD = Field.create("LAUNCHSPEEDTHRESHOLD", 980, FieldType.INT).setScale(1.0).setBaseOffset(0);
 	public static final Field LAUNCHRPMWINDOW = Field.create("LAUNCHRPMWINDOW", 984, FieldType.INT).setScale(1.0).setBaseOffset(0);
-	public static final Field LAUNCHSPARKSKIPPERCENT = Field.create("LAUNCHSPARKSKIPPERCENT", 988, FieldType.INT).setScale(1.0).setBaseOffset(0);
-	public static final Field LAUNCHBOOSTDUTY = Field.create("LAUNCHBOOSTDUTY", 992, FieldType.INT).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDHERE12 = Field.create("UNUSEDHERE12", 988, FieldType.INT).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDHERE13 = Field.create("UNUSEDHERE13", 992, FieldType.INT).setScale(1.0).setBaseOffset(0);
 	public static final Field MAGICNUMBERAVAILABLEFORDEVTRICKS = Field.create("MAGICNUMBERAVAILABLEFORDEVTRICKS", 996, FieldType.FLOAT).setBaseOffset(0);
 	public static final Field TURBOCHARGERFILTER = Field.create("TURBOCHARGERFILTER", 1000, FieldType.FLOAT).setBaseOffset(0);
 	public static final Field LAUNCHTPSTHRESHOLD = Field.create("LAUNCHTPSTHRESHOLD", 1004, FieldType.INT).setScale(1.0).setBaseOffset(0);
@@ -2173,6 +2225,9 @@ public class Fields {
 	public static final Field DEVBIT5 = Field.create("DEVBIT5", 1496, FieldType.BIT, 25).setBaseOffset(0);
 	public static final Field DEVBIT6 = Field.create("DEVBIT6", 1496, FieldType.BIT, 26).setBaseOffset(0);
 	public static final Field DEVBIT7 = Field.create("DEVBIT7", 1496, FieldType.BIT, 27).setBaseOffset(0);
+	public static final Field SKIPADC12BITASSERT = Field.create("SKIPADC12BITASSERT", 1496, FieldType.BIT, 28).setBaseOffset(0);
+	public static final Field INVERTEXHAUSTCAMVVTSIGNAL = Field.create("INVERTEXHAUSTCAMVVTSIGNAL", 1496, FieldType.BIT, 29).setBaseOffset(0);
+	public static final Field ENABLEKNOCKSPECTROGRAM = Field.create("ENABLEKNOCKSPECTROGRAM", 1496, FieldType.BIT, 30).setBaseOffset(0);
 	public static final Field AFTERCRANKINGIACTAPERDURATION = Field.create("AFTERCRANKINGIACTAPERDURATION", 1500, FieldType.INT16).setScale(1.0).setBaseOffset(0);
 	public static final Field IACBYTPSTAPER = Field.create("IACBYTPSTAPER", 1502, FieldType.INT16).setScale(1.0).setBaseOffset(0);
 	public static final Field AUXSERIALTXPIN = Field.create("AUXSERIALTXPIN", 1504, FieldType.INT16, Gpio).setScale(1.0).setBaseOffset(0);
@@ -2671,7 +2726,7 @@ public class Fields {
 	public static final Field ALSIDLEADD = Field.create("ALSIDLEADD", 3552, FieldType.INT).setScale(1.0).setBaseOffset(0);
 	public static final Field ALSETBADD = Field.create("ALSETBADD", 3556, FieldType.INT).setScale(1.0).setBaseOffset(0);
 	public static final Field ALSSKIPRATIO = Field.create("ALSSKIPRATIO", 3560, FieldType.FLOAT).setBaseOffset(0);
-	public static final Field ALSMAXDRIVERTHROTTLEINTENT = Field.create("ALSMAXDRIVERTHROTTLEINTENT", 3564, FieldType.INT8).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDSORRY11 = Field.create("UNUSEDSORRY11", 3564, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field ALSACTIVATEPINMODE = Field.create("ALSACTIVATEPINMODE", 3565, FieldType.INT8, pin_input_mode_e).setScale(1.0).setBaseOffset(0);
 	public static final Field TPSSECONDARYMAXIMUM = Field.create("TPSSECONDARYMAXIMUM", 3566, FieldType.INT8).setScale(0.5).setBaseOffset(0);
 	public static final Field PPSSECONDARYMAXIMUM = Field.create("PPSSECONDARYMAXIMUM", 3567, FieldType.INT8).setScale(0.5).setBaseOffset(0);
@@ -2866,22 +2921,7 @@ public class Fields {
 	public static final Field IACCOASTINGRPMBINS = Field.create("IACCOASTINGRPMBINS", 5180, FieldType.INT8).setScale(100.0).setBaseOffset(0);
 	public static final Field IACCOASTING = Field.create("IACCOASTING", 5196, FieldType.INT8).setScale(0.5).setBaseOffset(0);
 	public static final Field WARNING_MESSAGE = Field.create("WARNING_MESSAGE", 5212, 120, FieldType.STRING).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS1 = Field.create("FANCYOPTIONS1", 5332, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS2 = Field.create("FANCYOPTIONS2", 5333, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS3 = Field.create("FANCYOPTIONS3", 5334, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS4 = Field.create("FANCYOPTIONS4", 5335, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS5 = Field.create("FANCYOPTIONS5", 5336, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS6 = Field.create("FANCYOPTIONS6", 5337, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS7 = Field.create("FANCYOPTIONS7", 5338, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS8 = Field.create("FANCYOPTIONS8", 5339, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS9 = Field.create("FANCYOPTIONS9", 5340, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS10 = Field.create("FANCYOPTIONS10", 5341, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS11 = Field.create("FANCYOPTIONS11", 5342, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS12 = Field.create("FANCYOPTIONS12", 5343, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS13 = Field.create("FANCYOPTIONS13", 5344, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS14 = Field.create("FANCYOPTIONS14", 5345, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS15 = Field.create("FANCYOPTIONS15", 5346, FieldType.INT8).setScale(1.0).setBaseOffset(0);
-	public static final Field FANCYOPTIONS16 = Field.create("FANCYOPTIONS16", 5347, FieldType.INT8).setScale(1.0).setBaseOffset(0);
+	public static final Field UNUSEDGAPHERE = Field.create("UNUSEDGAPHERE", 5332, FieldType.INT8).setScale(1.0).setBaseOffset(0);
 	public static final Field BOOSTTABLEOPENLOOP = Field.create("BOOSTTABLEOPENLOOP", 5348, FieldType.INT8).setScale(0.5).setBaseOffset(0);
 	public static final Field BOOSTRPMBINS = Field.create("BOOSTRPMBINS", 5412, FieldType.INT8).setScale(100.0).setBaseOffset(0);
 	public static final Field BOOSTTABLECLOSEDLOOP = Field.create("BOOSTTABLECLOSEDLOOP", 5420, FieldType.INT8).setScale(2.0).setBaseOffset(0);
@@ -3460,7 +3500,6 @@ public class Fields {
 	DISABLEETBWHENENGINESTOPPED,
 	IS_ENABLED_SPI_4,
 	PAUSEETBCONTROL,
-	ALIGNENGINESNIFFERATTDC,
 	VERBOSEKLINE,
 	IDLEINCREMENTALPIDCIC,
 	ENABLEAEMXSERIES,
@@ -3477,8 +3516,8 @@ public class Fields {
 	VERBOSECANBASEADDRESS,
 	MC33_HVOLT,
 	MINIMUMBOOSTCLOSEDLOOPMAP,
-	ACFANPIN,
-	ACFANPINMODE,
+	UNUSEDACFANPIN,
+	UNUSEDACFANPINMODE,
 	L9779SPIDEVICE,
 	IMUTYPE,
 	ALIGNMENTFILL_AT_783,
@@ -3508,7 +3547,7 @@ public class Fields {
 	SDCARDLOGFREQUENCY,
 	IDLEPOSITIONCHANNEL,
 	ALIGNMENTFILL_AT_827,
-	DEBUGMAPAVERAGING,
+	UNUSEDHERE,
 	STARTERRELAYDISABLEPIN,
 	STARTERRELAYDISABLEPINMODE,
 	ALIGNMENTFILL_AT_833,
@@ -3613,8 +3652,8 @@ public class Fields {
 	NOFUELTRIMAFTERDFCOTIME,
 	LAUNCHSPEEDTHRESHOLD,
 	LAUNCHRPMWINDOW,
-	LAUNCHSPARKSKIPPERCENT,
-	LAUNCHBOOSTDUTY,
+	UNUSEDHERE12,
+	UNUSEDHERE13,
 	MAGICNUMBERAVAILABLEFORDEVTRICKS,
 	TURBOCHARGERFILTER,
 	LAUNCHTPSTHRESHOLD,
@@ -3854,6 +3893,9 @@ public class Fields {
 	DEVBIT5,
 	DEVBIT6,
 	DEVBIT7,
+	SKIPADC12BITASSERT,
+	INVERTEXHAUSTCAMVVTSIGNAL,
+	ENABLEKNOCKSPECTROGRAM,
 	AFTERCRANKINGIACTAPERDURATION,
 	IACBYTPSTAPER,
 	AUXSERIALTXPIN,
@@ -4340,7 +4382,7 @@ public class Fields {
 	ALSIDLEADD,
 	ALSETBADD,
 	ALSSKIPRATIO,
-	ALSMAXDRIVERTHROTTLEINTENT,
+	UNUSEDSORRY11,
 	ALSACTIVATEPINMODE,
 	TPSSECONDARYMAXIMUM,
 	PPSSECONDARYMAXIMUM,
@@ -4531,22 +4573,7 @@ public class Fields {
 	IACCOASTINGRPMBINS,
 	IACCOASTING,
 	WARNING_MESSAGE,
-	FANCYOPTIONS1,
-	FANCYOPTIONS2,
-	FANCYOPTIONS3,
-	FANCYOPTIONS4,
-	FANCYOPTIONS5,
-	FANCYOPTIONS6,
-	FANCYOPTIONS7,
-	FANCYOPTIONS8,
-	FANCYOPTIONS9,
-	FANCYOPTIONS10,
-	FANCYOPTIONS11,
-	FANCYOPTIONS12,
-	FANCYOPTIONS13,
-	FANCYOPTIONS14,
-	FANCYOPTIONS15,
-	FANCYOPTIONS16,
+	UNUSEDGAPHERE,
 	BOOSTTABLEOPENLOOP,
 	BOOSTRPMBINS,
 	BOOSTTABLECLOSEDLOOP,

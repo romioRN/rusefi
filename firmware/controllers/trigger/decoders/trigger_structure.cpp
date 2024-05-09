@@ -680,10 +680,8 @@ void TriggerWaveform::initializeTriggerWaveform(operation_mode_e triggerOperatio
 	case trigger_type_e::TT_MITSU_4G9x_CAM:
 	    initializeMitsubishi4g9xCam(this);
         break;
-	case trigger_type_e::TT_1_16:
-		configureOnePlus16(this);
-		break;
 
+	case trigger_type_e::TT_UNUSED_50:
 	case trigger_type_e::TT_HONDA_CBR_600:
 		configureHondaCbr600(this);
 		break;
@@ -771,6 +769,17 @@ void TriggerWaveform::initializeTriggerWaveform(operation_mode_e triggerOperatio
 	default:
 		setShapeDefinitionError(true);
 		warning(ObdCode::CUSTOM_ERR_NO_SHAPE, "initializeTriggerWaveform() not implemented: %d", triggerType.type);
+	}
+
+	if (!needSecondTriggerInput &&
+#if EFI_UNIT_TEST
+ 	engineConfiguration != nullptr &&
+#endif
+	engineConfiguration->triggerInputPins[1] != Gpio::Unassigned) {
+// todo: technical debt: HW CI should not require special treatment
+#ifndef HARDWARE_CI
+	  criticalError("Single-channel trigger %s selected while two inputs were configured", getTrigger_type_e(triggerType.type));
+#endif
 	}
 
 	/**

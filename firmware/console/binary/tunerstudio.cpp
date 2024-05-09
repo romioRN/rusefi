@@ -74,6 +74,7 @@
 #include "bluetooth.h"
 #include "tunerstudio_io.h"
 #include "trigger_scope.h"
+#include "software_knock.h"
 #include "electronic_throttle.h"
 #include "live_data.h"
 
@@ -340,9 +341,9 @@ void requestBurn() {
 #if !EFI_UNIT_TEST
 	onBurnRequest();
 
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 	setNeedToWriteConfiguration();
-#endif /* (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE) */
+#endif /* EFI_CONFIGURATION_STORAGE */
 #endif // !EFI_UNIT_TEST
 }
 
@@ -357,7 +358,9 @@ static void sendResponseCode(ts_response_format_e mode, TsChannelBase *tsChannel
  * 'Burn' command is a command to commit the changes
  */
 static void handleBurnCommand(TsChannelBase* tsChannel, ts_response_format_e mode) {
-	efitimems_t nowMs = getTimeNowMs();
+	Timer t;
+	t.reset();
+
 	tsState.burnCommandCounter++;
 
 	efiPrintf("got B (Burn) %s", mode == TS_PLAIN ? "plain" : "CRC");
@@ -368,7 +371,7 @@ static void handleBurnCommand(TsChannelBase* tsChannel, ts_response_format_e mod
 	}
 
 	sendResponseCode(mode, tsChannel, TS_RESPONSE_BURN_OK);
-	efiPrintf("BURN in %dms", getTimeNowMs() - nowMs);
+	efiPrintf("BURN in %dms", (int)(t.getElapsedSeconds() * 1e3));
 }
 
 #if (EFI_PROD_CODE || EFI_SIMULATOR)
@@ -389,6 +392,10 @@ static bool isKnownCommand(char command) {
 			|| command == TS_GET_TEXT
 			|| command == TS_CRC_CHECK_COMMAND
 			|| command == TS_GET_FIRMWARE_VERSION
+#ifdef KNOCK_SPECTROGRAM
+			|| command == TS_KNOCK_SPECTROGRAM_ENABLE
+			|| command == TS_KNOCK_SPECTROGRAM_DISABLE
+#endif
 			|| command == TS_PERF_TRACE_BEGIN
 			|| command == TS_PERF_TRACE_GET_BUFFER
 			|| command == TS_GET_CONFIG_ERROR
@@ -831,6 +838,16 @@ int TunerStudio::handleCrcCommand(TsChannelBase* tsChannel, char *data, int inco
 		sendErrorCode(tsChannel, TS_RESPONSE_OUT_OF_RANGE);
 		break;
 #endif /* EFI_TOOTH_LOGGER */
+#ifdef KNOCK_SPECTROGRAM
+	case TS_KNOCK_SPECTROGRAM_ENABLE:
+		knockSpectrogramEnable();
+		sendOkResponse(tsChannel, TS_CRC);
+		break;
+	case TS_KNOCK_SPECTROGRAM_DISABLE:
+		knockSpectrogramDisable();
+		sendOkResponse(tsChannel, TS_CRC);
+		break;
+#endif /* KNOCK_SPECTROGRAM */
 #if ENABLE_PERF_TRACE
 	case TS_PERF_TRACE_BEGIN:
 		perfTraceEnable();
@@ -907,6 +924,9 @@ void startTunerStudioConnectivity(void) {
 	});
 	addConsoleActionSSS("bluetooth_jdy", [](const char *baudRate, const char *name, const char *pinCode) {
 		bluetoothStart(BLUETOOTH_JDY_3x, baudRate, name, pinCode);
+	});
+  addConsoleActionSSS("bluetooth_jdy31", [](const char *baudRate, const char *name, const char *pinCode) {
+		bluetoothStart(BLUETOOTH_JDY_31, baudRate, name, pinCode);
 	});
 #endif /* EFI_BLUETOOTH_SETUP */
 }

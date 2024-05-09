@@ -40,7 +40,7 @@ float __attribute__((weak)) getAnalogInputDividerCoefficient(adc_channel_e) {
 
 static NO_CACHE adcsample_t slowAdcSamples[SLOW_ADC_CHANNEL_COUNT];
 
-static adc_channel_mode_e adcHwChannelEnabled[HW_MAX_ADC_INDEX];
+static adc_channel_mode_e adcHwChannelMode[HW_MAX_ADC_INDEX];
 
 // Board voltage, with divider coefficient accounted for
 float getVoltageDivided(const char *msg, adc_channel_e hwChannel) {
@@ -85,7 +85,20 @@ static int adcDebugReporting = false;
 static adcsample_t getAvgAdcValue(int index, adcsample_t *samples, int bufDepth, int numChannels) {
 	uint32_t result = 0;
 	for (int i = 0; i < bufDepth; i++) {
-		result += samples[index];
+	  adcsample_t sample = samples[index];
+//	  if (sample > 0x1FFF) {
+//	    // 12bit ADC expected right now, make this configurable one day
+//	    criticalError("fast ADC unexpected sample %d", sample);
+//	  } else
+	  if (sample > 0xFFF) {
+	    if (!engineConfiguration->skipADC12bitAssert) {
+	      criticalError("fast ADC unexpected sample %d. Please report and use skipADC12bitAssert to disable", sample);
+	    }
+	    engine->outputChannels.unexpectedAdcSample = sample;
+	    sample = sample & 0xFFF; // sad hack which works around https://github.com/rusefi/rusefi/issues/6376 which we do not understand
+	    engine->outputChannels.adc13bitCounter++;
+	  }
+		result += sample;
 		index += numChannels;
 	}
 
@@ -95,7 +108,9 @@ static adcsample_t getAvgAdcValue(int index, adcsample_t *samples, int bufDepth,
 
 
 // See https://github.com/rusefi/rusefi/issues/976 for discussion on this value
+#ifndef ADC_SAMPLING_FAST
 #define ADC_SAMPLING_FAST ADC_SAMPLE_28
+#endif
 
 static void adc_callback_fast(ADCDriver *adcp) {
 	// State may not be complete if we get a callback for "half done"
@@ -158,13 +173,13 @@ static void fast_adc_callback(GPTDriver*) {
 	 * will be executed in parallel to the current PWM cycle and will
 	 * terminate before the next PWM cycle.
 	 */
-	chSysLockFromISR()
-	;
-	if (ADC_FAST_DEVICE.state != ADC_READY &&
-	ADC_FAST_DEVICE.state != ADC_COMPLETE &&
-	ADC_FAST_DEVICE.state != ADC_ERROR) {
-		fastAdc.errorsCount++;
+	chSysLockFromISR();
+	if ((ADC_FAST_DEVICE.state != ADC_READY) &&
+		(ADC_FAST_DEVICE.state != ADC_COMPLETE) &&
+		(ADC_FAST_DEVICE.state != ADC_ERROR)) {
+		engine->outputChannels.fastAdcErrorsCount++;
 		// todo: when? why? criticalError("ADC fast not ready?");
+		// see notes at https://github.com/rusefi/rusefi/issues/6399
 		chSysUnlockFromISR();
 		return;
 	}
@@ -189,7 +204,7 @@ int getInternalAdcValue(const char *msg, adc_channel_e hwChannel) {
 	}
 
 #if EFI_USE_FAST_ADC
-	if (adcHwChannelEnabled[hwChannel] == ADC_FAST) {
+	if (adcHwChannelMode[hwChannel] == ADC_FAST) {
 		int internalIndex = fastAdc.internalAdcIndexByHardwareIndex[hwChannel];
 // todo if ADC_BUF_DEPTH_FAST EQ 1
 //		return fastAdc.samples[internalIndex];
@@ -203,20 +218,15 @@ int getInternalAdcValue(const char *msg, adc_channel_e hwChannel) {
 
 #if EFI_USE_FAST_ADC
 static GPTConfig fast_adc_config = {
-	GPT_FREQ_FAST,
-	fast_adc_callback,
-	0, 0
+	.frequency = GPT_FREQ_FAST,
+	.callback = fast_adc_callback,
+	.cr2 = 0,
+	.dier = 0,
 };
 #endif /* EFI_USE_FAST_ADC */
 
 adc_channel_mode_e getAdcMode(adc_channel_e hwChannel) {
-#if EFI_USE_FAST_ADC
-	if (fastAdc.isHwUsed(hwChannel)) {
-		return ADC_FAST;
-	}
-#endif // EFI_USE_FAST_ADC
-
-	return ADC_SLOW;
+	return adcHwChannelMode[hwChannel];
 }
 
 #if EFI_USE_FAST_ADC
@@ -238,15 +248,6 @@ void AdcDevice::init(void) {
 	hwConfig->num_channels = size();
 	/* driver does this internally */
 	//hwConfig->sqr1 += ADC_SQR1_NUM_CH(size());
-}
-
-bool AdcDevice::isHwUsed(adc_channel_e hwChannelIndex) const {
-	for (size_t i = 0; i < channelCount; i++) {
-		if (hardwareIndexByIndernalAdcIndex[i] == hwChannelIndex) {
-			return true;
-		}
-	}
-	return false;
 }
 
 void AdcDevice::enableChannel(adc_channel_e hwChannel) {
@@ -281,8 +282,8 @@ void AdcDevice::enableChannel(adc_channel_e hwChannel) {
 #endif /* ADC_MAX_CHANNELS_COUNT */
 }
 
-adc_channel_e AdcDevice::getAdcHardwareIndexByInternalIndex(int index) const {
-	return hardwareIndexByIndernalAdcIndex[index];
+adc_channel_e AdcDevice::getAdcHardwareIndexByInternalIndex(int hwChannel) const {
+	return hardwareIndexByIndernalAdcIndex[hwChannel];
 }
 
 #endif // EFI_USE_FAST_ADC
@@ -301,16 +302,16 @@ void printFullAdcReport(void) {
 	efiPrintf("fast %d samples", fastAdc.conversionCount);
 
 	for (int internalIndex = 0; internalIndex < fastAdc.size(); internalIndex++) {
-		adc_channel_e hwIndex = fastAdc.getAdcHardwareIndexByInternalIndex(internalIndex);
+		adc_channel_e hwChannel = fastAdc.getAdcHardwareIndexByInternalIndex(internalIndex);
 
-		if (isAdcChannelValid(hwIndex)) {
-			ioportid_t port = getAdcChannelPort("print", hwIndex);
-			int pin = getAdcChannelPin(hwIndex);
+		if (isAdcChannelValid(hwChannel)) {
+			ioportid_t port = getAdcChannelPort("print", hwChannel);
+			int pin = getAdcChannelPin(hwChannel);
 			int adcValue = getAvgAdcValue(internalIndex, fastAdc.samples, ADC_BUF_DEPTH_FAST, fastAdc.size());
 			float volts = adcToVolts(adcValue);
 			/* Human index starts from 1 */
 			efiPrintf(" F ch[%2d] @ %s%d ADC%d 12bit=%4d %.2fV",
-				internalIndex, portname(port), pin, hwIndex - EFI_ADC_0 + 1, adcValue, volts);
+				internalIndex, portname(port), pin, hwChannel - EFI_ADC_0 + 1, adcValue, volts);
 		}
 	}
 #endif // EFI_USE_FAST_ADC
@@ -318,16 +319,16 @@ void printFullAdcReport(void) {
 
 	/* we assume that all slow ADC channels are enabled */
 	for (int internalIndex = 0; internalIndex < ADC_MAX_CHANNELS_COUNT; internalIndex++) {
-		adc_channel_e hwIndex = static_cast<adc_channel_e>(internalIndex + EFI_ADC_0);
+		adc_channel_e hwChannel = static_cast<adc_channel_e>(internalIndex + EFI_ADC_0);
 
-		if (isAdcChannelValid(hwIndex)) {
-			ioportid_t port = getAdcChannelPort("print", hwIndex);
-			int pin = getAdcChannelPin(hwIndex);
+		if (isAdcChannelValid(hwChannel)) {
+			ioportid_t port = getAdcChannelPort("print", hwChannel);
+			int pin = getAdcChannelPin(hwChannel);
 			int adcValue = slowAdcSamples[internalIndex];
 			float volts = adcToVolts(adcValue);
 			/* Human index starts from 1 */
 			efiPrintf(" S ch[%2d] @ %s%d ADC%d 12bit=%4d %.2fV",
-				internalIndex, portname(port), pin, hwIndex - EFI_ADC_0 + 1, adcValue, volts);
+				internalIndex, portname(port), pin, hwChannel - EFI_ADC_0 + 1, adcValue, volts);
 		}
 	}
 }
@@ -383,36 +384,40 @@ public:
 	}
 };
 
-void addChannel(const char* /*name*/, adc_channel_e setting, adc_channel_mode_e mode) {
-	if (!isAdcChannelValid(setting)) {
+void addChannel(const char*, adc_channel_e hwChannel, adc_channel_mode_e mode) {
+	if (!isAdcChannelValid(hwChannel)) {
 		return;
 	}
-
-	adcHwChannelEnabled[setting] = mode;
 
 #if EFI_USE_FAST_ADC
 	if (mode == ADC_FAST) {
-		fastAdc.enableChannel(setting);
-		return;
+		fastAdc.enableChannel(hwChannel);
 	}
 #endif
 
+	adcHwChannelMode[hwChannel] = mode;
 	// Nothing to do for slow channels, input is mapped to analog in init_sensors.cpp
 }
 
-void removeChannel(const char *name, adc_channel_e setting) {
-	(void)name;
-	if (!isAdcChannelValid(setting)) {
+void removeChannel(const char*, adc_channel_e hwChannel) {
+	if (!isAdcChannelValid(hwChannel)) {
 		return;
 	}
-	adcHwChannelEnabled[setting] = ADC_OFF;
+#if EFI_USE_FAST_ADC
+	if (adcHwChannelMode[hwChannel] == ADC_FAST) {
+		/* TODO: */
+		//fastAdc.disableChannel(hwChannel);
+	}
+#endif
+
+	adcHwChannelMode[hwChannel] = ADC_OFF;
 }
 
 // Weak link a stub so that every board doesn't have to implement this function
 __attribute__((weak)) void setAdcChannelOverrides() { }
 
 static void configureInputs() {
-	memset(adcHwChannelEnabled, 0, sizeof(adcHwChannelEnabled));
+	memset(adcHwChannelMode, 0, sizeof(adcHwChannelMode));
 
 	/**
 	 * order of analog channels here is totally random and has no meaning

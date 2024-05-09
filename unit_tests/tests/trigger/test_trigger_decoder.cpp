@@ -170,10 +170,11 @@ static void assertREqualsM(const char *msg, void *expected, void *actual) {
 	assertEqualsM(msg, (float)(uint64_t)expected, (float)(uint64_t)actual);
 }
 
-extern bool_t debugSignalExecutor;
+extern bool debugSignalExecutor;
 
 TEST(misc, testRpmCalculator) {
 	EngineTestHelper eth(engine_type_e::FORD_INLINE_6_1995);
+	efiAssertVoid(ObdCode::CUSTOM_ERR_6670, engineConfiguration!=NULL, "null config in engine");
 
 	setTable(config->injectionPhase, -180.0f);
 
@@ -189,8 +190,6 @@ TEST(misc, testRpmCalculator) {
 	ASSERT_EQ( 0,  ilist->isReady) << "size #1";
 
 	ASSERT_EQ( 720,  engine->engineState.engineCycle) << "engineCycle";
-
-	efiAssertVoid(ObdCode::CUSTOM_ERR_6670, engineConfiguration!=NULL, "null config in engine");
 
 	engineConfiguration->minimumIgnitionTiming = -15;
 	float timingAdvance = -13;
@@ -223,7 +222,7 @@ TEST(misc, testRpmCalculator) {
 
 	eth.moveTimeForwardMs(5 /*ms*/);
 
-	int start = eth.getTimeNowUs();
+	int start = getTimeNowUs();
 	ASSERT_EQ( 485000,  start) << "start value";
 
 	engine->periodicFastCallback();
@@ -250,12 +249,12 @@ TEST(misc, testRpmCalculator) {
 	scheduling_s *ev0 = engine->executor.getForUnitTest(0);
 
 	assertREqualsM("Call@0", (void*)ev0->action.getCallback(), (void*)turnSparkPinHighStartCharging);
-	assertEqualsM("ev 0", start + 944, ev0->momentX);
+	ASSERT_EQ(start + 944, ev0->getMomentUs()) << "ev 0";
 	assertEqualsLM("coil 0", (uintptr_t)&enginePins.coils[0], (uintptr_t)((IgnitionEvent*)ev0->action.getArgument())->outputs[0]);
 
 	scheduling_s *ev1 = engine->executor.getForUnitTest(1);
 	assertREqualsM("Call@1", (void*)ev1->action.getCallback(), (void*)fireSparkAndPrepareNextSchedule);
-	assertEqualsM("ev 1", start + 944 + 1000 * FORD_INLINE_DWELL , ev1->momentX);
+	ASSERT_EQ(start + 944 + 1000 * FORD_INLINE_DWELL, ev1->getMomentUs()) << "ev 1";
 	assertEqualsLM("coil 1", (uintptr_t)&enginePins.coils[0], (uintptr_t)((IgnitionEvent*)ev1->action.getArgument())->outputs[0]);
 
 	}
@@ -267,9 +266,10 @@ TEST(misc, testRpmCalculator) {
 	eth.fireFall(5);
 	ASSERT_EQ( 2,  engine->triggerCentral.triggerState.getCurrentIndex()) << "index #3";
 	ASSERT_EQ( 4,  engine->executor.size()) << "queue size 3";
-	assertEqualsM("ev 3", start + 13333 - 1515 + 2459, engine->executor.getForUnitTest(0)->momentX);
-	assertEqualsM2("ev 5", start + 14277 + 500, engine->executor.getForUnitTest(1)->momentX, 2);
-	assertEqualsM("3/3", start + 14777 + 677, engine->executor.getForUnitTest(2)->momentX);
+
+	ASSERT_EQ(start + 13333 - 1515 + 2459, engine->executor.getForUnitTest(0)->getMomentUs()) << "ev 3";
+	ASSERT_EQ(start + 14277 + 500, engine->executor.getForUnitTest(1)->getMomentUs()) << "ev 5";
+	ASSERT_EQ(start + 14777 + 677, engine->executor.getForUnitTest(2)->getMomentUs()) << "3/3";
 	engine->executor.clear();
 
 	ASSERT_EQ(4, engine->triggerCentral.triggerShape.findAngleIndex(&engine->triggerCentral.triggerFormDetails, 240));
@@ -304,8 +304,8 @@ TEST(misc, testRpmCalculator) {
 
 	eth.fireRise(5);
 	ASSERT_EQ( 4,  engine->executor.size()) << "queue size 6";
-	assertEqualsM("6/0", start + 40944, engine->executor.getForUnitTest(0)->momentX);
-	assertEqualsM("6/1", start + 41444, engine->executor.getForUnitTest(1)->momentX);
+	ASSERT_EQ(start + 40944, engine->executor.getForUnitTest(0)->getMomentUs()) << "6/0";
+	ASSERT_EQ(start + 41444, engine->executor.getForUnitTest(1)->getMomentUs()) << "6/1";
 	engine->executor.clear();
 
 	eth.fireFall(5);
@@ -316,8 +316,8 @@ TEST(misc, testRpmCalculator) {
 	eth.fireFall(5);
 
 	ASSERT_EQ( 4,  engine->executor.size()) << "queue size 8";
-	assertEqualsM("8/0", start + 53333 - 1515 + 2459, engine->executor.getForUnitTest(0)->momentX);
-	assertEqualsM2("8/1", start + 54277 + 2459 - 1959, engine->executor.getForUnitTest(1)->momentX, 0);
+	ASSERT_EQ(start + 53333 - 1515 + 2459, engine->executor.getForUnitTest(0)->getMomentUs()) << "8/0";
+	ASSERT_EQ(start + 54277 + 2459 - 1959, engine->executor.getForUnitTest(1)->getMomentUs()) << "8/1";
 	engine->executor.clear();
 }
 
@@ -400,6 +400,7 @@ static void assertInjectionEventBatch(const char *msg, InjectionEvent *ev, int i
 	EXPECT_EQ(secondInjectorIndex, ev->outputs[1]->injectorIndex);
 }
 
+// https://sourceforge.net/p/rusefi/tickets/299/
 static void setTestBug299(EngineTestHelper *eth) {
 	setupSimpleTestEngineWithMafAndTT_ONE_trigger(eth);
 	EXPECT_CALL(*eth->mockAirmass, getAirmass(_, _))
@@ -527,6 +528,8 @@ void doTestFuelSchedulerBug299smallAndMedium(int startUpDelayMs) {
 	printf("*************************************************** testFuelSchedulerBug299 small to medium\r\n");
 
 	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
+	extern bool unitTestBusyWaitHack;
+	unitTestBusyWaitHack = true;
 	setTable(config->injectionPhase, -180.0f);
 	engineConfiguration->isFasterEngineSpinUpEnabled = false;
 	engine->tdcMarkEnabled = false;
@@ -884,6 +887,8 @@ TEST(big, testSinglePoint) {
 
 TEST(big, testFuelSchedulerBug299smallAndLarge) {
 	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
+	extern bool unitTestBusyWaitHack;
+	unitTestBusyWaitHack = true;
 	engineConfiguration->hpfpCamLobes = 0;
 	setTable(config->injectionPhase, -180.0f);
 	engineConfiguration->isFasterEngineSpinUpEnabled = false;
@@ -929,11 +934,11 @@ TEST(big, testFuelSchedulerBug299smallAndLarge) {
 //	assertInjectorDownEvent("L04@8", 8, MS2US(50.0), 0);
 
 
-	engine->executor.executeAll(eth.getTimeNowUs() + 1);
+	engine->executor.executeAll(getTimeNowUs() + 1);
 	// injector goes high...
 	ASSERT_FALSE(enginePins.injectors[0].currentLogicValue) << "injector@1";
 
-	engine->executor.executeAll(eth.getTimeNowUs() + MS2US(17.5) + 1);
+	engine->executor.executeAll(getTimeNowUs() + MS2US(17.5) + 1);
 	// injector does not go low too soon, that's a feature :)
 	ASSERT_TRUE(enginePins.injectors[0].currentLogicValue) << "injector@2";
 
@@ -949,7 +954,7 @@ TEST(big, testFuelSchedulerBug299smallAndLarge) {
 //todo	assertInjectorDownEvent("L015@5", 5, MS2US(30), 0);
 
 
-	engine->executor.executeAll(eth.getTimeNowUs() + MS2US(10) + 1);
+	engine->executor.executeAll(getTimeNowUs() + MS2US(10) + 1);
 	// end of combined injection
 	ASSERT_FALSE(enginePins.injectors[0].currentLogicValue) << "injector@3";
 
@@ -1010,7 +1015,7 @@ TEST(big, testSparkReverseOrderBug319) {
 
 	setConstantDwell(45);
 
-	engine->triggerCentral.syncAndReport(2, 0);
+	engine->triggerCentral.syncEnginePhaseAndReport(2, 0);
 
 	// this is needed to update injectorLag
 	engine->updateSlowSensors();
@@ -1023,7 +1028,7 @@ TEST(big, testSparkReverseOrderBug319) {
 	eth.fireRise(20);
 	eth.fireFall(20);
 
-	engine->triggerCentral.syncAndReport(2, 0);
+	engine->triggerCentral.syncEnginePhaseAndReport(2, 0);
 
 	eth.executeActions();
 
@@ -1102,7 +1107,9 @@ TEST(big, testSparkReverseOrderBug319) {
 	ASSERT_EQ(ObdCode::CUSTOM_OUT_OF_ORDER_COIL, unitTestWarningCodeState.recentWarnings.get(1).Code);
 }
 
-TEST(big, testMissedSpark299) {
+// https://sourceforge.net/p/rusefi/tickets/299/
+// this is not a test of wasted spark!
+TEST(big, testAssertWeAreNotMissingASpark299) {
 	printf("*************************************************** testMissedSpark299\r\n");
 
 	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
@@ -1113,7 +1120,7 @@ TEST(big, testMissedSpark299) {
 
 	ASSERT_EQ( 0,  unitTestWarningCodeState.recentWarnings.getCount()) << "warningCounter#0";
 
-
+  // todo: migrate to 'smartFireRise' see header which explains the difference
 	eth.fireRise(20);
 	eth.executeActions();
 	ASSERT_EQ( 0,  engine->triggerCentral.triggerState.currentCycle.current_index) << "ci#0";
@@ -1147,6 +1154,7 @@ TEST(big, testMissedSpark299) {
 
 	ASSERT_EQ(3000, Sensor::getOrZero(SensorType::Rpm));
 
+  // positive advance scenario which is the typical case
 	setWholeTimingTable(3);
 	eth.engine.periodicFastCallback();
 
@@ -1164,6 +1172,7 @@ TEST(big, testMissedSpark299) {
 	eth.fireFall(20);
 	eth.executeActions();
 
+  // negative advance is rarely used but worth testing considering all out angleWrap.
 	setWholeTimingTable(-5);
 	eth.engine.periodicFastCallback();
 

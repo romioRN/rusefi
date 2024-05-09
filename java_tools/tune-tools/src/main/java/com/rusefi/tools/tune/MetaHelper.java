@@ -18,9 +18,17 @@ import static com.devexperts.logging.Logging.getLogging;
  */
 public class MetaHelper {
     private static final Logging log = getLogging(MetaHelper.class);
+    public static final String PERSISTENT_CONFIG_S = "persistent_config_s";
+    public static final String ENGINE_CONFIGURATION_S = "engine_configuration_s";
+
     @NotNull
     static ReaderStateImpl getReaderState() throws IOException {
         List<String> options = Files.readAllLines(Paths.get(RootHolder.ROOT + "../" + ConfigDefinition.CONFIG_PATH));
+        // add default (empty) board config
+        options.add(ConfigDefinition.READFILE_OPTION);
+        options.add("BOARD_CONFIG_FROM_FILE");
+        options.add("tunerstudio/empty_board_options.ini");
+
         String[] totalArgs = options.toArray(new String[0]);
 
 
@@ -66,10 +74,12 @@ public class MetaHelper {
         }
     }
 
+    //
     static ConfigField findField(ReaderState state, String name, StringBuffer context) {
-        ConfigField field = lookForFieldWithinSpecificStruct(state, name, context, "engine_configuration_s");
+        ConfigField field = lookForFieldWithinSpecificStruct(state, name, context, ENGINE_CONFIGURATION_S);
         if (field != null)
             return field;
-        return lookForFieldWithinSpecificStruct(state, name, context, "persistent_config_s");
+        // TuneCanTool has a smarter version of similar parent lookup logic?
+        return lookForFieldWithinSpecificStruct(state, name, context, PERSISTENT_CONFIG_S);
     }
 }

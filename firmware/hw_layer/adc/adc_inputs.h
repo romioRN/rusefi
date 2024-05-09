@@ -18,19 +18,26 @@
 float getAnalogInputDividerCoefficient(adc_channel_e);
 
 inline bool isAdcChannelValid(adc_channel_e hwChannel) {
-	if (hwChannel <= EFI_ADC_NONE) {
-		return false;
-	} else if (hwChannel >= EFI_ADC_LAST_CHANNEL) {
+	/* Compiler will optimize, keep following if as a reminder */
+	if (hwChannel >= EFI_ADC_TOTAL_CHANNELS) {
 		/* this should not happen!
 		 * if we have enum out of range somewhere in settings
 		 * that means something goes terribly wrong
 		 * TODO: should we say something?
 		 */
 		return false;
-	} else {
-		return true;
 	}
+	return ((hwChannel > EFI_ADC_NONE) && (hwChannel < EFI_ADC_TOTAL_CHANNELS));
 }
+
+inline bool isAdcChannelOnChip(adc_channel_e hwChannel) {
+	return (isAdcChannelValid(hwChannel) && (hwChannel <= EFI_ADC_ONCHIP_LAST));
+}
+
+inline bool isAdcChannelOffChip(adc_channel_e hwChannel) {
+	return (isAdcChannelValid(hwChannel) && (hwChannel > EFI_ADC_ONCHIP_LAST));
+}
+
 
 #if !defined(GPT_FREQ_FAST) || !defined(GPT_PERIOD_FAST)
 /**
@@ -65,8 +72,8 @@ void printFullAdcReportIfNeeded(void);
 int getInternalAdcValue(const char *msg, adc_channel_e index);
 float getMCUInternalTemperature(void);
 
-void addChannel(const char *name, adc_channel_e setting, adc_channel_mode_e mode);
-void removeChannel(const char *name, adc_channel_e setting);
+void addChannel(const char *name, adc_channel_e hwChannel, adc_channel_mode_e mode);
+void removeChannel(const char *name, adc_channel_e hwChannel);
 
 #define getAdcValue(msg, hwChannel) getInternalAdcValue(msg, hwChannel)
 

@@ -111,7 +111,7 @@ void setBoardDefaultConfiguration() {
 	engineConfiguration->triggerSimulatorPins[1] = Gpio::D2;
 
 	engineConfiguration->triggerInputPins[0] = Gpio::C6;
-	engineConfiguration->triggerInputPins[1] = Gpio::A5;
+//	engineConfiguration->triggerInputPins[1] = Gpio::A5;
 
 	// set this to SPI_DEVICE_3 to enable stimulation
 	//engineConfiguration->digitalPotentiometerSpiDevice = SPI_DEVICE_3;
@@ -145,7 +145,7 @@ void setBoardDefaultConfiguration() {
 
 // weak linkage
 void boardInitHardware() {
-#if HW_FRANKENSO
+
 static const struct mc33810_config mc33810 = {
 	.spi_bus = &SPID3,
 	.spi_config = {
@@ -193,5 +193,4 @@ static const struct mc33810_config mc33810 = {
 	        efiPrintf("injinfo index=%d", engine->fuelComputer.brokenInjector);
 	    });
 	}
-#endif // HW_FRANKENSO
 }

@@ -244,7 +244,7 @@ void setWholeIatCorrTimingTable(float value) {
 /**
  * See also crankingTimingAngle
  */
-void setWholeTimingTable_d(angle_t value) {
+void setWholeTimingTable(angle_t value) {
 	setTable(config->ignitionTable, value);
 }
 
@@ -662,7 +662,7 @@ void loadConfiguration() {
 #endif /* EFI_ACTIVE_CONFIGURATION_IN_FLASH */
 
 	/* If board have any storage */
-#if (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE)
+#if EFI_CONFIGURATION_STORAGE
 	if (IGNORE_FLASH_CONFIGURATION) {
 		engineConfiguration->engineType = DEFAULT_ENGINE_TYPE;
 		resetConfigurationExt(engineConfiguration->engineType);
@@ -676,7 +676,7 @@ void loadConfiguration() {
 	// This board doesn't load configuration, initialize the default
 	engineConfiguration->engineType = DEFAULT_ENGINE_TYPE;
 	resetConfigurationExt(engineConfiguration->engineType);
-#endif /* (EFI_STORAGE_INT_FLASH == TRUE) || (EFI_STORAGE_MFS == TRUE) */
+#endif /* EFI_CONFIGURATION_STORAGE */
 
 	// Force any board configuration options that humans shouldn't be able to change
 	setBoardConfigOverrides();
@@ -940,6 +940,11 @@ void resetConfigurationExt(configuration_callback_t boardCallback, engine_type_e
 		setBMW_M73_TwoCoilUnitTest();
 		break;
 #endif // HW_FRANKENSO || HW_PROTEUS
+
+	case engine_type_e::TEST_ISSUE_6451:
+		testEngine6451();
+		break;
+
 #if defined(HW_FRANKENSO)
 	case engine_type_e::DEFAULT_FRANKENSO:
 		setFrankensoConfiguration();

@@ -8,14 +8,7 @@
 #include "pch.h"
 #include "knock_logic.h"
 
-
 #include "hip9011.h"
-
-void KnockController::onConfigurationChange(engine_configuration_s const * previousConfig) {
-	KnockControllerBase::onConfigurationChange(previousConfig);
-
-	m_maxRetardTable.initTable(config->maxKnockRetardTable, config->maxKnockRetardRpmBins, config->maxKnockRetardLoadBins);
-}
 
 int getCylinderKnockBank(uint8_t cylinderNumber) {
 	// C/C++ can't index in to bit fields, we have to provide lookup ourselves
@@ -51,7 +44,7 @@ int getCylinderKnockBank(uint8_t cylinderNumber) {
 	}
 }
 
-bool KnockControllerBase::onKnockSenseCompleted(uint8_t cylinderNumber, float dbv, efitick_t lastKnockTime) {
+bool KnockControllerBase::onKnockSenseCompleted(uint8_t cylinderNumber, float dbv, float frequency, efitick_t lastKnockTime) {
 	bool isKnock = dbv > m_knockThreshold;
 
 	// Per-cylinder peak detector
@@ -60,6 +53,7 @@ bool KnockControllerBase::onKnockSenseCompleted(uint8_t cylinderNumber, float db
 
 	// All-cylinders peak detector
 	m_knockLevel = allCylinderPeakDetector.detect(dbv, lastKnockTime);
+	m_knockFrequency = frequency;
 
 	if (isKnock) {
 		m_knockCount++;
@@ -125,7 +119,12 @@ float KnockController::getKnockThreshold() const {
 }
 
 float KnockController::getMaximumRetard() const {
-	return m_maxRetardTable.getValue(Sensor::getOrZero(SensorType::Rpm), getIgnitionLoad());
+	return
+		interpolate3d(
+			config->maxKnockRetardTable,
+			config->maxKnockRetardLoadBins, getIgnitionLoad(),
+			config->maxKnockRetardRpmBins, Sensor::getOrZero(SensorType::Rpm)
+		);
 }
 
 // This callback is to be implemented by the knock sense driver

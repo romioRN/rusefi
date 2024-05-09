@@ -71,7 +71,7 @@ void TriggerDecoderBase::resetState() {
 	m_timeSinceDecodeError.init();
 
 	prevSignal = SHAFT_PRIMARY_FALLING;
-	startOfCycleNt = 0;
+	startOfCycleNt = {};
 
 	resetCurrentCycleState();
 
@@ -375,6 +375,10 @@ expected<TriggerDecodeResult> TriggerDecoderBase::decodeTriggerEvent(
 		const efitick_t nowNt) {
 	ScopePerf perf(PE::DecodeTriggerEvent);
 
+#if EFI_PROD_CODE
+  getTriggerCentral()->triggerElapsedUs = previousEventTimer.getElapsedUs();
+#endif
+
 	if (previousEventTimer.getElapsedSecondsAndReset(nowNt) > 1) {
 		/**
 		 * We are here if there is a time gap between now and previous shaft event - that means the engine is not running.
@@ -406,7 +410,7 @@ expected<TriggerDecodeResult> TriggerDecoderBase::decodeTriggerEvent(
 		firmwareError(ObdCode::CUSTOM_OBD_93, "[%s] toothed_previous_time after nowNt prev=%d now=%d", msg, toothed_previous_time, nowNt);
 	}
 
-	efitick_t currentDurationLong = isFirstEvent ? 0 : nowNt - toothed_previous_time;
+	efidur_t currentDurationLong = isFirstEvent ? 0 : (nowNt - toothed_previous_time);
 
 	/**
 	 * For performance reasons, we want to work with 32 bit values. If there has been more then

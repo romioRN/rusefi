@@ -1,4 +1,4 @@
-// this section was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Sat Apr 20 12:21:43 UTC 2024
+// this section was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Tue May 07 14:32:56 UTC 2024
 // by class com.rusefi.output.CHeaderConsumer
 // begin
 #pragma once
@@ -934,9 +934,8 @@ struct engine_configuration_s {
 	 */
 	int hip9011PrescalerAndSDO;
 	/**
-	 * We calculate knock band based of cylinderBore
-	 *  Use this to override - kHz knock band override
-	 * Requires power cycling to effect
+	 * Use any online calculator and input your bore.
+	 * Reminder that in some cases double frequency works better!
 	 * units: kHz
 	 * offset 428
 	 */
@@ -1635,7 +1634,7 @@ struct engine_configuration_s {
 	bool pauseEtbControl : 1 {};
 	/**
 	offset 752 bit 27 */
-	bool alignEngineSnifferAtTDC : 1 {};
+	bool unusedAlign : 1 {};
 	/**
 	offset 752 bit 28 */
 	bool verboseKLine : 1 {};
@@ -1698,14 +1697,13 @@ struct engine_configuration_s {
 	 */
 	uint8_t minimumBoostClosedLoopMap;
 	/**
-	 * Optional Radiator Fan used with A/C
 	 * offset 778
 	 */
-	output_pin_e acFanPin;
+	uint16_t unusedacFanPin;
 	/**
 	 * offset 780
 	 */
-	pin_output_mode_e acFanPinMode;
+	uint8_t unusedAcFanPinMode;
 	/**
 	 * offset 781
 	 */
@@ -1815,7 +1813,7 @@ struct engine_configuration_s {
 	/**
 	 * offset 828
 	 */
-	Gpio debugMapAveraging;
+	uint16_t unusedHere;
 	/**
 	 * offset 830
 	 */
@@ -2032,7 +2030,6 @@ struct engine_configuration_s {
 	offset 920 bit 13 */
 	bool verboseVVTDecoding : 1 {};
 	/**
-	 * get invertCamVVTSignal
 	offset 920 bit 14 */
 	bool invertCamVVTSignal : 1 {};
 	/**
@@ -2170,17 +2167,13 @@ struct engine_configuration_s {
 	 */
 	int launchRpmWindow;
 	/**
-	 * Spark Skip Transition Target
-	 * units: %
 	 * offset 988
 	 */
-	int launchSparkSkipPercent;
+	int unusedHere12;
 	/**
-	 * Duty Cycle for the Boost Solenoid
-	 * units: %
 	 * offset 992
 	 */
-	int launchBoostDuty;
+	int unusedHere13;
 	/**
 	 * offset 996
 	 */
@@ -2501,6 +2494,7 @@ struct engine_configuration_s {
 	offset 1316 bit 14 */
 	bool twoWireBatchIgnition : 1 {};
 	/**
+	 * Read MAP sensor on ECU start-up to use as baro value.
 	offset 1316 bit 15 */
 	bool useFixedBaroCorrFromMap : 1 {};
 	/**
@@ -2874,16 +2868,16 @@ struct engine_configuration_s {
 	bool devBit7 : 1 {};
 	/**
 	offset 1496 bit 28 */
-	bool unusedBit_512_28 : 1 {};
+	bool skipADC12bitAssert : 1 {};
 	/**
 	offset 1496 bit 29 */
-	bool unusedBit_512_29 : 1 {};
+	bool invertExhaustCamVVTSignal : 1 {};
 	/**
 	offset 1496 bit 30 */
-	bool unusedBit_512_30 : 1 {};
+	bool enableKnockSpectrogram : 1 {};
 	/**
 	offset 1496 bit 31 */
-	bool unusedBit_512_31 : 1 {};
+	bool unusedBit_515_31 : 1 {};
 	/**
 	 * This is the duration in cycles that the IAC will take to reach its normal idle position, it can be used to hold the idle higher for a few seconds after cranking to improve startup.\Should be 100 once tune is better
 	 * units: cycles
@@ -4186,10 +4180,9 @@ struct engine_configuration_s {
 	 */
 	float ALSSkipRatio;
 	/**
-	 * units: %
 	 * offset 3564
 	 */
-	uint8_t ALSMaxDriverThrottleIntent;
+	uint8_t unusedSorry11;
 	/**
 	 * offset 3565
 	 */
@@ -4559,7 +4552,7 @@ struct engine_configuration_s {
 	 * units: units
 	 * offset 4020
 	 */
-	uint8_t unusedOftenChangesDuringFirmwareUpdate[200];
+	uint8_t unusedOftenChangesDuringFirmwareUpdate[END_OF_CALIBRATION_PADDING];
 };
 static_assert(sizeof(engine_configuration_s) == 4220);
 
@@ -4808,7 +4801,7 @@ struct persistent_config_s {
 	/**
 	 * offset 5332
 	 */
-	uint8_t fancyOptions[FANCY_OPTIONS_COUNT];
+	uint8_t unusedGapHere[16];
 	/**
 	 * offset 5348
 	 */
@@ -5289,17 +5282,17 @@ struct persistent_config_s {
 	 * units: deg
 	 * offset 19172
 	 */
-	scaled_channel<uint8_t, 4, 1> maxKnockRetardTable[6][6];
+	scaled_channel<uint8_t, 4, 1> maxKnockRetardTable[KNOCK_TABLE_SIZE][KNOCK_TABLE_SIZE];
 	/**
 	 * units: %
 	 * offset 19208
 	 */
-	uint8_t maxKnockRetardLoadBins[6];
+	uint8_t maxKnockRetardLoadBins[KNOCK_TABLE_SIZE];
 	/**
 	 * units: RPM
 	 * offset 19214
 	 */
-	scaled_channel<uint8_t, 1, 100> maxKnockRetardRpmBins[6];
+	scaled_channel<uint8_t, 1, 100> maxKnockRetardRpmBins[KNOCK_TABLE_SIZE];
 	/**
 	 * units: deg
 	 * offset 19220
@@ -5626,4 +5619,4 @@ struct persistent_config_s {
 static_assert(sizeof(persistent_config_s) == 22656);
 
 // end
-// this section was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Sat Apr 20 12:21:43 UTC 2024
+// this section was generated automatically by rusEFI tool config_definition-all.jar based on (unknown script) integration/rusefi_config.txt Tue May 07 14:32:56 UTC 2024
