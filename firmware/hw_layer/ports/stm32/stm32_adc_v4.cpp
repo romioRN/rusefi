@@ -59,6 +59,7 @@ adcsample_t* fastSampleBuffer;
 static void adc_callback(ADCDriver *adcp) {
 	// State may not be complete if we get a callback for "half done"
 	if (adcp->state == ADC_COMPLETE) {
+	  // here we invoke 'fast' from slow ADC due to https://github.com/rusefi/rusefi/issues/3301
 		onFastAdcComplete(adcp->samples);
 	}
 }
@@ -170,11 +171,9 @@ bool readSlowAnalogInputs(adcsample_t* convertedSamples) {
 	return true;
 }
 
-static constexpr FastAdcToken invalidToken = (FastAdcToken)(-1);
-
 FastAdcToken enableFastAdcChannel(const char*, adc_channel_e channel) {
 	if (!isAdcChannelValid(channel)) {
-		return invalidToken;
+		return invalidAdcToken;
 	}
 
 	// H7 always samples all fast channels, nothing to do here but compute index
@@ -182,7 +181,7 @@ FastAdcToken enableFastAdcChannel(const char*, adc_channel_e channel) {
 }
 
 adcsample_t getFastAdc(FastAdcToken token) {
-	if (token == invalidToken) {
+	if (token == invalidAdcToken) {
 		return 0;
 	}
 

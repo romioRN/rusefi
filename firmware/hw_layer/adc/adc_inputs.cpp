@@ -33,14 +33,13 @@ float __attribute__((weak)) getAnalogInputDividerCoefficient(adc_channel_e) {
 #include "periodic_thread_controller.h"
 #include "protected_gpio.h"
 
-/* Depth of the conversion buffer, channels are sampled X times each.*/
-#ifndef ADC_BUF_DEPTH_FAST
-#define ADC_BUF_DEPTH_FAST      4
-#endif
-
 static NO_CACHE adcsample_t slowAdcSamples[SLOW_ADC_CHANNEL_COUNT];
 
 static adc_channel_mode_e adcHwChannelMode[HW_MAX_ADC_INDEX];
+
+adc_channel_mode_e getAdcMode(adc_channel_e hwChannel) {
+	return adcHwChannelMode[hwChannel];
+}
 
 // Board voltage, with divider coefficient accounted for
 float getVoltageDivided(const char *msg, adc_channel_e hwChannel) {
@@ -53,10 +52,15 @@ float getVoltage(const char *msg, adc_channel_e hwChannel) {
 }
 
 #if EFI_USE_FAST_ADC
-AdcDevice::AdcDevice(ADCConversionGroup* p_hwConfig, adcsample_t *p_buf, size_t p_buf_len) {
-	this->hwConfig = p_hwConfig;
-	this->samples = p_buf;
-	this->buf_len = p_buf_len;
+
+/* Depth of the conversion buffer, channels are sampled X times each.*/
+#ifndef ADC_BUF_DEPTH_FAST
+#define ADC_BUF_DEPTH_FAST      4
+#endif
+
+AdcDevice::AdcDevice(ADCConversionGroup* p_hwConfig, adcsample_t *p_buf) {
+	hwConfig = p_hwConfig;
+	samples = p_buf;
 
 	hwConfig->sqr1 = 0;
 	hwConfig->sqr2 = 0;
@@ -65,7 +69,6 @@ AdcDevice::AdcDevice(ADCConversionGroup* p_hwConfig, adcsample_t *p_buf, size_t 
 	hwConfig->sqr4 = 0;
 	hwConfig->sqr5 = 0;
 #endif /* ADC_MAX_CHANNELS_COUNT */
-	memset(hardwareIndexByIndernalAdcIndex, EFI_ADC_NONE, sizeof(hardwareIndexByIndernalAdcIndex));
 	memset(internalAdcIndexByHardwareIndex, 0xFF, sizeof(internalAdcIndexByHardwareIndex));
 }
 
@@ -76,54 +79,24 @@ AdcDevice::AdcDevice(ADCConversionGroup* p_hwConfig, adcsample_t *p_buf, size_t 
 #define ADC_FAST_DEVICE ADCD2
 #endif /* ADC_FAST_DEVICE */
 
-static uint32_t slowAdcCounter = 0;
-
 // todo: move this flag to Engine god object
 static int adcDebugReporting = false;
 
 #if EFI_USE_FAST_ADC
-static adcsample_t getAvgAdcValue(int index, adcsample_t *samples, int bufDepth, int numChannels) {
-	uint32_t result = 0;
-	for (int i = 0; i < bufDepth; i++) {
-	  adcsample_t sample = samples[index];
-//	  if (sample > 0x1FFF) {
-//	    // 12bit ADC expected right now, make this configurable one day
-//	    criticalError("fast ADC unexpected sample %d", sample);
-//	  } else
-	  if (sample > 0xFFF) {
-	    if (!engineConfiguration->skipADC12bitAssert) {
-	      criticalError("fast ADC unexpected sample %d. Please report and use skipADC12bitAssert to disable", sample);
-	    }
-	    engine->outputChannels.unexpectedAdcSample = sample;
-	    sample = sample & 0xFFF; // sad hack which works around https://github.com/rusefi/rusefi/issues/6376 which we do not understand
-	    engine->outputChannels.adc13bitCounter++;
-	  }
-		result += sample;
-		index += numChannels;
-	}
-
-	// this truncation is guaranteed to not be lossy - the average can't be larger than adcsample_t
-	return static_cast<adcsample_t>(result / bufDepth);
-}
-
 
 // See https://github.com/rusefi/rusefi/issues/976 for discussion on this value
 #ifndef ADC_SAMPLING_FAST
 #define ADC_SAMPLING_FAST ADC_SAMPLE_28
 #endif
 
-static void adc_callback_fast(ADCDriver *adcp) {
-	// State may not be complete if we get a callback for "half done"
-	if (adcp->state == ADC_COMPLETE) {
-		onFastAdcComplete(adcp->samples);
-	}
-}
+static void fastAdcDoneCB(ADCDriver *adcp);
+static void fastAdcErrorCB(ADCDriver *, adcerror_t err);
 
 static ADCConversionGroup adcgrpcfgFast = {
 	.circular			= FALSE,
 	.num_channels		= 0,
-	.end_cb				= adc_callback_fast,
-	.error_cb			= nullptr,
+	.end_cb				= fastAdcDoneCB,
+	.error_cb			= fastAdcErrorCB,
 	/* HW dependent part.*/
 	.cr1				= 0,
 	.cr2				= ADC_CR2_SWSTART,
@@ -164,9 +137,25 @@ static ADCConversionGroup adcgrpcfgFast = {
 };
 
 static NO_CACHE adcsample_t fastAdcSampleBuf[ADC_BUF_DEPTH_FAST * ADC_MAX_CHANNELS_COUNT];
-AdcDevice fastAdc(&adcgrpcfgFast, fastAdcSampleBuf, efi::size(fastAdcSampleBuf));
 
-static void fast_adc_callback(GPTDriver*) {
+AdcDevice fastAdc(&adcgrpcfgFast, fastAdcSampleBuf);
+
+static void fastAdcDoneCB(ADCDriver *adcp) {
+	// State may not be complete if we get a callback for "half done"
+	if (adcp->state == ADC_COMPLETE) {
+		fastAdc.conversionCount++;
+		onFastAdcComplete(adcp->samples);
+	}
+}
+
+static volatile adcerror_t fastAdcLastError;
+
+static void fastAdcErrorCB(ADCDriver *, adcerror_t err)
+{
+	fastAdcLastError = err;
+}
+
+static void fastAdcTrigger(GPTDriver*) {
 #if EFI_INTERNAL_ADC
 	/*
 	 * Starts an asynchronous ADC conversion operation, the conversion
@@ -180,13 +169,10 @@ static void fast_adc_callback(GPTDriver*) {
 		engine->outputChannels.fastAdcErrorsCount++;
 		// todo: when? why? criticalError("ADC fast not ready?");
 		// see notes at https://github.com/rusefi/rusefi/issues/6399
-		chSysUnlockFromISR();
-		return;
+	} else {
+		adcStartConversionI(&ADC_FAST_DEVICE, &adcgrpcfgFast, fastAdc.samples, ADC_BUF_DEPTH_FAST);
 	}
-
-	adcStartConversionI(&ADC_FAST_DEVICE, &adcgrpcfgFast, fastAdc.samples, ADC_BUF_DEPTH_FAST);
 	chSysUnlockFromISR();
-	fastAdc.conversionCount++;
 #endif /* EFI_INTERNAL_ADC */
 }
 #endif // EFI_USE_FAST_ADC
@@ -205,11 +191,9 @@ int getInternalAdcValue(const char *msg, adc_channel_e hwChannel) {
 
 #if EFI_USE_FAST_ADC
 	if (adcHwChannelMode[hwChannel] == ADC_FAST) {
-		int internalIndex = fastAdc.internalAdcIndexByHardwareIndex[hwChannel];
-// todo if ADC_BUF_DEPTH_FAST EQ 1
-//		return fastAdc.samples[internalIndex];
-		int value = getAvgAdcValue(internalIndex, fastAdc.samples, ADC_BUF_DEPTH_FAST, fastAdc.size());
-		return value;
+		/* todo if ADC_BUF_DEPTH_FAST EQ 1
+		 * return fastAdc.samples[internalIndex]; */
+		return fastAdc.getAvgAdcValue(hwChannel, ADC_BUF_DEPTH_FAST);
 	}
 #endif // EFI_USE_FAST_ADC
 
@@ -219,29 +203,13 @@ int getInternalAdcValue(const char *msg, adc_channel_e hwChannel) {
 #if EFI_USE_FAST_ADC
 static GPTConfig fast_adc_config = {
 	.frequency = GPT_FREQ_FAST,
-	.callback = fast_adc_callback,
+	.callback = fastAdcTrigger,
 	.cr2 = 0,
 	.dier = 0,
 };
-#endif /* EFI_USE_FAST_ADC */
-
-adc_channel_mode_e getAdcMode(adc_channel_e hwChannel) {
-	return adcHwChannelMode[hwChannel];
-}
-
-#if EFI_USE_FAST_ADC
 
 int AdcDevice::size() const {
 	return channelCount;
-}
-
-int AdcDevice::getAdcValueByHwChannel(adc_channel_e hwChannel) const {
-	int internalIndex = internalAdcIndexByHardwareIndex[hwChannel];
-	return values.adc_data[internalIndex];
-}
-
-int AdcDevice::getAdcValueByIndex(int internalIndex) const {
-	return values.adc_data[internalIndex];
 }
 
 void AdcDevice::init(void) {
@@ -264,7 +232,6 @@ void AdcDevice::enableChannel(adc_channel_e hwChannel) {
 	size_t channelAdcIndex = hwChannel - EFI_ADC_0;
 
 	internalAdcIndexByHardwareIndex[hwChannel] = logicChannel;
-	hardwareIndexByIndernalAdcIndex[logicChannel] = hwChannel;
 	if (logicChannel < 6) {
 		hwConfig->sqr3 |= channelAdcIndex << (5 * logicChannel);
 	} else if (logicChannel < 12) {
@@ -282,37 +249,87 @@ void AdcDevice::enableChannel(adc_channel_e hwChannel) {
 #endif /* ADC_MAX_CHANNELS_COUNT */
 }
 
-adc_channel_e AdcDevice::getAdcHardwareIndexByInternalIndex(int hwChannel) const {
-	return hardwareIndexByIndernalAdcIndex[hwChannel];
+adcsample_t AdcDevice::getAvgAdcValue(adc_channel_e hwChannel, size_t bufDepth) {
+	uint32_t result = 0;
+	int numChannels = size();
+	int index = fastAdc.internalAdcIndexByHardwareIndex[hwChannel];
+
+	for (size_t i = 0; i < bufDepth; i++) {
+		adcsample_t sample = samples[index];
+//		if (sample > 0x1FFF) {
+//			// 12bit ADC expected right now, make this configurable one day
+//			criticalError("fast ADC unexpected sample %d", sample);
+//		} else
+		if (sample > ADC_MAX_VALUE) {
+			if (!engineConfiguration->skipADC12bitAssert) {
+				criticalError("fast ADC unexpected sample %d. Please report and use skipADC12bitAssert to disable", sample);
+			}
+			engine->outputChannels.unexpectedAdcSample = sample;
+			// sad hack which works around https://github.com/rusefi/rusefi/issues/6376 which we do not understand
+			sample = sample & ADC_MAX_VALUE;
+			engine->outputChannels.adc13bitCounter++;
+		}
+		result += sample;
+		index += numChannels;
+	}
+
+	// this truncation is guaranteed to not be lossy - the average can't be larger than adcsample_t
+	return static_cast<adcsample_t>(result / bufDepth);
+}
+
+adc_channel_e AdcDevice::getAdcChannelByInternalIndex(int hwChannel) const {
+	for (size_t idx = EFI_ADC_0; idx < EFI_ADC_TOTAL_CHANNELS; idx++) {
+		if (internalAdcIndexByHardwareIndex[idx] == hwChannel) {
+			return (adc_channel_e)idx;
+		}
+	}
+	return EFI_ADC_NONE;
+}
+
+FastAdcToken AdcDevice::getAdcChannelToken(adc_channel_e hwChannel) {
+	return fastAdc.internalAdcIndexByHardwareIndex[hwChannel];
 }
 
 #endif // EFI_USE_FAST_ADC
 
-static void printAdcValue(int channel) {
-	int value = getAdcValue("print", (adc_channel_e)channel);
-	float volts = adcToVoltsDivided(value, (adc_channel_e)channel);
-	efiPrintf("adc voltage : %.2f", volts);
-}
-
 static uint32_t slowAdcConversionCount = 0;
 static uint32_t slowAdcErrorsCount = 0;
+
+static void printAdcValue(int channel) {
+	/* Do this check before conversion to adc_channel_e that is uint8_t based */
+	if ((channel < EFI_ADC_NONE) || (channel >= EFI_ADC_TOTAL_CHANNELS)) {
+		efiPrintf("Invalid ADC channel %d", channel);
+		return;
+	}
+	int value = getAdcValue("print", (adc_channel_e)channel);
+	float volts = adcToVoltsDivided(value, (adc_channel_e)channel);
+	efiPrintf("adc %d voltage : %.3f", channel, volts);
+}
+
+static void printAdcChannedReport(const char *prefix, int internalIndex, adc_channel_e hwChannel)
+{
+	if (isAdcChannelValid(hwChannel)) {
+		ioportid_t port = getAdcChannelPort("print", hwChannel);
+		int pin = getAdcChannelPin(hwChannel);
+		int adcValue = getAdcValue("print", hwChannel);
+		float volts = getVoltage("print", hwChannel);
+		float voltsDivided = getVoltageDivided("print", hwChannel);
+		/* Human index starts from 1 */
+		efiPrintf(" %s ch[%2d] @ %s%d ADC%d 12bit=%4d %.3fV (input %.3fV)",
+			prefix, internalIndex, portname(port), pin,
+			/* TODO: */ hwChannel - EFI_ADC_0 + 1,
+			adcValue, volts, voltsDivided);
+	}
+}
 
 void printFullAdcReport(void) {
 #if EFI_USE_FAST_ADC
 	efiPrintf("fast %d samples", fastAdc.conversionCount);
 
 	for (int internalIndex = 0; internalIndex < fastAdc.size(); internalIndex++) {
-		adc_channel_e hwChannel = fastAdc.getAdcHardwareIndexByInternalIndex(internalIndex);
+		adc_channel_e hwChannel = fastAdc.getAdcChannelByInternalIndex(internalIndex);
 
-		if (isAdcChannelValid(hwChannel)) {
-			ioportid_t port = getAdcChannelPort("print", hwChannel);
-			int pin = getAdcChannelPin(hwChannel);
-			int adcValue = getAvgAdcValue(internalIndex, fastAdc.samples, ADC_BUF_DEPTH_FAST, fastAdc.size());
-			float volts = adcToVolts(adcValue);
-			/* Human index starts from 1 */
-			efiPrintf(" F ch[%2d] @ %s%d ADC%d 12bit=%4d %.2fV",
-				internalIndex, portname(port), pin, hwChannel - EFI_ADC_0 + 1, adcValue, volts);
-		}
+		printAdcChannedReport("F", internalIndex, hwChannel);
 	}
 #endif // EFI_USE_FAST_ADC
 	efiPrintf("slow %d samples", slowAdcConversionCount);
@@ -321,15 +338,7 @@ void printFullAdcReport(void) {
 	for (int internalIndex = 0; internalIndex < ADC_MAX_CHANNELS_COUNT; internalIndex++) {
 		adc_channel_e hwChannel = static_cast<adc_channel_e>(internalIndex + EFI_ADC_0);
 
-		if (isAdcChannelValid(hwChannel)) {
-			ioportid_t port = getAdcChannelPort("print", hwChannel);
-			int pin = getAdcChannelPin(hwChannel);
-			int adcValue = slowAdcSamples[internalIndex];
-			float volts = adcToVolts(adcValue);
-			/* Human index starts from 1 */
-			efiPrintf(" S ch[%2d] @ %s%d ADC%d 12bit=%4d %.2fV",
-				internalIndex, portname(port), pin, hwChannel - EFI_ADC_0 + 1, adcValue, volts);
-		}
+		printAdcChannedReport("S", internalIndex, hwChannel);
 	}
 }
 
@@ -339,17 +348,11 @@ static void setAdcDebugReporting(int value) {
 }
 
 void waitForSlowAdc(uint32_t lastAdcCounter) {
-	// we use slowAdcCounter instead of slowAdc.conversionCount because we need ADC_COMPLETE state
 	// todo: use sync.objects?
-	while (slowAdcCounter <= lastAdcCounter) {
+	while (slowAdcConversionCount <= lastAdcCounter) {
 		chThdSleepMilliseconds(1);
 	}
 }
-
-int getSlowAdcCounter() {
-	return slowAdcCounter;
-}
-
 
 class SlowAdcController : public PeriodicController<UTILITY_THREAD_STACK_SIZE> {
 public:
@@ -362,7 +365,6 @@ public:
 		{
 			ScopePerf perf(PE::AdcConversionSlow);
 
-			slowAdcConversionCount++;
 			if (!readSlowAnalogInputs(slowAdcSamples)) {
 				slowAdcErrorsCount++;
 				return;
@@ -375,7 +377,7 @@ public:
 		{
 			ScopePerf perf(PE::AdcProcessSlow);
 
-			slowAdcCounter++;
+			slowAdcConversionCount++;
 
 			AdcSubscription::UpdateSubscribers(nowNt);
 
@@ -417,7 +419,7 @@ void removeChannel(const char*, adc_channel_e hwChannel) {
 __attribute__((weak)) void setAdcChannelOverrides() { }
 
 static void configureInputs() {
-	memset(adcHwChannelMode, 0, sizeof(adcHwChannelMode));
+	memset(adcHwChannelMode, ADC_OFF, sizeof(adcHwChannelMode));
 
 	/**
 	 * order of analog channels here is totally random and has no meaning
