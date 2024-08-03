@@ -120,6 +120,13 @@ typedef enum  __attribute__ ((__packed__)) {
   VVT_MAZDA_L = 22,
 
   VVT_DEV = 23,
+    
+	/**
+	 * Nssan HR12DDR 
+	 */
+  VVT_NISSAN_HR12_IN = 24,
+
+  VVT_NISSAN_HR12_EX = 25, 
 
 } vvt_mode_e;
 
