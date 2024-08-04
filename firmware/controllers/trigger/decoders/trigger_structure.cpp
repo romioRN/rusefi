@@ -500,13 +500,13 @@ void TriggerWaveform::initializeTriggerWaveform(operation_mode_e triggerOperatio
 		initializeNissanVQvvt(this);
 		break;
 
-  case trigger_type_e::TT_VVT_NISSAN_HR12_IN:
-		initializeNissanHRvvtIn(this);
-		break;
+//  case trigger_type_e::TT_VVT_NISSAN_HR12_IN:
+//		initializeNissanHRvvtIn(this);
+//		break;
 
-  case trigger_type_e::TT_VVT_NISSAN_HR12_EX:
-		initializeNissanHRvvtEx(this);
-		break;
+//  case trigger_type_e::TT_VVT_NISSAN_HR12_EX:
+//		initializeNissanHRvvtEx(this);
+//		break;
 
     case trigger_type_e::TT_VVT_MITSU_6G72:
 		initializeVvt6G72(this);
