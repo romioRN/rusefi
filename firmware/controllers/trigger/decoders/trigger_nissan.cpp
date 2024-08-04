@@ -53,8 +53,8 @@ void initializeNissanVQvvt(TriggerWaveform *s) {
 	s->setSecondTriggerSynchronizationGap2(0.35f, 0.7f);
 }
 
-void initializeNissanHRvvtIn(TriggerWaveform *s);
-s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+void initializeNissanHRvvtIn(TriggerWaveform *s) {
+ s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
 	int offset = 360 - 260;
 
@@ -65,9 +65,12 @@ s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
 	s->setTriggerSynchronizationGap2(4, 6);
 	s->setSecondTriggerSynchronizationGap2(0.35f, 0.7f);
+}
 
 
-void initializeNissanHRvvtEx(TriggerWaveform *s);
+ void initializeNissanHRvvtEx(TriggerWaveform *s){
+  s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+   
 	int offset = 360 - 260;
 
 	s->addToothRiseFall(offset + 30);
@@ -76,6 +79,7 @@ void initializeNissanHRvvtEx(TriggerWaveform *s);
 
 	s->setTriggerSynchronizationGap2(4, 6);
 	s->setSecondTriggerSynchronizationGap2(0.35f, 0.7f);
+}
 
 void makeNissanPattern(TriggerWaveform* s, size_t halfCylinderCount, size_t totalWheel, size_t missing) {
 
