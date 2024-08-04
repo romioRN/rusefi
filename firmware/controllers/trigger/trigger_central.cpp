@@ -186,8 +186,8 @@ static angle_t adjustCrankPhase(int camIndex) {
 		return tc->syncEnginePhaseAndReport(crankDivider, 1);
 	case VVT_SINGLE_TOOTH:
 	case VVT_NISSAN_VQ:
-  case VVT_NISSAN_HR12_IN;
-  case VVT_NISSAN_HR12_EX;
+  //case VVT_NISSAN_HR12_IN;
+  //case VVT_NISSAN_HR12_EX;
 	case VVT_BOSCH_QUICK_START:
 	case VVT_MIATA_NB:
 	case VVT_TOYOTA_3_TOOTH:
