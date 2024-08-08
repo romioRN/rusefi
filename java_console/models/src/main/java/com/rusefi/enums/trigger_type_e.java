@@ -90,4 +90,6 @@ public enum trigger_type_e {
 	TT_VVT_MAZDA_L,
 	TT_DEV,
 	TT_UNUSED,
+	TT_VVT_NISSAN_HR12_IN,
+	TT_VVT_NISSAN_HR12_EX,
 }
