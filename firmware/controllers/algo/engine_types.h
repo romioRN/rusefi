@@ -433,7 +433,11 @@ enum class trigger_type_e : uint32_t {
   
   TT_VVT_NISSAN_HR12_EX =85,
 
-TT_UNUSED = 84, // this is used if we want to iterate over all trigger types
+  TT_UNUSED = 86, // this is used if we want to iterate over all trigger types
+
+  TT_UNUSED = 87,
+
+  TT_UNUSED = 88,
 };
 
 typedef enum {
