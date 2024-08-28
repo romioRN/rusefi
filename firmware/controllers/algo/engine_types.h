@@ -412,7 +412,7 @@ enum class trigger_type_e : uint32_t {
 
 	TT_VVT_MITSU_6G72 = 79,
 
-  TT_6_TOOTH_CRANK = 80,
+    TT_6_TOOTH_CRANK = 80,
 
 	TT_DAIHATSU_4_CYL = 81,
 
@@ -424,13 +424,17 @@ enum class trigger_type_e : uint32_t {
 
 	TT_ARCTIC_CAT = 85,
 
+	TT_NISSAN_HR_CAM_IN = 86,
+
+	TT_NISSAN_HR_CAM_EX = 87,
+
 	// do not forget to edit "#define trigger_type_e_enum" line in integration/rusefi_config.txt file to propogate new value to rusefi.ini TS project
 	// do not forget to invoke "gen_config.bat" once you make changes to integration/rusefi_config.txt
 	// todo: one day a hero would integrate some of these things into Makefile in order to reduce manual magic
 	//
 	// Another point: once you add a new trigger, run get_trigger_images.bat which would run rusefi_test.exe from unit_tests
 	//
-	TT_UNUSED = 86, // this is used if we want to iterate over all trigger types
+	TT_UNUSED = 88, // this is used if we want to iterate over all trigger types
 };
 
 typedef enum {

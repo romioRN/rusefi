@@ -121,6 +121,10 @@ typedef enum  __attribute__ ((__packed__)) {
 
   VVT_DEV = 23,
 
+  VVT_HR12DDR_IN = 24,
+
+  VVT_HR12DDR_EX = 25,
+
 } vvt_mode_e;
 
 /**

@@ -748,6 +748,15 @@ void TriggerWaveform::initializeTriggerWaveform(operation_mode_e triggerOperatio
 	case trigger_type_e::TT_NISSAN_HR:
 	  initializeNissanHRcrank(this);
     break;
+
+    case trigger_type_e::TT_NISSAN_HR_CAM_IN:
+      initializeNissanHRvvtIn(this);
+	    break;
+
+	case trigger_type_e::TT_NISSAN_HR_CAM_EX:
+      initializeNissanHRvvtEx(this);
+	    break;
+
 	case trigger_type_e::TT_NISSAN_SR20VE:
 		initializeNissanSR20VE_4(this);
 		break;

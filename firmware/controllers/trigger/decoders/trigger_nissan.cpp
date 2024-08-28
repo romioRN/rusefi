@@ -225,5 +225,34 @@ void initializeNissanHRcrank(TriggerWaveform *s) {
     s->setTriggerSynchronizationGap3(/*gapIndex*/i, 0.7, 1.7);
   }
   s->setTriggerSynchronizationGap3(/*gapIndex*/count, 0.1, 0.5);
-  }
+}
+
+void initializeNissanHRvvtIn(TriggerWaveform *s) {
+
+	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+
+    int wide = 6;
+    int narrow = 5;
+
+	s->addToothRiseFall(70, wide);
+	s->addToothRiseFall(90, narrow);
+
+	s->addToothRiseFall(160, wide);
+	s->addToothRiseFall(180, narrow);
+
+	s->addToothRiseFall(270, wide);
+	s->addToothRiseFall(360, wide);
+
+	s->setTriggerSynchronizationGap(0.43);
+	s->setSecondTriggerSynchronizationGap(0.78);
+	s->setThirdTriggerSynchronizationGap(1.12); // 3rd gap is not required but let's have it for some resiliency
+
+
+}
+
+void initializeNissanHRvvtEx(TriggerWaveform *s) {
+
+	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+	
+}
 
