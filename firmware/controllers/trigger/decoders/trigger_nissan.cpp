@@ -231,7 +231,7 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
 	int wide = 5;
-    s->useOnlyPrimaryForSync = true;
+    
     s->tdcPosition = 60;
 
 	s->addToothRiseFall(120, wide);
