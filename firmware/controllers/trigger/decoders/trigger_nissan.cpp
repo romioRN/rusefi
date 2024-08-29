@@ -244,8 +244,8 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	//s->setThirdTriggerSynchronizationGap(1);
 
 	s->setTriggerSynchronizationGap3(/*gapIndex*/0, 6.5,11.5);
-	s->setTriggerSynchronizationGap3(/*gapIndex*/1, 0.05,0.15);
-	s->setTriggerSynchronizationGap3(/*gapIndex*/2, 0.5,1.5);
+	s->setTriggerSynchronizationGap3(/*gapIndex*/1, 0.5,1.5);
+	s->setTriggerSynchronizationGap3(/*gapIndex*/2, 0.05,0.15);
 	
 
 
