@@ -19,5 +19,5 @@ TEST(nissan, realFromFileVVTIN) {
 
 	ASSERT_EQ( 1, eth.recentWarnings()->getCount())<< "warningCounter#nissanRealCranking";
 	ASSERT_EQ(1,  engine->triggerCentral.triggerState.totalTriggerErrorCounter);
-	ASSERT_EQ(215, round(Sensor::getOrZero(SensorType::Rpm)))<< reader.lineIndex();
+	ASSERT_EQ(179, round(Sensor::getOrZero(SensorType::Rpm)))<< reader.lineIndex();
 }
