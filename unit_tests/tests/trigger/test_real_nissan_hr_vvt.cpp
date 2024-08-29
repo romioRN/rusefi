@@ -5,7 +5,7 @@
 TEST(nissan, realFromFileVVTIN) {
 	CsvReader reader(1, /* vvtCount */ 0);
 
-	reader.open("rusefi/unit_tests/tests/trigger/resources/hr12-vvt-in.csv");
+	reader.open("rusefi/unit_tests/tests/trigger/resources/hr12-vvt-in-16s");
 	EngineTestHelper eth(engine_type_e::TEST_ENGINE);
 //	engineConfiguration->isFasterEngineSpinUpEnabled = true;
 //	engineConfiguration->alwaysInstantRpm = true;
@@ -19,5 +19,5 @@ TEST(nissan, realFromFileVVTIN) {
 
 	ASSERT_EQ( 1, eth.recentWarnings()->getCount())<< "warningCounter#nissanRealCranking";
 	ASSERT_EQ(1,  engine->triggerCentral.triggerState.totalTriggerErrorCounter);
-	ASSERT_EQ(90, round(Sensor::getOrZero(SensorType::Rpm)))<< reader.lineIndex();
+	ASSERT_EQ(215, round(Sensor::getOrZero(SensorType::Rpm)))<< reader.lineIndex();
 }
