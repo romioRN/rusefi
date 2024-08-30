@@ -228,9 +228,9 @@ void initializeNissanHRcrank(TriggerWaveform *s) {
 }
 
 void initializeNissanHRvvtIn(TriggerWaveform *s) {
-	s->initialize(FOUR_STROKE_CRANK_SENSOR, SyncEdge::RiseOnly);
+	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
-	int wide = 5;
+	int wide = 7;
    // int narrow = 10;
     //s->tdcPosition = 60;
 	size_t count = 2;
