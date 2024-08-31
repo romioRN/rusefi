@@ -233,7 +233,7 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	//int wide = 2;
    // int narrow = 10;
     //s->tdcPosition = 60;
-	//size_t count = 2;
+	size_t count = 2;
 
 	s->addToothRiseFall(120);
 	s->addToothRiseFall(120+16);
