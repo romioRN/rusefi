@@ -233,7 +233,7 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	//int wide = 2;
    // int narrow = 10;
     //s->tdcPosition = 60;
-	size_t count = 2;
+	//size_t count = 2;
 
 	s->addToothRiseFall(120);
 	s->addToothRiseFall(120+16);
@@ -246,7 +246,7 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 //	s->setSecondTriggerSynchronizationGap(0.1);
 
 	s->setTriggerSynchronizationGap3(/*gapIndex*/0, 5, 7);
-    s->setTriggerSynchronizationGap3(/*gapIndex*/1, 0.9, 1.3);
+    s->setTriggerSynchronizationGap3(/*gapIndex*/1, 1, 1.3);
     s->setTriggerSynchronizationGap3(/*gapIndex*/2, 0.07, 0.3);
 	
 }
