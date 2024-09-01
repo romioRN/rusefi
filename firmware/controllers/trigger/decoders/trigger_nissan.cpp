@@ -236,7 +236,7 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	//size_t count = 2;
 
 	s->addToothRiseFall(120);
-	s->addToothRiseFall(120+16);
+	s->addToothRiseFall(120+22);
 	s->addToothRiseFall(240);
 	s->addToothRiseFall(360);
 
