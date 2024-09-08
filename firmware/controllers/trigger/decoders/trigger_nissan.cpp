@@ -230,12 +230,12 @@ void initializeNissanHRcrank(TriggerWaveform *s) {
 void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
-	int wide = 7;
+	//int wide = 7;
   
-	s->addToothFallRise(120, wide);
-	s->addToothFallRise(120+17, wide);
-	s->addToothFallRise(240, wide);
-	s->addToothFallRise(360, wide);
+	s->addToothFallRise(120);
+	s->addToothFallRise(120+17);
+	s->addToothFallRise(240);
+	s->addToothFallRise(360);
 
 	s->setTriggerSynchronizationGap(0.15);
     s->setSecondTriggerSynchronizationGap(6);
