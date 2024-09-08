@@ -231,13 +231,13 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
   
-	s->addToothFallRise(120);
-	s->addToothFallRise(120 + 17);
-	s->addToothFallRise(240);
-	s->addToothFallRise(360);
+	s->addToothRiseFall(120);
+	s->addToothRiseFall(120 + 17);
+	s->addToothRiseFall(240);
+	s->addToothRiseFall(360);
 
 	s->setTriggerSynchronizationGap2(5, 7);
-	s->setSecondTriggerSynchronizationGap2(0.05f, 0.5f);
+	s->setSecondTriggerSynchronizationGap2(0.05, 0.5);
 
 
 	
@@ -245,21 +245,7 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 
 void initializeNissanHRvvtEx(TriggerWaveform *s) {
 
-	 int wide = 115;
-
-	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
-   
-	s->addToothRiseFall(120, wide);
-	s->addToothRiseFall(240, wide);
-	s->addToothRiseFall(360, wide);
-
-
-
-	s->isSynchronizationNeeded = false;
-	s->shapeWithoutTdc = true;
-
-	//s->setTriggerSynchronizationGap(9);
-	//s->setSecondTriggerSynchronizationGap(0.11);
+	
 	
 }
 
