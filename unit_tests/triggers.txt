@@ -5845,7 +5845,7 @@ event 38 0 1 315.00 1.000000
 event 39 0 0 322.50 nan
 event 40 0 1 330.00 1.000000
 event 41 0 0 337.50 nan
-TRIGGERTYPE 86 8 TT_NISSAN_HR_CAM_IN 60.00
+TRIGGERTYPE 86 8 TT_NISSAN_HR_CAM_IN 0.00
 knownOperationMode=true
 crankBased=false
 hasSecondChannel=false
