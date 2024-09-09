@@ -237,4 +237,5 @@ void initializeNissanHRvvtIn(TriggerWaveform *s) {
 	s->addToothRiseFall(360);
 
 	s->setTriggerSynchronizationGap(0.18);
+	s->setSecondTriggerSynchronizationGap(6);
 }
