@@ -5615,7 +5615,7 @@ event 10 0 1 540.00 1.000000
 event 11 0 0 540.00 nan
 event 12 0 1 660.00 1.333333
 event 13 0 0 660.00 nan
-TRIGGERTYPE 84 128 TT_NISSAN_HR 515.00
+TRIGGERTYPE 84 128 TT_NISSAN_HR 500.00
 knownOperationMode=true
 crankBased=true
 hasSecondChannel=false
@@ -5626,21 +5626,21 @@ syncEdge=RiseOnly
 isSynchronizationNeeded=1
 gapFrom.0=2.500000
 gapTo.0=5.500000
-gapFrom.1=0.650000
+gapFrom.1=0.600000
 gapTo.1=1.700000
-gapFrom.2=0.650000
+gapFrom.2=0.600000
 gapTo.2=1.700000
-gapFrom.3=0.650000
+gapFrom.3=0.600000
 gapTo.3=1.700000
-gapFrom.4=0.650000
+gapFrom.4=0.600000
 gapTo.4=1.700000
-gapFrom.5=0.650000
+gapFrom.5=0.600000
 gapTo.5=1.700000
-gapFrom.6=0.650000
+gapFrom.6=0.600000
 gapTo.6=1.700000
-gapFrom.7=0.650000
+gapFrom.7=0.600000
 gapTo.7=1.700000
-gapFrom.8=0.650000
+gapFrom.8=0.600000
 gapTo.8=1.700000
 gapFrom.9=0.100000
 gapTo.9=0.500000
@@ -5845,7 +5845,7 @@ event 38 0 1 315.00 1.000000
 event 39 0 0 322.50 nan
 event 40 0 1 330.00 1.000000
 event 41 0 0 337.50 nan
-TRIGGERTYPE 86 8 TT_NISSAN_HR_CAM_IN 60.00
+TRIGGERTYPE 86 8 TT_NISSAN_HR_CAM_IN 0.00
 knownOperationMode=true
 crankBased=false
 hasSecondChannel=false
