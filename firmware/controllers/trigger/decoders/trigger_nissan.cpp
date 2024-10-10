@@ -192,8 +192,8 @@ void initializeNissanMRvvt(TriggerWaveform *s) {
 void initialize_one_of_36_2_2(TriggerWaveform *s, int firstCount, int secondCount) {
 	s->initialize(FOUR_STROKE_CRANK_SENSOR, SyncEdge::RiseOnly);
 
-	float narrow = 360 / 36;
-	float wide = narrow * 3;
+	float narrow = 360 / 24;
+	float wide = narrow * 2;
 
 	float base = 0;
 
@@ -214,17 +214,17 @@ void initialize_one_of_36_2_2(TriggerWaveform *s, int firstCount, int secondCoun
 }
 
 void initializeNissanHRcrank(TriggerWaveform *s) {
-	initialize_one_of_36_2_2(s, 9, 21);
+	initialize_one_of_36_2_2(s, 7, 15);
 
-    size_t count = 9;
+    size_t count = 7;
 
-    s->tdcPosition = 155 + 360;
+    s->tdcPosition = 0;
 
  s->setTriggerSynchronizationGap3(/*gapIndex*/0, 1.7, 5);
   for (size_t i = 1 ; i < count ; i++) {
-    s->setTriggerSynchronizationGap3(/*gapIndex*/i, 0.6, 1.5);
+    s->setTriggerSynchronizationGap3(/*gapIndex*/i, 0.8, 1.5);
   }
-  s->setTriggerSynchronizationGap3(/*gapIndex*/count, 0.1, 0.5);
+  s->setTriggerSynchronizationGap3(/*gapIndex*/count, 0.1, 0.6);
   }
 
 
