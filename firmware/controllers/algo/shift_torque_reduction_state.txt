@@ -1,0 +1,10 @@
+struct_no_prefix shift_torque_reduction_state_s
+
+bit isTorqueReductionTriggerPinValid
+bit torqueReductionTriggerPinState
+bit isTimeConditionSatisfied
+bit isRpmConditionSatisfied
+bit isAppConditionSatisfied
+bit isFlatShiftConditionSatisfied
+
+end_struct

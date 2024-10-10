@@ -204,6 +204,7 @@ struct_no_prefix engine_configuration_s
 #define LOGIC_ANALYZER_CHANNEL_COUNT 4
 #define SCRIPT_SETTING_COUNT 8
 
+#define ENGINE_TYPES_DIALOG_NAME "Popular vehicles"
 #define VVT1_TARGET_NAME "VVT intake target"
 #define GPPWM_1_NAME "General Purpose PWM 1"
 #define GPPWM_2_NAME "General Purpose PWM 2"
@@ -456,7 +457,7 @@ uint16_t engineSnifferRpmThreshold;Engine sniffer would be disabled above this r
 	Gpio canTxPin
 	Gpio canRxPin
 
-	uint16_t unusedEtbExpAverageLength
+	switch_input_pin_e torqueReductionTriggerPin;Pin that activates the reduction/cut for shifting. Sometimes shared with the Launch Control pin
 	int8_t launchFuelAdderPercent;;"%", 1, 0, 0, 100, 0
 	uint8_t autoscale etbJamTimeout;Time required to detect a stuck throttle.;"sec", 0.02, 0, 0, 5, 2
 
@@ -472,7 +473,7 @@ uint16_t engineSnifferRpmThreshold;Engine sniffer would be disabled above this r
 
 
 struct injector_s
-	float flow;This is your injector flow at the fuel pressure used in the vehicle. cc/min, cubic centimetre per minute\nBy the way, g/s = 0.125997881 * (lb/hr)\ng/s = 0.125997881 * (cc/min)/10.5\ng/s = 0.0119997981 * cc/min;"cm3/min", 1, 0, 0, 99999, 2
+	float flow;This is your injector flow at the fuel pressure used in the vehicle\nSee units setting below;"", 1, 0, 0, 99999, 2
     float[VBAT_INJECTOR_CURVE_SIZE] battLagCorrBins;;"volts", 1, 0, 0, 20, 2
     float[VBAT_INJECTOR_CURVE_SIZE] battLagCorr;ms delay between injector open and close dead times;"ms", 1, 0, 0, 50, 2
 end_struct
@@ -537,7 +538,10 @@ ThermistorConf iat;
 	int hip9011PrescalerAndSDO;value '6' for 8MHz hw osc\nread hip9011 datasheet for details\ntodo split into two bit fields;"integer", 1, 0, 0, 32, 0
 	float unusedFloatHere
 
-uint16_t autoscale displacement;Engine displacement in litres;"L", 0.001, 0, 0, 65, 3
+#define DISPLACEMENT_UNITS "L"
+#define DISPLACEMENT_TOOLTIP "Engine displacement in litres"
+#define DISPLACEMENT_MULTIPLIER 0.001
+uint16_t autoscale displacement;@@DISPLACEMENT_TOOLTIP@@;@@DISPLACEMENT_UNITS@@, @@DISPLACEMENT_MULTIPLIER@@, 0, 0, 65, 3
 
 uint16_t triggerSimulatorRpm;;"RPM", 1, 0, 0, 30000, 0
 
@@ -565,7 +569,7 @@ custom firing_order_e 1 bits, U08, @OFFSET@, [0:6], "One Cylinder", "1-3-4-2", "
 firing_order_e firingOrder;
 uint8_t justATempTest
 uint8_t mapSyncThreshold;Delta kPa for MAP sync;"kPa", 1, 0, 0, 50, 0
-uint8_t unusedByteHere
+int8_t torqueReductionIgnitionCut;How many % of ignition events will be cut;"%", 1, 0, 0, 100, 0
 
 #define CYLINDER_BORE_UNITS "mm"
 #define CYLINDER_BORE_TOOLTIP "Cylinder diameter in mm"
@@ -862,7 +866,7 @@ pin_output_mode_e hip9011IntHoldPinMode;
 
 	Gpio[EGT_CHANNEL_COUNT iterate] max31855_cs;
 	brain_input_pin_e flexSensorPin;Continental/GM flex fuel sensor, 50-150hz type;
-	uint16_t unused720
+	uint16_t torqueReductionArmingRpm;Since torque reduction pin is usually shared with launch control, most people have an RPM where behavior under that is Launch Control, over that is Flat Shift/Torque Reduction;"rpm", 1, 0, 0, 20000, 0
 	pin_output_mode_e stepperDirectionPinMode;
 
 	spi_device_e mc33972spiDevice;
@@ -1067,8 +1071,8 @@ bit cutFuelOnHardLimit,"yes","no"
 bit cutSparkOnHardLimit,"yes","no";Be careful enabling this: some engines are known to self-disassemble their valvetrain with a spark cut. Fuel cut is much safer.
 bit launchFuelCutEnable
 bit launchSparkCutEnable;This is the Cut Mode normally used
-	bit unusedFancy1
-	bit unusedFancy2
+	bit torqueReductionEnabled
+	bit torqueReductionTriggerPinInverted
 	bit unusedFancy14
 	bit unusedFancy7
 	bit unusedFancy8
@@ -1142,7 +1146,7 @@ float idleStepperReactionTime;;"ms", 1, 0, 1, 300, 0
 
 	int idleStepperTotalSteps;;"count", 1, 0, 5, 3000, 0
 
-int unusedInt3423423
+int torqueReductionArmingApp;Pedal position to realize that we need to reduce torque when the trigger pin is uuuh triggered;"", 1, 0, 0, 20000, 0
 
 	#define pin_mode_e_enum "default", "INVALID", "INVALID", "INVALID", "opendrain", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "PULLUP", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "INVALID", "PULLDOWN"
 custom pin_mode_e 1 bits, U08, @OFFSET@, [0:6], @@pin_mode_e_enum@@
@@ -1187,7 +1191,7 @@ int16_t tps2Max;Full throttle#2. tpsMax value as 10 bit ADC value. Not Voltage!\
 	int16_t idlePidRpmDeadZone;If the RPM closer to target than this value, disable closed loop idle correction to prevent oscillation;"RPM", 1, 0, 0, 800, 0
 
 
-	float unusedTargetVBatt
+	float torqueReductionTime;For how long after the pin has been triggered will the cut/reduction stay active. After that, even if the pin is still triggered, torque is re-introduced;"ms", 1, 0, 1, 300, 0
 	bit mc33810DisableRecoveryMode;See Over/Undervoltage Shutdown/Retry bit in documentation
 	bit mc33810Gpgd0Mode
 	bit mc33810Gpgd1Mode
@@ -1247,7 +1251,7 @@ int16_t tps2Max;Full throttle#2. tpsMax value as 10 bit ADC value. Not Voltage!\
 	float tpsDecelEnleanmentThreshold;For decel we simply multiply delta of TPS and tFor decel we do not use table?!;"roc", 1, 0, 0, 200, 1
 	float tpsDecelEnleanmentMultiplier;Magic multiplier, we multiply delta of TPS and get fuel squirt duration;"coeff", 1, 0, 0, 200, 2
 
-	uint32_t unusedAuxSerialSpee
+	float torqueReductionIgnitionRetard;How many degrees of timing advance will be reduced during the Torque Reduction Time;"deg", 1, 0, -180, 180, 2
 
 	float throttlePedalSecondaryUpVoltage;;"voltage", 1, 0, -6, 6, 2
 	float throttlePedalSecondaryWOTVoltage;Pedal in the floor;"voltage", 1, 0, -6, 6, 2
@@ -1272,7 +1276,7 @@ int16_t tps2Max;Full throttle#2. tpsMax value as 10 bit ADC value. Not Voltage!\
 	bit stepperDcInvertedPins;Enable if DC-motor driver (H-bridge) inverts the signals (eg. RZ7899 on Hellen boards)
 	bit canOpenBLT; Allow OpenBLT on Primary CAN
 	bit can2OpenBLT; Allow OpenBLT on Secondary CAN
-	bit injectorFlowAsMassFlow,"mass flow","volumetric flow";Select whether to configure injector flow in volumetric flow (defualt, cc/min) or mass flow (g/s).
+	bit injectorFlowAsMassFlow,"mass flow","volumetric flow";Select whether to configure injector flow in volumetric flow (default, cc/min) or mass flow (g/s).
 	bit boardUseCanTerminator
 	bit kLineDoHondaSend
 	bit can1ListenMode;ListenMode is about acknowledging CAN traffic on the protocol level. Different from canWriteEnabled
@@ -1438,7 +1442,11 @@ float tChargeAirDecrLimit;Maximum allowed rate of decrease allowed for the estim
 	pid_s idleTimingPid;See useIdleTimingPidControl
 	float idleTimingSoftEntryTime;When entering idle, and the PID settings are aggressive, it's good to make a soft entry upon entering closed loop;"", 1, 0, 0, 100, 1
 
-	int16_t unusedEtbRocExpAverageLength
+    pin_input_mode_e torqueReductionTriggerPinMode;
+
+    #define torqueReductionActivationMode_e_enum "Torque Reduction Button", "Launch Button"
+    custom torqueReductionActivationMode_e  1 bits, S08, @OFFSET@, [0:0], @@torqueReductionActivationMode_e_enum@@
+    torqueReductionActivationMode_e torqueReductionActivationMode;
 
 	int16_t tpsAccelFractionPeriod;A delay in cycles between fuel-enrich. portions;"cycles", 1, 0, 0, 500, 0
 	float tpsAccelFractionDivisor;A fraction divisor: 1 or less = entire portion at once, or split into diminishing fractions;"coef", 1, 0, 1, 100, 2
@@ -2076,6 +2084,7 @@ end_struct
 #define pedalSensor_NAME "Accelerator pedal"
 #define ts_show_charge_estimation true
 #define VE_MENU_NAME "VE"
+#define VE_TABLE_NAME "VE Table"
 #define VE_MENU_MAP_NAME "VE 3D view"
 #define CAM_1_MODE_NAME "Cam mode (intake)"
 #define CAM_2_MODE_NAME "Cam mode (exhaust)"
@@ -2429,6 +2438,9 @@ end_struct
 #define ts_show_vr_threshold_pins true
 
 #define show_test_presets false
+#define show_honda_obd1_preset true
+#define show_fuel_bench_preset true
+#define show_default_engine_type true
 #define show_Frankenso_presets false
 #define show_microRusEFI_presets false
 #define show_Proteus_presets false

@@ -88,7 +88,7 @@ public:
 	ShutdownController shutdownController;
 
 	// This is called from periodicFastCallback to update internal state
-	void updateState(int rpm, efitick_t nowNt);
+	void updateState(float rpm, efitick_t nowNt);
 
 	void onFastCallback() override;
 	void onIgnitionStateChanged(bool ignitionOn) override;
@@ -103,7 +103,7 @@ public:
 
 	bool allowTriggerInput() const;
 
-	void updateRevLimit(int rpm);
+	void updateRevLimit(float rpm);
 	angle_t getLimitingTimingRetard() const;
 	float getLimitingFuelCorrection() const;
 

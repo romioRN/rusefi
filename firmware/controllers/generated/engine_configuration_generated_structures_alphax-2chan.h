@@ -398,11 +398,8 @@ static_assert(sizeof(ThermistorConf) == 32);
 // start of injector_s
 struct injector_s {
 	/**
-	 * This is your injector flow at the fuel pressure used in the vehicle. cc/min, cubic centimetre per minute
-	 * By the way, g/s = 0.125997881 * (lb/hr)
-	 * g/s = 0.125997881 * (cc/min)/10.5
-	 * g/s = 0.0119997981 * cc/min
-	 * units: cm3/min
+	 * This is your injector flow at the fuel pressure used in the vehicle
+	 * See units setting below
 	 * offset 0
 	 */
 	float flow;
@@ -672,9 +669,10 @@ struct engine_configuration_s {
 	 */
 	Gpio canRxPin;
 	/**
+	 * Pin that activates the reduction/cut for shifting. Sometimes shared with the Launch Control pin
 	 * offset 36
 	 */
-	uint16_t unusedEtbExpAverageLength;
+	switch_input_pin_e torqueReductionTriggerPin;
 	/**
 	 * units: %
 	 * offset 38
@@ -933,7 +931,7 @@ struct engine_configuration_s {
 	 */
 	float unusedFloatHere;
 	/**
-	 * Engine displacement in litres
+	 * @@DISPLACEMENT_TOOLTIP@@
 	 * units: L
 	 * offset 432
 	 */
@@ -963,9 +961,11 @@ struct engine_configuration_s {
 	 */
 	uint8_t mapSyncThreshold;
 	/**
+	 * How many % of ignition events will be cut
+	 * units: %
 	 * offset 443
 	 */
-	uint8_t unusedByteHere;
+	int8_t torqueReductionIgnitionCut;
 	/**
 	 * @@CYLINDER_BORE_TOOLTIP@@
 	 * units: mm
@@ -1774,9 +1774,11 @@ struct engine_configuration_s {
 	 */
 	brain_input_pin_e flexSensorPin;
 	/**
+	 * Since torque reduction pin is usually shared with launch control, most people have an RPM where behavior under that is Launch Control, over that is Flat Shift/Torque Reduction
+	 * units: rpm
 	 * offset 818
 	 */
-	uint16_t unused720;
+	uint16_t torqueReductionArmingRpm;
 	/**
 	 * offset 820
 	 */
@@ -2369,10 +2371,10 @@ struct engine_configuration_s {
 	bool launchSparkCutEnable : 1 {};
 	/**
 	offset 1304 bit 20 */
-	bool unusedFancy1 : 1 {};
+	bool torqueReductionEnabled : 1 {};
 	/**
 	offset 1304 bit 21 */
-	bool unusedFancy2 : 1 {};
+	bool torqueReductionTriggerPinInverted : 1 {};
 	/**
 	offset 1304 bit 22 */
 	bool unusedFancy14 : 1 {};
@@ -2609,9 +2611,10 @@ struct engine_configuration_s {
 	 */
 	int idleStepperTotalSteps;
 	/**
+	 * Pedal position to realize that we need to reduce torque when the trigger pin is uuuh triggered
 	 * offset 1356
 	 */
-	int unusedInt3423423;
+	int torqueReductionArmingApp;
 	/**
 	 * Duration in ms or duty cycle depending on selected mode
 	 * offset 1360
@@ -2769,9 +2772,11 @@ struct engine_configuration_s {
 	 */
 	int16_t idlePidRpmDeadZone;
 	/**
+	 * For how long after the pin has been triggered will the cut/reduction stay active. After that, even if the pin is still triggered, torque is re-introduced
+	 * units: ms
 	 * offset 1488
 	 */
-	float unusedTargetVBatt;
+	float torqueReductionTime;
 	/**
 	 * See Over/Undervoltage Shutdown/Retry bit in documentation
 	offset 1492 bit 0 */
@@ -2958,9 +2963,11 @@ struct engine_configuration_s {
 	 */
 	float tpsDecelEnleanmentMultiplier;
 	/**
+	 * How many degrees of timing advance will be reduced during the Torque Reduction Time
+	 * units: deg
 	 * offset 1532
 	 */
-	uint32_t unusedAuxSerialSpee;
+	float torqueReductionIgnitionRetard;
 	/**
 	 * units: voltage
 	 * offset 1536
@@ -3027,7 +3034,7 @@ struct engine_configuration_s {
 	offset 1552 bit 2 */
 	bool can2OpenBLT : 1 {};
 	/**
-	 * Select whether to configure injector flow in volumetric flow (defualt, cc/min) or mass flow (g/s).
+	 * Select whether to configure injector flow in volumetric flow (default, cc/min) or mass flow (g/s).
 	offset 1552 bit 3 */
 	bool injectorFlowAsMassFlow : 1 {};
 	/**
@@ -3643,7 +3650,11 @@ struct engine_configuration_s {
 	/**
 	 * offset 2384
 	 */
-	int16_t unusedEtbRocExpAverageLength;
+	pin_input_mode_e torqueReductionTriggerPinMode;
+	/**
+	 * offset 2385
+	 */
+	torqueReductionActivationMode_e torqueReductionActivationMode;
 	/**
 	 * A delay in cycles between fuel-enrich. portions
 	 * units: cycles

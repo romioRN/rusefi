@@ -27,8 +27,8 @@ public:
 	bool isInsideSpeedCondition() const;
 	bool isInsideTpsCondition() const;
 	bool isInsideSwitchCondition();
-	LaunchCondition calculateRPMLaunchCondition(int rpm);
-	LaunchCondition calculateLaunchCondition(int rpm);
+	LaunchCondition calculateRPMLaunchCondition(float rpm);
+	LaunchCondition calculateLaunchCondition(float rpm);
 
 	bool isLaunchSparkRpmRetardCondition() const;
 	bool isLaunchFuelRpmRetardCondition() const;
@@ -38,7 +38,7 @@ public:
 private:
 	bool isLaunchRpmRetardCondition() const;
 
-	float calculateSparkSkipRatio(int rpm) const;
+	float calculateSparkSkipRatio(float rpm) const;
 
 
 	float sparkSkipRatio = 0.0f;
@@ -56,7 +56,7 @@ public:
 	void updateTargetSkipRatio(
 		float luaSoftSparkSkip,
 		float tractionControlSparkSkip,
-		float launchControllerSparkSkipRatio = 0.0f
+		float launchOrShiftTorqueReductionControllerSparkSkipRatio = 0.0f
 	);
 	[[nodiscard]] float getTargetSkipRatio() const { return targetSkipRatio; }
 

@@ -41,7 +41,7 @@ void LimpManager::onFastCallback() {
 	updateState(Sensor::getOrZero(SensorType::Rpm), getTimeNowNt());
 }
 
-void LimpManager::updateRevLimit(int rpm) {
+void LimpManager::updateRevLimit(float rpm) {
 	// User-configured hard RPM limit, either constant or CLT-lookup
 	m_revLimit = engineConfiguration->useCltBasedRpmLimit
 		? interpolate2d(Sensor::getOrZero(SensorType::Clt), config->cltRevLimitRpmBins, config->cltRevLimitRpm)
@@ -56,7 +56,7 @@ void LimpManager::updateRevLimit(int rpm) {
 	m_fuelCorrection = 1.0f + fuelAdded / 100;
 }
 
-void LimpManager::updateState(int rpm, efitick_t nowNt) {
+void LimpManager::updateState(float rpm, efitick_t nowNt) {
 	Clearable allowFuel = engineConfiguration->isInjectionEnabled;
 	Clearable allowSpark = engineConfiguration->isIgnitionEnabled;
 

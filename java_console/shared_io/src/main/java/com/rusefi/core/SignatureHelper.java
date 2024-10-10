@@ -1,19 +1,27 @@
 package com.rusefi.core;
 
+import com.devexperts.logging.Logging;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
+import static com.devexperts.logging.Logging.getLogging;
 import static com.rusefi.core.FileUtil.RUSEFI_SETTINGS_FOLDER;
 
 public class SignatureHelper {
-    private final static String LOCAL_INI = RUSEFI_SETTINGS_FOLDER + File.separator + "ini_database";
+    private static final Logging log = getLogging(SignatureHelper.class);
+    private final static String LOCAL_INI_CACHE_FOLDER = RUSEFI_SETTINGS_FOLDER + File.separator + "ini_database";
 
     // todo: find a way to reference Fields.PROTOCOL_SIGNATURE_PREFIX
     private static final String PREFIX = "rusEFI ";
     private static final char SLASH = '/';
+    /**
+     * java -Dextra_local_ini_file_name=path_to_local_generated.ini ...
+     */
+    private static final String EXTRA_INI_SOURCE = System.getProperty("extra_local_ini_file_name");
 
     public static Pair<String, String> getUrl(String signature) {
         RusEfiSignature s = parse(signature);
@@ -34,11 +42,17 @@ public class SignatureHelper {
     public static String downloadIfNotAvailable(Pair<String, String> p) {
         if (p == null)
             return null;
-        new File(LOCAL_INI).mkdirs();
-        String localIniFile = LOCAL_INI + File.separator + p.second;
+        new File(LOCAL_INI_CACHE_FOLDER).mkdirs();
+        String localIniFile = LOCAL_INI_CACHE_FOLDER + File.separator + p.second;
         File file = new File(localIniFile);
-        if (file.exists() && file.length() > 10000)
+        if (file.exists() && file.length() > 10000) {
+            log.info("Found cached at " + LOCAL_INI_CACHE_FOLDER);
             return localIniFile;
+        }
+        if (EXTRA_INI_SOURCE != null) {
+            return EXTRA_INI_SOURCE;
+        }
+        log.info(".ini not found in " + LOCAL_INI_CACHE_FOLDER + "(" + localIniFile + "), trying to download " + p.first);
         try (BufferedInputStream in = new BufferedInputStream(new URL(p.first).openStream());
              FileOutputStream fileOutputStream = new FileOutputStream(localIniFile)) {
             byte[] dataBuffer = new byte[32 * 1024];

@@ -62,10 +62,10 @@ Configures the maximum number of extra sparks to fire (does not include main spa
 
 
 ### injector.flow
-This is your injector flow at the fuel pressure used in the vehicle. cc/min, cubic centimetre per minute\nBy the way, g/s = 0.125997881 * (lb/hr)\ng/s = 0.125997881 * (cc/min)/10.5\ng/s = 0.0119997981 * cc/min
+This is your injector flow at the fuel pressure used in the vehicle\nSee units setting below
 
 ### injectorSecondary.flow
-This is your injector flow at the fuel pressure used in the vehicle. cc/min, cubic centimetre per minute\nBy the way, g/s = 0.125997881 * (lb/hr)\ng/s = 0.125997881 * (cc/min)/10.5\ng/s = 0.0119997981 * cc/min
+This is your injector flow at the fuel pressure used in the vehicle\nSee units setting below
 
 ### isForcedInduction
 Does the vehicle have a turbo or supercharger?
@@ -245,7 +245,7 @@ Pull-up resistor value on your board
 value '6' for 8MHz hw osc\nread hip9011 datasheet for details\ntodo split into two bit fields
 
 ### displacement
-Engine displacement in litres
+@@DISPLACEMENT_TOOLTIP@@
 
 ### triggerSimulatorRpm
 
@@ -258,6 +258,9 @@ null
 
 ### mapSyncThreshold
 Delta kPa for MAP sync
+
+### torqueReductionIgnitionCut
+How many % of ignition events will be cut
 
 ### cylinderBore
 @@CYLINDER_BORE_TOOLTIP@@
@@ -525,6 +528,9 @@ How far above idle speed do we consider idling, i.e. coasting detection threshol
 
 ### applyNonlinearBelowPulse
 Apply nonlinearity correction below a pulse of this duration. Pulses longer than this duration will receive no adjustment.
+
+### torqueReductionArmingRpm
+Since torque reduction pin is usually shared with launch control, most people have an RPM where behavior under that is Launch Control, over that is Flat Shift/Torque Reduction
 
 ### stoichRatioSecondary
 Stoichiometric ratio for your secondary fuel. This value is used when the Flex Fuel sensor indicates E100, typically 9.0
@@ -805,6 +811,12 @@ Be careful enabling this: some engines are known to self-disassemble their valve
 ### launchSparkCutEnable
 This is the Cut Mode normally used
 
+### torqueReductionEnabled
+
+
+### torqueReductionTriggerPinInverted
+
+
 ### verboseIsoTp
 Are you a developer troubleshooting TS over CAN ISO/TP?
 
@@ -940,6 +952,9 @@ set warningPeriod X
 ### idleStepperTotalSteps
 
 
+### torqueReductionArmingApp
+Pedal position to realize that we need to reduce torque when the trigger pin is uuuh triggered
+
 ### tachPulseDuractionMs
 Duration in ms or duty cycle depending on selected mode
 
@@ -1047,6 +1062,9 @@ on IGN voltage detection turn fuel pump on to build fuel pressure
 
 ### idlePidRpmDeadZone
 If the RPM closer to target than this value, disable closed loop idle correction to prevent oscillation
+
+### torqueReductionTime
+For how long after the pin has been triggered will the cut/reduction stay active. After that, even if the pin is still triggered, torque is re-introduced
 
 ### mc33810DisableRecoveryMode
 See Over/Undervoltage Shutdown/Retry bit in documentation
@@ -1159,6 +1177,9 @@ For decel we simply multiply delta of TPS and tFor decel we do not use table?!
 ### tpsDecelEnleanmentMultiplier
 Magic multiplier, we multiply delta of TPS and get fuel squirt duration
 
+### torqueReductionIgnitionRetard
+How many degrees of timing advance will be reduced during the Torque Reduction Time
+
 ### throttlePedalSecondaryUpVoltage
 
 
@@ -1187,7 +1208,7 @@ Allow OpenBLT on Primary CAN
 Allow OpenBLT on Secondary CAN
 
 ### injectorFlowAsMassFlow
-Select whether to configure injector flow in volumetric flow (defualt, cc/min) or mass flow (g/s).
+Select whether to configure injector flow in volumetric flow (default, cc/min) or mass flow (g/s).
 
 ### boardUseCanTerminator
 

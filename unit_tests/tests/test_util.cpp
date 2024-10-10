@@ -274,7 +274,7 @@ TEST(misc, testConsoleLogic) {
 
 	helpCommand();
 
-	char * cmd = "he ha";
+	const char * cmd = "he ha";
 	ASSERT_EQ(2, findEndOfToken(cmd));
 
 	cmd = "\"hee\" ha";
@@ -396,7 +396,7 @@ TEST(misc, testMisc) {
 //	ASSERT_EQ(SPARKOUT_12_OUTPUT, getPinByName("spa12"));
 }
 
-int getRusEfiVersion(void) {
+int getRusEfiVersion() {
 	return TS_FILE_VERSION;
 }
 

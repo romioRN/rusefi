@@ -94,7 +94,7 @@ void EngineState::updateSparkSkip() {
 			 * We are applying launch controller spark skip ratio only for hard skip limiter (see
 			 * https://github.com/rusefi/rusefi/issues/6566#issuecomment-2153149902).
 			 */
-			engine->launchController.getSparkSkipRatio()
+			engine->launchController.getSparkSkipRatio() + engine->shiftTorqueReductionController.getSparkSkipRatio()
 		);
 #endif // EFI_LAUNCH_CONTROL
 }
@@ -173,6 +173,7 @@ void EngineState::periodicFastCallback() {
 
 #if EFI_LAUNCH_CONTROL
 	engine->launchController.update();
+	engine->shiftTorqueReductionController.update();
 #endif //EFI_LAUNCH_CONTROL
 
 	float l_ignitionLoad = getIgnitionLoad();
@@ -222,7 +223,7 @@ void EngineState::periodicFastCallback() {
 }
 
 #if EFI_ENGINE_CONTROL
-void EngineState::updateTChargeK(int rpm, float tps) {
+void EngineState::updateTChargeK(float rpm, float tps) {
 	float newTCharge = engine->fuelComputer.getTCharge(rpm, tps);
 	if (!std::isnan(newTCharge)) {
 		// control the rate of change or just fill with the initial value

@@ -20,15 +20,6 @@
  *
  * Relevant console commands:
  *
- * ETB_BENCH_ENGINE
- * set engine_type 58
- *
- * enable verbose_etb
- * disable verbose_etb
- * etbinfo
- *
- * http://rusefi.com/forum/viewtopic.php?f=5&t=592
- *
  * @date Dec 7, 2013
  * @author Andrey Belomutskiy, (c) 2012-2020
  *
@@ -55,6 +46,7 @@
 #include "dc_motor.h"
 #include "dc_motors.h"
 #include "defaults.h"
+#include "tunerstudio.h"
 
 #if defined(HAS_OS_ACCESS)
 #error "Unexpected OS ACCESS HERE"
@@ -342,7 +334,7 @@ expected<percent_t> EtbController::getSetpointEtb() {
 		targetPosition = interpolateClamped(etbRpmLimit, targetPosition, fullyLimitedRpm, 0, rpm);
 
 		// rev limit active if the position was changed by rev limiter
-		etbRevLimitActive = absF(targetPosition - targetPositionBefore) > 0.1f;
+		etbRevLimitActive = std::abs(targetPosition - targetPositionBefore) > 0.1f;
 	}
 
 	float minPosition = engineConfiguration->etbMinimumPosition;
@@ -350,7 +342,7 @@ expected<percent_t> EtbController::getSetpointEtb() {
 	// Keep the throttle just barely off the lower stop, and less than the user-configured maximum
 	float maxPosition = engineConfiguration->etbMaximumPosition;
 	// Don't allow max position over 100
-	maxPosition = minF(maxPosition, 100);
+	maxPosition = std::min(maxPosition, 100.0f);
 
 	targetPosition = clampF(minPosition, targetPosition, maxPosition);
 	etbCurrentAdjustedTarget = targetPosition;
@@ -736,7 +728,7 @@ struct EtbImpl final : public TBase {
 		motor->disable("autotune");
 
 		// Check that the calibrate actually moved the throttle
-		if (absF(primaryMax - primaryMin) < 0.5f) {
+		if (std::abs(primaryMax - primaryMin) < 0.5f) {
 			firmwareError(ObdCode::OBD_TPS_Configuration, "Auto calibrate failed, check your wiring!\r\nClosed voltage: %.1fv Open voltage: %.1fv", primaryMin, primaryMax);
 			TBase::m_isAutocal = false;
 			return;
@@ -831,6 +823,7 @@ void etbAutocal(size_t throttleIndex) {
 
 	if (auto etb = engine->etbControllers[throttleIndex]) {
 		etb->autoCalibrateTps();
+		requestBurn();
 	}
 }
 
@@ -972,7 +965,7 @@ void doInitElectronicThrottle() {
 
 #if 0 && ! EFI_UNIT_TEST
 	percent_t startupThrottlePosition = getTPS();
-	if (absF(startupThrottlePosition - engineConfiguration->etbNeutralPosition) > STARTUP_NEUTRAL_POSITION_ERROR_THRESHOLD) {
+	if (std::abs(startupThrottlePosition - engineConfiguration->etbNeutralPosition) > STARTUP_NEUTRAL_POSITION_ERROR_THRESHOLD) {
 		/**
 		 * Unexpected electronic throttle start-up position is worth a critical error
 		 */

@@ -22,3 +22,17 @@ void TestBase::periodicFastCallback() {
 void TestBase::periodicSlowCallback() {
     engine->periodicSlowCallback();
 }
+
+void TestBase::updateRpm(const float rpm) {
+    Sensor::setMockValue(SensorType::Rpm, rpm);
+    periodicFastCallback();
+}
+
+void TestBase::updateApp(const std::optional<float> app) {
+    if (app.has_value()) {
+        Sensor::setMockValue(SensorType::DriverThrottleIntent, app.value());
+    } else {
+        Sensor::resetMockValue(SensorType::DriverThrottleIntent);
+    }
+    periodicFastCallback();
+}
