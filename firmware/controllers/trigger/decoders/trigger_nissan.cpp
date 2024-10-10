@@ -216,7 +216,7 @@ void initialize_one_of_36_2_2(TriggerWaveform *s, int firstCount, int secondCoun
 void initializeNissanHRcrank(TriggerWaveform *s) {
 	initialize_one_of_36_2_2(s, 6, 14);
 
-    size_t count = 7;
+    size_t count = 6;
 
     s->tdcPosition = 0;
 
