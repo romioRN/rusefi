@@ -1169,8 +1169,8 @@ void canDashboardAim(CanCycle cycle) {
 	transmitStruct<Aim5f5>(CanCategory::NBC, 0x5f5, false, canChannel);
 	transmitStruct<Aim5f6>(CanCategory::NBC, 0x5f6, false, canChannel);
 	transmitStruct<Aim5f7>(CanCategory::NBC, 0x5f7, false, canChannel);
-  transmitStruct<Aim5f7>(CanCategory::NBC, 0x5f7, false, canChannel);
-  
+  transmitStruct<Aim5f7>(CanCategory::NBC, 0x5f8, false, canChannel);
+
 	// there are more, but less important for us
 	// transmitStruct<Aim5f8>(0x5f8, false);
 	// transmitStruct<Aim5f9>(0x5f9, false);
