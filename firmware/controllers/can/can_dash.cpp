@@ -1138,6 +1138,22 @@ static void populateFrame(Aim5f7& msg) {
 #endif // EFI_ENGINE_CONTROL
 }
 
+struct Aim5f8 {
+	scaled_channel<uint16_t, 1> EngineRunTimePerSeconds;
+	scaled_channel<uint16_t, 1> EngineWarningStatus;
+	scaled_channel<uint16_t, 1> UserParam2;
+	scaled_channel<uint16_t, 1> UserParam3;
+};
+
+static void populateFrame(Aim5f8& msg) {
+	msg.EngineRunTimePerSeconds = engine->module<TripOdometer>()->getEngineRunTime();
+	msg.EngineWarningStatus = (uint16_t)engine->engineState.warnings.isWarningNow();
+	msg.UserParam2 = 0;
+	msg.UserParam3 = 0;
+	
+}
+
+
 void canDashboardAim(CanCycle cycle) {
 	if (!cycle.isInterval(CI::_10ms)) {
 		return;
@@ -1153,7 +1169,8 @@ void canDashboardAim(CanCycle cycle) {
 	transmitStruct<Aim5f5>(CanCategory::NBC, 0x5f5, false, canChannel);
 	transmitStruct<Aim5f6>(CanCategory::NBC, 0x5f6, false, canChannel);
 	transmitStruct<Aim5f7>(CanCategory::NBC, 0x5f7, false, canChannel);
-
+  transmitStruct<Aim5f7>(CanCategory::NBC, 0x5f7, false, canChannel);
+  
 	// there are more, but less important for us
 	// transmitStruct<Aim5f8>(0x5f8, false);
 	// transmitStruct<Aim5f9>(0x5f9, false);
