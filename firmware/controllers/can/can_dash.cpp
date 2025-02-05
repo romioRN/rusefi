@@ -1148,18 +1148,7 @@ struct Aim5f8 {
 static void populateFrame(Aim5f8& msg) {
 	msg.EngineRunTimePerSeconds = engine->module<TripOdometer>()->getEngineRunTime();
 	msg.EngineWarningStatus = (uint16_t)engine->engineState.warnings.isWarningNow();
-	static int err_state_count = 0;
-	if(engine->engineState.warnings.isWarningNow()) {
-		if(err_state_count < 0 ){
-			msg.ErrorCode =  tempBuffer[err_state_count ].Code;
-			err_state_count--;
-
-		}else {
-			static std::vector<warning_t> tempBuffer(engine->engineState.warnings.recentWarnings.begin(), engine->engineState.warnings.recentWarnings.end());
-			err_state_count = tempBuffer.size();
-		}
-
-	}
+	msg.ErrorCode = (uint16_t)engine->engineState.warnings. warningCounter;
 	msg.UserParam2 = 0;
 	msg.UserParam3 = 0;
 }
