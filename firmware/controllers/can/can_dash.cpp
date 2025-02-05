@@ -1148,8 +1148,7 @@ struct Aim5f8 {
 static void populateFrame(Aim5f8& msg) {
 	msg.EngineRunTimePerSeconds = engine->module<TripOdometer>()->getEngineRunTime();
 	msg.EngineWarningStatus = (uint16_t)engine->engineState.warnings.isWarningNow();
-	msg.ErrorCode = (uint16_t)engine->engineState.warnings. warningCounter;
-	msg.UserParam2 = 0;
+	msg.ErrorCode = (uint16_t)engine->engineState.warnings.warningCounter;
 	msg.UserParam3 = 0;
 }
 
