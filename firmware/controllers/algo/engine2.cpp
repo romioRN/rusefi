@@ -58,10 +58,19 @@ void WarningCodeState::addWarningCode(ObdCode code) {
 /**
  * @param forIndicator if we want to retrieving value for TS indicator, this case a minimal period is applued
  */
-bool WarningCodeState::isWarningNow() const {
+/*bool WarningCodeState::isWarningNow() const {
 	int period = maxI(3, engineConfiguration->warningPeriod);
 
 	return !timeSinceLastWarning.hasElapsedSec(period);
+}*/
+
+bool WarningCodeState::isWarningNow() const {
+	//int period = maxI(3, engineConfiguration->warningPeriod);
+
+	//return !timeSinceLastWarning.hasElapsedSec(period);
+
+	return (lastErrorCode != ObdCode::None) ? true : false;
+
 }
 
 // Check whether a particular warning is active
