@@ -22,17 +22,17 @@ static ObdCode getCode(SensorType type, UnexpectedCode code) {
 		case SensorType::Tps2:
 		case SensorType::Tps2Primary:
 			switch (code) {
-				case UnexpectedCode::Timeout:      return ObdCode::OBD_TPS2_Primary_Timeout;
-				case UnexpectedCode::Low:          return ObdCode::OBD_TPS2_Primary_Low;
-				case UnexpectedCode::High:         return ObdCode::OBD_TPS2_Primary_High;
-				case UnexpectedCode::Inconsistent: return ObdCode::OBD_TPS2_Correlation;
+			//	case UnexpectedCode::Timeout:      return ObdCode::OBD_TPS2_Primary_Timeout;
+			//	case UnexpectedCode::Low:          return ObdCode::OBD_TPS2_Primary_Low;
+			//	case UnexpectedCode::High:         return ObdCode::OBD_TPS2_Primary_High;
+			//	case UnexpectedCode::Inconsistent: return ObdCode::OBD_TPS2_Correlation;
 				default: break;
 			} break;
 		case SensorType::Tps2Secondary:
 			switch (code) {
-				case UnexpectedCode::Timeout:      return ObdCode::OBD_TPS2_Secondary_Timeout;
-				case UnexpectedCode::Low:          return ObdCode::OBD_TPS2_Secondary_Low;
-				case UnexpectedCode::High:         return ObdCode::OBD_TPS2_Secondary_High;
+			//	case UnexpectedCode::Timeout:      return ObdCode::OBD_TPS2_Secondary_Timeout;
+			//	case UnexpectedCode::Low:          return ObdCode::OBD_TPS2_Secondary_Low;
+			//	case UnexpectedCode::High:         return ObdCode::OBD_TPS2_Secondary_High;
 				default: break;
 			} break;
 
