@@ -22,10 +22,10 @@ static ObdCode getCode(SensorType type, UnexpectedCode code) {
 		case SensorType::Tps2:
 		case SensorType::Tps2Primary:
 			switch (code) {
-			//	case UnexpectedCode::Timeout:      return ObdCode::OBD_TPS2_Primary_Timeout;
-			//	case UnexpectedCode::Low:          return ObdCode::OBD_TPS2_Primary_Low;
-			//	case UnexpectedCode::High:         return ObdCode::OBD_TPS2_Primary_High;
-			//	case UnexpectedCode::Inconsistent: return ObdCode::OBD_TPS2_Correlation;
+				case UnexpectedCode::Timeout:      return ObdCode::OBD_TPS2_Primary_Timeout;
+				case UnexpectedCode::Low:          return ObdCode::OBD_TPS2_Primary_Low;
+				case UnexpectedCode::High:         return ObdCode::OBD_TPS2_Primary_High;
+				case UnexpectedCode::Inconsistent: return ObdCode::OBD_TPS2_Correlation;
 				default: break;
 			} break;
 		case SensorType::Tps2Secondary:
@@ -181,9 +181,9 @@ void SensorChecker::onSlowCallback() {
 	check(SensorType::Tps1Primary);
 	check(SensorType::Tps1Secondary);
 	check(SensorType::Tps1);
-	check(SensorType::Tps2Primary);
-	check(SensorType::Tps2Secondary);
-	check(SensorType::Tps2);
+//	check(SensorType::Tps2Primary);
+//	check(SensorType::Tps2Secondary);
+//	check(SensorType::Tps2);
 
 	check(SensorType::AcceleratorPedalPrimary);
 	check(SensorType::AcceleratorPedalSecondary);
