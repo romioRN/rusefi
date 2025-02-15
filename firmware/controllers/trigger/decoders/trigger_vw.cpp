@@ -42,6 +42,6 @@ void setVwConfiguration(TriggerWaveform *s) {
 	s->addEventClamped(0 + engineCycle, TriggerValue::FALL, TriggerWheel::T_PRIMARY, NO_LEFT_FILTER, NO_RIGHT_FILTER);
 
 	s->setTriggerSynchronizationGap2(2.5, 4.5);
-	s->setSecondTriggerSynchronizationGap(0.33); // this gap is not required to synch on perfect signal but is needed to handle to reject cranking transition noise
+	s->setSecondTriggerSynchronizationGap(0.35); // this gap is not required to synch on perfect signal but is needed to handle to reject cranking transition noise
 	s->setThirdTriggerSynchronizationGap(1);
 }
