@@ -524,35 +524,36 @@ void initJeep_XJ_4cyl_2500(TriggerWaveform *s) {
 }
 
 void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
-    s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+    s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::Rise);
 
     const float narrow = 10.0f;
     const float wide = 23.13f;
+    const float missing = 30.0f;
     const int totalTeeth = 36;
-    const int missingStart = 18; // индекс первого пропущенного зуба (уточни по факту!)
-    const int wideToothIndex = 0; // индекс широкого зуба (уточни по факту!)
+    const int wideToothIndex = 0;    // первый зуб после пропуска — широкий
+    const int missingStart = 34;     // пропуск: 34-й и 35-й зубы
 
     float angle = 0.0f;
 
     for (int i = 0; i < totalTeeth; i++) {
-        // Пропуск двух зубьев подряд
-        if (i == missingStart || i == (missingStart + 1) % totalTeeth) {
-            angle += narrow;
-            continue;
-        }
-        // Широкий зуб
         if (i == wideToothIndex) {
+            // Широкий зуб
             s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
             angle += wide;
             s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        } else if (i == missingStart || i == (missingStart + 1) % totalTeeth) {
+            // Пропуск двух зубьев подряд (длинный сектор)
+            angle += narrow;
+            continue;
         } else {
+            // Обычный зуб
             s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
             angle += narrow;
             s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
         }
     }
 
-    // Диапазоны для синхронизации по твоему CSV
+    // Диапазоны для синхронизации
     s->setTriggerSynchronizationGap3(0, 20.0, 35.0); // длинный пропуск
     s->setTriggerSynchronizationGap3(1, 6.5, 8.5);   // широкий зуб
     s->setTriggerSynchronizationGap3(2, 4.0, 6.5);   // обычные зубья
