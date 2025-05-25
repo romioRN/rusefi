@@ -524,38 +524,41 @@ void initJeep_XJ_4cyl_2500(TriggerWaveform *s) {
 }
 
 void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
-    
-  s->initialize(FOUR_STROKE_CRANK_SENSOR, SyncEdge::Rise);
+    s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
-    const float toothAngle = 10.0f;
+    const float narrow = 10.0f;
+    const float wide = 23.13f;
     const int totalTeeth = 36;
-    const int missingStart = 18; // где начинается пропуск
-    const int wideToothIndex = 0; // широкий зуб
+    const int missingStart = 18; // индекс первого пропущенного зуба (уточни по факту!)
+    const int wideToothIndex = 0; // индекс широкого зуба (уточни по факту!)
 
-    float angle = 10.0f; // Первый угол не 0!
+    float angle = 0.0f;
 
     for (int i = 0; i < totalTeeth; i++) {
+        // Пропуск двух зубьев подряд
         if (i == missingStart || i == (missingStart + 1) % totalTeeth) {
-            angle += toothAngle;
+            angle += narrow;
             continue;
         }
+        // Широкий зуб
         if (i == wideToothIndex) {
-            s->addEvent360(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-            angle += 23.13f;
-            s->addEvent360(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+            s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+            angle += wide;
+            s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
         } else {
-            s->addEvent360(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-            angle += toothAngle;
-            s->addEvent360(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+            s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+            angle += narrow;
+            s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
         }
     }
 
-    s->tdcPosition = 10; // выстави по своему мотору
-
+    // Диапазоны для синхронизации по твоему CSV
     s->setTriggerSynchronizationGap3(0, 20.0, 35.0); // длинный пропуск
     s->setTriggerSynchronizationGap3(1, 6.5, 8.5);   // широкий зуб
     s->setTriggerSynchronizationGap3(2, 4.0, 6.5);   // обычные зубья
     s->setTriggerSynchronizationGap3(3, 4.0, 6.5);   // обычные зубья
+
+    s->tdcPosition = 0; // выставь по мотору (обычно угол первого зуба после пропуска)
 }
 
 
