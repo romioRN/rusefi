@@ -527,47 +527,46 @@ void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
     
   s->initialize(FOUR_STROKE_CRANK_SENSOR, SyncEdge::Rise);
 
-    // Условно: первый зуб - широкий (репер), пропуск начинается с 19-го (индексы с нуля)
+    const float toothAngle = 10.0f;
     const int totalTeeth = 36;
-    const int wideToothIndex = 0;      // первый зуб - широкий
-    const int missingStart = 18;       // с 19-го зуба пропуск двух зубьев
+    const int missingStart = 18; // Например, пропуск начинается на 180°
+    const int wideToothIndex = 0; // Широкий зуб
 
-    // Для удобства: считаем события на 720°
-    int base = 0;
-    int teethAfterMissing = 0;
+    // Первый угол — после пропуска, например, 200°
+    float angle = 0.0f;
 
-    // Добавляем события по окружности
     for (int i = 0; i < totalTeeth; i++) {
-        // Пропуск двух зубьев (ничего не добавляем)
+        // Пропуск двух зубьев
         if (i == missingStart || i == (missingStart + 1) % totalTeeth) {
+            angle += toothAngle;
             continue;
         }
 
-        // Широкий зуб (репер)
-        if (i == wideToothIndex) {
-            // Можно добавить особую метку, если поддерживается
-            s->addEvent360(base + i * 20, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-            s->addEvent360(base + i * 20 + 10, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-        } else {
-            // Обычный зуб
-            s->addEvent360(base + i * 20, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-            s->addEvent360(base + i * 20 + 10, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        // Первый зуб после пропуска — должен быть первым событием!
+        if (angle < 1.0f) {
+            angle = 1.0f; // Сдвинь первый угол чуть дальше нуля!
         }
-        teethAfterMissing++;
+
+        // Широкий зуб
+        if (i == wideToothIndex) {
+            s->addEvent360(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+            angle += 23.13f;
+            s->addEvent360(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        } else {
+            s->addEvent360(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+            angle += toothAngle;
+            s->addEvent360(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        }
     }
 
-    // Установка положения ВМТ (примерно, скорректируйте по вашему мотору)
-    s->tdcPosition = 0; // Поставьте нужный угол, например, положение первого зуба
+    s->tdcPosition = 200; // Примерно — угол первого зуба после пропуска
 
-    // Пример настройки синхронизации по пропуску
-    s->setTriggerSynchronizationGap3(0, 1.5, 4.5); // обычный зуб
-    s->setTriggerSynchronizationGap3(1, 20.0, 40.0); // пропуск (длинный интервал)
-    s->setTriggerSynchronizationGap3(2, 1.5, 4.5); // обычный зуб
-    s->setTriggerSynchronizationGap3(3, 1.5, 4.5); // обычный зуб
-
-    // Если есть фазовый датчик — добавьте вторичный канал
+    // Настрой синхронизацию по пропуску
+    s->setTriggerSynchronizationGap3(0, 15.0, 25.0); // длинный пропуск
+    s->setTriggerSynchronizationGap3(1, 8.0, 12.0);  // широкий зуб
+    s->setTriggerSynchronizationGap3(2, 8.0, 12.0);  // обычные зубья
+    s->setTriggerSynchronizationGap3(3, 8.0, 12.0);  // обычные зубья
 }
-
 
 
 void configureChryslerVtt15(TriggerWaveform *s) {
