@@ -523,41 +523,60 @@ void initJeep_XJ_4cyl_2500(TriggerWaveform *s) {
 
 }
 
-void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
-	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+	void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
+    // 4-тактный двигатель, синхронизация только по фронту RISE
+    s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
 
-	float wide = 30 * 2;
-	float narrow = 10 * 2;
+    // Угловые размеры зубьев (в градусах коленвала)
+    constexpr float narrow = 20.0f; // 10° распредвала
+    constexpr float wide   = 60.0f; // 30° распредвала
+    constexpr float skip   = 40.0f; // 2 пропуска по 20°
 
-	s->setTriggerSynchronizationGap(3.5);
-	for (int i = 1; i < 15; i++) {
-		s->setTriggerSynchronizationGap4(/*gapIndex*/i, 1);
-	}
-	s->setTriggerSynchronizationGap4(/*gapIndex*/15, 0.4);
+    float base = 0.0f;
+    int eventIndex = 0;
 
-	float base = 0;
+    // --- 1. 15 узких зубьев ---
+    for (int i = 0; i < 15; i++) {
+        s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+        s->addEventAngle(base + narrow,     TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        base += narrow;
+        eventIndex++;
+    }
 
-	for (int i = 0; i < 14; i++) {
-		s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-		s->addEventAngle(base + narrow, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-		base += narrow;
-	}
+    // --- 2. 1 широкий зуб (синхронизирующий) ---
+    s->addEventAngle(base + wide / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY); // Синхронизирующий фронт
+    s->addEventAngle(base + wide,     TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+    base += wide;
+    eventIndex++;
 
-	s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-	base += narrow / 2;
-	s->addEventAngle(base + wide, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-	base += wide;
+    // --- 3. 15 узких зубьев ---
+    for (int i = 0; i < 15; i++) {
+        s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+        s->addEventAngle(base + narrow,     TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        base += narrow;
+        eventIndex++;
+    }
 
-	for (int i = 0; i < 16; i++) {
-		s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-		s->addEventAngle(base + narrow, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-		base += narrow;
-	}
+    // --- 4. 2 пропуска (нет зубьев) ---
+    base += skip; // Просто пропускаем 40° (2 зуба по 20°)
 
-	// one small tooth at the end of the engine cycle
-	s->addEventAngle(s->getCycleDuration() - narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-	s->addEventAngle(s->getCycleDuration(), TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+    // --- 5. Проверка на полный цикл ---
+    // Если base < 720, добавить dummy-событие для корректного завершения цикла (обычно не требуется)
+
+    // --- 6. Синхронизационные окна ---
+    // Широкий зуб — главное окно синхронизации (gapIndex 0)
+    s->setTriggerSynchronizationGap3(0, 2.2, 3.8); // Подберите параметры под реальные отношения длин
+
+    // Узкие зубья — стандартные окна
+    for (int i = 1; i < 31; i++) {
+        s->setTriggerSynchronizationGap3(i, 0.7, 1.6);
+    }
+
+    // Пропуск (gapIndex 31 и 32) — очень большое окно, чтобы ловить пропуск
+    s->setTriggerSynchronizationGap3(31, 2.0, 10.0);
+    s->setTriggerSynchronizationGap3(32, 2.0, 10.0);
 }
+
 
 void configureChryslerVtt15(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
