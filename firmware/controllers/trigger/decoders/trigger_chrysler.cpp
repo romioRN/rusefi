@@ -533,33 +533,29 @@ void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
     const int wideToothIndex = 0;    // первый зуб после пропуска — широкий
     const int missingStart = 34;     // пропуск: 34-й и 35-й зубы
 
-    float angle = 0.0f;
+    float angle = 10.0f; // <-- Исправлено! Первый угол не 0
 
     for (int i = 0; i < totalTeeth; i++) {
         if (i == wideToothIndex) {
-            // Широкий зуб
             s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
             angle += wide;
             s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
         } else if (i == missingStart || i == (missingStart + 1) % totalTeeth) {
-            // Пропуск двух зубьев подряд (длинный сектор)
             angle += narrow;
             continue;
         } else {
-            // Обычный зуб
             s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
             angle += narrow;
             s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
         }
     }
 
-    // Диапазоны для синхронизации
     s->setTriggerSynchronizationGap3(0, 20.0, 35.0); // длинный пропуск
     s->setTriggerSynchronizationGap3(1, 6.5, 8.5);   // широкий зуб
     s->setTriggerSynchronizationGap3(2, 4.0, 6.5);   // обычные зубья
     s->setTriggerSynchronizationGap3(3, 4.0, 6.5);   // обычные зубья
 
-    s->tdcPosition = 0; // выставь по мотору (обычно угол первого зуба после пропуска)
+    s->tdcPosition = 10; // или другой угол, если нужно
 }
 
 
