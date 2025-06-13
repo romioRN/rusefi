@@ -528,17 +528,17 @@ void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
 
     const int total_teeth = 36;
     const float tooth_angle = 360.0f / total_teeth;
-    float angle = 0;
+    float angle = tooth_angle; // начинаем НЕ с нуля, чтобы избежать ошибки rusEFI
 
-    // Позиции уникальных событий (уточните по реальному диску!)
+    // Позиции уникальных событий — уточните по вашему реальному диску!
     const int skip_start = 10;      // позиция пропуска двух зубьев (пример)
     const int wide_tooth_start = 25; // позиция широкого зуба (пример)
-    const float wide_tooth_multiplier = 4.5f; // ширина "широкого" зуба в обычных зубьях
+    const float wide_tooth_multiplier = 3.0f; // широкий зуб = 3 обычных
 
-    for (int i = 0; i < total_teeth; ) {
+    for (int i = 1; i <= total_teeth; ) {
         if (i == skip_start) {
             // Пропуск двух зубьев (синхро-событие)
-            s->setTriggerSynchronizationGap(angle); // В rusEFI: это длинный gap
+            s->setTriggerSynchronizationGap(angle); // Обозначаем gap для прошивки
             angle += tooth_angle * 2;
             i += 2;
             continue;
@@ -549,7 +549,7 @@ void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
             angle += (tooth_angle * wide_tooth_multiplier) / 2;
             s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
             angle += (tooth_angle * wide_tooth_multiplier) / 2;
-            s->setTriggerSynchronizationGap(angle); // В rusEFI: это тоже gap
+            s->setTriggerSynchronizationGap(angle);
             i += static_cast<int>(wide_tooth_multiplier);
             continue;
         }
@@ -561,6 +561,7 @@ void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
         i++;
     }
 }
+
 
 
 void configureChryslerVtt15(TriggerWaveform *s) {
