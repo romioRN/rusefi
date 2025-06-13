@@ -524,40 +524,44 @@ void initJeep_XJ_4cyl_2500(TriggerWaveform *s) {
 }
 
 void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
-	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
+    s->initialize(FOUR_STROKE_CRANK_SENSOR, SyncEdge::RiseOnly);
 
-	float wide = 30 * 2;
-	float narrow = 10 * 2;
+    const int total_teeth = 36;
+    const float tooth_angle = 360.0f / total_teeth;
+    float angle = 0;
 
-	s->setTriggerSynchronizationGap(3.5);
-	for (int i = 1; i < 15; i++) {
-		s->setTriggerSynchronizationGap4(/*gapIndex*/i, 1);
-	}
-	s->setTriggerSynchronizationGap4(/*gapIndex*/15, 0.4);
+    // Позиции уникальных событий (уточните по реальному диску!)
+    const int skip_start = 10;      // позиция пропуска двух зубьев (пример)
+    const int wide_tooth_start = 25; // позиция широкого зуба (пример)
+    const float wide_tooth_multiplier = 4.5f; // ширина "широкого" зуба в обычных зубьях
 
-	float base = 0;
-
-	for (int i = 0; i < 14; i++) {
-		s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-		s->addEventAngle(base + narrow, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-		base += narrow;
-	}
-
-	s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-	base += narrow / 2;
-	s->addEventAngle(base + wide, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-	base += wide;
-
-	for (int i = 0; i < 16; i++) {
-		s->addEventAngle(base + narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-		s->addEventAngle(base + narrow, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-		base += narrow;
-	}
-
-	// one small tooth at the end of the engine cycle
-	s->addEventAngle(s->getCycleDuration() - narrow / 2, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-	s->addEventAngle(s->getCycleDuration(), TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+    for (int i = 0; i < total_teeth; ) {
+        if (i == skip_start) {
+            // Пропуск двух зубьев (синхро-событие)
+            s->setTriggerSynchronizationGap(angle); // В rusEFI: это длинный gap
+            angle += tooth_angle * 2;
+            i += 2;
+            continue;
+        }
+        if (i == wide_tooth_start) {
+            // Широкий зуб (синхро-событие)
+            s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+            angle += (tooth_angle * wide_tooth_multiplier) / 2;
+            s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+            angle += (tooth_angle * wide_tooth_multiplier) / 2;
+            s->setTriggerSynchronizationGap(angle); // В rusEFI: это тоже gap
+            i += static_cast<int>(wide_tooth_multiplier);
+            continue;
+        }
+        // Обычный зуб
+        s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+        angle += tooth_angle / 2;
+        s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        angle += tooth_angle / 2;
+        i++;
+    }
 }
+
 
 void configureChryslerVtt15(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::RiseOnly);
