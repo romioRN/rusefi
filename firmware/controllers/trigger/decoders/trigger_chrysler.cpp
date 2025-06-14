@@ -528,39 +528,48 @@ void configureChryslerNGC_36_2_2(TriggerWaveform *s) {
 
     const int total_teeth = 36;
     const float tooth_angle = 360.0f / total_teeth;
-    float angle = tooth_angle; // начинаем НЕ с нуля, чтобы избежать ошибки rusEFI
+    float angle = 0.0f;
 
-    // Позиции уникальных событий — уточните по вашему реальному диску!
-    const int skip_start = 10;      // позиция пропуска двух зубьев (пример)
-    const int wide_tooth_start = 25; // позиция широкого зуба (пример)
-    const float wide_tooth_multiplier = 3.0f; // широкий зуб = 3 обычных
+    // Позиция пропуска двух зубьев (например, после 15-го зуба)
+    const int missing_tooth_pos = 15;
+    // Позиция широкого зуба (например, после 30-го зуба)
+    const int wide_tooth_pos = 30;
 
-    for (int i = 1; i <= total_teeth; ) {
-        if (i == skip_start) {
-            // Пропуск двух зубьев (синхро-событие)
-            s->setTriggerSynchronizationGap(angle); // Обозначаем gap для прошивки
-            angle += tooth_angle * 2;
-            i += 2;
-            continue;
-        }
-        if (i == wide_tooth_start) {
-            // Широкий зуб (синхро-событие)
-            s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
-            angle += (tooth_angle * wide_tooth_multiplier) / 2;
-            s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
-            angle += (tooth_angle * wide_tooth_multiplier) / 2;
-            s->setTriggerSynchronizationGap(angle);
-            i += static_cast<int>(wide_tooth_multiplier);
-            continue;
-        }
-        // Обычный зуб
+    // 1. До пропуска двух зубьев
+    for (int i = 0; i < missing_tooth_pos; i++) {
         s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
         angle += tooth_angle / 2;
         s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
         angle += tooth_angle / 2;
-        i++;
+    }
+
+    // 2. Пропуск двух зубьев (синхро-gap)
+    angle += tooth_angle * 2;
+    s->setTriggerSynchronizationGap(angle); // rusEFI будет искать длинный gap
+
+    // 3. До широкого зуба
+    for (int i = missing_tooth_pos; i < wide_tooth_pos; i++) {
+        s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+        angle += tooth_angle / 2;
+        s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        angle += tooth_angle / 2;
+    }
+
+    // 4. Широкий зуб (один зуб, занимает угол двух обычных)
+    s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+    angle += tooth_angle; // ширина = два обычных промежутка
+    s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+    angle += tooth_angle;
+
+    // 5. Оставшиеся зубья
+    for (int i = wide_tooth_pos + 1; i < total_teeth; i++) {
+        s->addEventAngle(angle, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+        angle += tooth_angle / 2;
+        s->addEventAngle(angle, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+        angle += tooth_angle / 2;
     }
 }
+
 
 
 
