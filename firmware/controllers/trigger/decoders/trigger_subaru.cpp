@@ -202,7 +202,7 @@ void initializeSubaru7_6_camOnly(TriggerWaveform *s) {
 	//s->setTriggerSynchronizationGap3(1,  0.50,  1.50);
 	//s->setTriggerSynchronizationGap3(2,  7.00, 15.00);
 
-	s->setTriggerSynchronizationGap3(/*index*/0, 6.53 * TRIGGER_GAP_DEVIATION_LOW, 15);
+	s->setTriggerSynchronizationGap3(/*index*/0, 5.53 * TRIGGER_GAP_DEVIATION_LOW, 15);
 	s->setTriggerSynchronizationGap3(/*index*/1, 0.3, 1 * TRIGGER_GAP_DEVIATION_HIGH);
 	s->setTriggerSynchronizationGap3(/*index*/2, 0.08, 0.3);
 }
