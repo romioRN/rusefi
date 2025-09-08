@@ -1399,6 +1399,9 @@ float getConfigValueByHash(const int hash) {
 // oilPressure.value2
 		case -505257057:
 			return engineConfiguration->oilPressure.value2;
+// hellaOilLevelInverted
+		case -480425560:
+			return engineConfiguration->hellaOilLevelInverted;
 // auxFrequencyFilter
 		case 383307083:
 			return engineConfiguration->auxFrequencyFilter;
@@ -4386,6 +4389,11 @@ bool setConfigValueByName(const char *name, float value) {
 		case -505257057:
 	{
 		engineConfiguration->oilPressure.value2 = value;
+		return 1;
+	}
+		case -480425560:
+	{
+		engineConfiguration->hellaOilLevelInverted = (int)value;
 		return 1;
 	}
 		case 383307083:

@@ -1393,6 +1393,9 @@ Minimum coolant temperature to activate VVT
 ### oilPressure.value2
 
 
+### hellaOilLevelInverted
+Invert Hella Oil Level sensor input
+
 ### auxFrequencyFilter
 
 
