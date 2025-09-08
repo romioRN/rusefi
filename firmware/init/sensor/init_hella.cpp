@@ -26,7 +26,7 @@ void initHellaOilLevelSensor(bool isFirstTime) {
 }
 
 void deInitHellaOilLevelSensor() {
-    hellaSensor.unregister();
+    hellaSensor.Unregister();
 
 #if EFI_PROD_CODE
     if (!isBrainPinValid(hellaPin)) {
