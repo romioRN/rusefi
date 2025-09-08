@@ -20,18 +20,27 @@ void initHellaOilLevelSensor(bool isFirstTime) {
         return;
     }
     hellaPin = engineConfiguration->hellaOilLevelPin;
+
+    // перед регистрацией датчика инициализировать его с пином
+    hellaSensor.init(hellaPin);
 #endif
 
+    // зарегистрировать сенсор в системе
     hellaSensor.Register();
 }
 
 void deInitHellaOilLevelSensor() {
+    // де-регистрируем сенсор в системе
     hellaSensor.Unregister();
 
 #if EFI_PROD_CODE
     if (!isBrainPinValid(hellaPin)) {
         return;
     }
+
+    // деинициализировать датчик (удалить локальные ресурсы, если нужно)
+    hellaSensor.deInit();
+
     efiExtiDisablePin(hellaPin);
     hellaPin = Gpio::Unassigned;
 #endif
