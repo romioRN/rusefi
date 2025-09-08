@@ -41,6 +41,7 @@ public enum SensorType {
 	BatteryVoltage,
 	BarometricPressure,
 	FuelLevel,
+	OilLevel,
 	VehicleSpeed,
 	WheelSlipRatio,
 	TurbochargerSpeed,
