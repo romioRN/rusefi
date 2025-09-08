@@ -15,7 +15,7 @@ void initHellaOilLevelSensor(bool isFirstTime) {
 
 void deInitHellaOilLevelSensor() {
     // Сначала де-регистрируем в системе, затем освобождаем ресурсы пина
-    hellaSensor.Unregister();
+    hellaSensor.unregister();
 
 #if EFI_PROD_CODE
     hellaSensor.deInit();
