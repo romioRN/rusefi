@@ -38,8 +38,10 @@ void initTurbochargerSpeedSensor();
 void initAuxSpeedSensors();
 void initInputShaftSpeedSensor();
 void initRangeSensors();
+void initHellaOilLevelSensor(bool isFirstTime);
 
 // Sensor reconfiguration
+void deInitHellaOilLevelSensor();
 void deinitVbatt();
 void deinitTps();
 void deinitThermistors();
