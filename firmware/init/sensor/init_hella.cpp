@@ -3,6 +3,7 @@
 #include "hella_oil_level.h"
 #include "digital_input_exti.h"
 
+#if EFI_HELLA_OIL
 static HellaOilLevelSensor hellaSensor(SensorType::OilLevel);
 
 void initHellaOilLevelSensor(bool isFirstTime) {
@@ -21,3 +22,8 @@ void deInitHellaOilLevelSensor() {
     hellaSensor.deInit();
 #endif
 }
+#else
+// Если фича выключена, предоставить пустые заглушки (чтобы линковка была корректной)
+void initHellaOilLevelSensor(bool /*isFirstTime*/) { }
+void deInitHellaOilLevelSensor() { }
+#endif
