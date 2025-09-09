@@ -476,17 +476,17 @@ end_struct
 struct hella_oil_level_s
     brain_input_pin_e hellaOilLevelPin; "Digital pin for Hella oil sensor"; ""
     bit hellaOilLevelInverted; "Invert signal from sensor"; ""
-    uint16_t hellaOilLevelPullup; "Pullup resistor in kOhm"; "kOhm", 1, 0, 0, 100, 0
-    uint16_t hellaOilLevel_minLevelMm; "Calibration: min liquid level, mm"; "mm", 1, 0, 0, 400, 0
-    uint16_t hellaOilLevel_maxLevelMm; "Calibration: max liquid level, mm"; "mm", 1, 0, 0, 400, 0
-    uint32_t hellaOilLevel_minPulseUs; "Calibration: min pulse, us"; "us", 1, 0, 0, 100000, 0
-    uint32_t hellaOilLevel_maxPulseUs; "Calibration: max pulse, us"; "us", 1, 0, 0, 100000, 0
-    int16_t hellaOilLevel_minTempC; "Calibration: min temp, C"; "*C", 1, 0, -40, 200, 0
-    int16_t hellaOilLevel_maxTempC; "Calibration: max temp, C"; "*C", 1, 0, -40, 200, 0
-    uint8_t hellaOilLevel_smoothing; "Filtering coeff, 0..255"; "", 1, 0, 0, 255, 0
-    uint32_t hellaOilLevel_rawPulseUs; "Raw last pulse, us (output only)"; "us", 1, 0, 0, 100000, 0
-    float hellaOilLevel_levelMm; "Decoded level, mm (output only)"; "mm", 1, 0, 0, 400, 1
-    float hellaOilLevel_tempC; "Decoded temp, C (output only)"; "*C", 1, 0, -40, 200, 1
+   
+    uint16_t minLevelMm; "Calibration: min liquid level, mm"; "mm", 1, 0, 0, 400, 0
+    uint16_t maxLevelMm; "Calibration: max liquid level, mm"; "mm", 1, 0, 0, 400, 0
+    uint32_t minPulseUs; "Calibration: min pulse, us"; "us", 1, 0, 0, 100000, 0
+    uint32_t maxPulseUs; "Calibration: max pulse, us"; "us", 1, 0, 0, 100000, 0
+    int16_t minTempC; "Calibration: min temp, C"; "*C", 1, 0, -40, 200, 0
+    int16_t maxTempC; "Calibration: max temp, C"; "*C", 1, 0, -40, 200, 0
+    uint8_t smoothing; "Filtering coeff, 0..255"; "", 1, 0, 0, 255, 0
+    uint32_t rawPulseUs; "Raw last pulse, us (output only)"; "us", 1, 0, 0, 100000, 0
+    float levelMm; "Decoded level, mm (output only)"; "mm", 1, 0, 0, 400, 1
+    float tempC; "Decoded temp, C (output only)"; "*C", 1, 0, -40, 200, 1
 end_struct
 
 hella_oil_level_s hellaOilLevel
