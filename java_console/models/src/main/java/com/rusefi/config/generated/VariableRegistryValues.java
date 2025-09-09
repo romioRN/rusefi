@@ -1178,7 +1178,7 @@ public class VariableRegistryValues {
 	public static final int GPPWM_NOTE_SIZE = 16;
 	public static final int GPPWM_RPM_COUNT = 8;
 	public static final String HD_MENU_NAME = "Harley";
-	public static final int hella_oil_level_s_size = 12;
+	public static final int hella_oil_level_s_size = 44;
 	public static final int hpfp_cam_e_HPFP_CAM_EX1 = 2;
 	public static final int hpfp_cam_e_HPFP_CAM_EX2 = 4;
 	public static final int hpfp_cam_e_HPFP_CAM_IN1 = 1;
@@ -1316,7 +1316,6 @@ public class VariableRegistryValues {
 	public static final int MsIoBoxVss_VR12 = 1;
 	public static final int nitrous_arming_method_e_DIGITAL_SWITCH_INPUT = 0;
 	public static final int nitrous_arming_method_e_LUA_GAUGE = 1;
-	public static final int oil_level_s_size = 8;
 	public static final int operation_mode_e_FOUR_STROKE_CAM_SENSOR = 2;
 	public static final int operation_mode_e_FOUR_STROKE_CRANK_SENSOR = 1;
 	public static final int operation_mode_e_FOUR_STROKE_SIX_TIMES_CRANK_SENSOR = 7;
@@ -1415,7 +1414,6 @@ public class VariableRegistryValues {
 	public static final int SentInput_INPUT6 = 6;
 	public static final int SentInput_INPUT7 = 7;
 	public static final int SentInput_NONE = 0;
-	public static final int SIGNATURE_HASH = 77897952;
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME = "generated/simulator_tune_image.bin";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX = "generated/simulator_tune_image";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX = ".bin";
@@ -1716,7 +1714,7 @@ public class VariableRegistryValues {
 	public static final int TS_RESPONSE_UNRECOGNIZED_COMMAND = 0x83;
 	public static final int TS_SCATTER_OFFSETS_COUNT = 128;
 	public static final char TS_SET_LOGGER_SWITCH = 'l';
-	public static final String TS_SIGNATURE = "rusEFI master.2025.09.09.f429-discovery.77897952";
+	public static final String TS_SIGNATURE = "rusEFI master.2025.09.09.f429-discovery.3064956842";
 	public static final char TS_SIMULATE_CAN = '>';
 	public static final char TS_TEST_COMMAND = 't';
 	public static final int TS_TOTAL_OUTPUT_SIZE = 2048;

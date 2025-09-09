@@ -528,48 +528,192 @@ static_assert(sizeof(linear_sensor_s) == 20);
 // start of hella_oil_level_s
 struct hella_oil_level_s {
 	/**
+	 * "Digital pin for Hella oil sensor"
 	 * offset 0
 	 */
-	int hellaOilLevelPullup;
-	/**
-	 * offset 4
-	 */
-	int hellaOilLevel_minLevelMm;
-	/**
-	 * offset 8
-	 */
-	int hellaOilLevel_maxLevelMm;
-};
-static_assert(sizeof(hella_oil_level_s) == 12);
-
-// start of oil_level_s
-struct oil_level_s {
-	/**
-	 * Oil level pullup value
-	 * units: Ohm
-	 * offset 0
-	 */
-	int16_t hellaOilLevelPullup;
-	/**
-	 * Minimum oil level, mm
-	 * units: mm
-	 * offset 2
-	 */
-	int16_t minLevelMm;
-	/**
-	 * Maximum oil level, mm
-	 * units: mm
-	 * offset 4
-	 */
-	int16_t maxLevelMm;
+	brain_input_pin_e hellaOilLevelPin;
 	/**
 	 * need 4 byte alignment
 	 * units: units
-	 * offset 6
+	 * offset 2
 	 */
-	uint8_t alignmentFill_at_6[2] = {};
+	uint8_t alignmentFill_at_2[2] = {};
+	/**
+	 * "Invert signal from sensor"; ""
+	offset 4 bit 0 */
+	bool hellaOilLevelInverted : 1 {};
+	/**
+	offset 4 bit 1 */
+	bool unusedBit_3_1 : 1 {};
+	/**
+	offset 4 bit 2 */
+	bool unusedBit_3_2 : 1 {};
+	/**
+	offset 4 bit 3 */
+	bool unusedBit_3_3 : 1 {};
+	/**
+	offset 4 bit 4 */
+	bool unusedBit_3_4 : 1 {};
+	/**
+	offset 4 bit 5 */
+	bool unusedBit_3_5 : 1 {};
+	/**
+	offset 4 bit 6 */
+	bool unusedBit_3_6 : 1 {};
+	/**
+	offset 4 bit 7 */
+	bool unusedBit_3_7 : 1 {};
+	/**
+	offset 4 bit 8 */
+	bool unusedBit_3_8 : 1 {};
+	/**
+	offset 4 bit 9 */
+	bool unusedBit_3_9 : 1 {};
+	/**
+	offset 4 bit 10 */
+	bool unusedBit_3_10 : 1 {};
+	/**
+	offset 4 bit 11 */
+	bool unusedBit_3_11 : 1 {};
+	/**
+	offset 4 bit 12 */
+	bool unusedBit_3_12 : 1 {};
+	/**
+	offset 4 bit 13 */
+	bool unusedBit_3_13 : 1 {};
+	/**
+	offset 4 bit 14 */
+	bool unusedBit_3_14 : 1 {};
+	/**
+	offset 4 bit 15 */
+	bool unusedBit_3_15 : 1 {};
+	/**
+	offset 4 bit 16 */
+	bool unusedBit_3_16 : 1 {};
+	/**
+	offset 4 bit 17 */
+	bool unusedBit_3_17 : 1 {};
+	/**
+	offset 4 bit 18 */
+	bool unusedBit_3_18 : 1 {};
+	/**
+	offset 4 bit 19 */
+	bool unusedBit_3_19 : 1 {};
+	/**
+	offset 4 bit 20 */
+	bool unusedBit_3_20 : 1 {};
+	/**
+	offset 4 bit 21 */
+	bool unusedBit_3_21 : 1 {};
+	/**
+	offset 4 bit 22 */
+	bool unusedBit_3_22 : 1 {};
+	/**
+	offset 4 bit 23 */
+	bool unusedBit_3_23 : 1 {};
+	/**
+	offset 4 bit 24 */
+	bool unusedBit_3_24 : 1 {};
+	/**
+	offset 4 bit 25 */
+	bool unusedBit_3_25 : 1 {};
+	/**
+	offset 4 bit 26 */
+	bool unusedBit_3_26 : 1 {};
+	/**
+	offset 4 bit 27 */
+	bool unusedBit_3_27 : 1 {};
+	/**
+	offset 4 bit 28 */
+	bool unusedBit_3_28 : 1 {};
+	/**
+	offset 4 bit 29 */
+	bool unusedBit_3_29 : 1 {};
+	/**
+	offset 4 bit 30 */
+	bool unusedBit_3_30 : 1 {};
+	/**
+	offset 4 bit 31 */
+	bool unusedBit_3_31 : 1 {};
+	/**
+	 * "Pullup resistor in kOhm"
+	 * units: kOhm
+	 * offset 8
+	 */
+	uint16_t hellaOilLevelPullup;
+	/**
+	 * "Calibration: min liquid level, mm"
+	 * units: mm
+	 * offset 10
+	 */
+	uint16_t hellaOilLevel_minLevelMm;
+	/**
+	 * "Calibration: max liquid level, mm"
+	 * units: mm
+	 * offset 12
+	 */
+	uint16_t hellaOilLevel_maxLevelMm;
+	/**
+	 * need 4 byte alignment
+	 * units: units
+	 * offset 14
+	 */
+	uint8_t alignmentFill_at_14[2] = {};
+	/**
+	 * "Calibration: min pulse, us"
+	 * units: us
+	 * offset 16
+	 */
+	uint32_t hellaOilLevel_minPulseUs;
+	/**
+	 * "Calibration: max pulse, us"
+	 * units: us
+	 * offset 20
+	 */
+	uint32_t hellaOilLevel_maxPulseUs;
+	/**
+	 * "Calibration: min temp, C"
+	 * units: *C
+	 * offset 24
+	 */
+	int16_t hellaOilLevel_minTempC;
+	/**
+	 * "Calibration: max temp, C"
+	 * units: *C
+	 * offset 26
+	 */
+	int16_t hellaOilLevel_maxTempC;
+	/**
+	 * "Filtering coeff, 0..255"
+	 * offset 28
+	 */
+	uint8_t hellaOilLevel_smoothing;
+	/**
+	 * need 4 byte alignment
+	 * units: units
+	 * offset 29
+	 */
+	uint8_t alignmentFill_at_29[3] = {};
+	/**
+	 * "Raw last pulse, us (output only)"
+	 * units: us
+	 * offset 32
+	 */
+	uint32_t hellaOilLevel_rawPulseUs;
+	/**
+	 * "Decoded level, mm (output only)"
+	 * units: mm
+	 * offset 36
+	 */
+	float hellaOilLevel_levelMm;
+	/**
+	 * "Decoded temp, C (output only)"
+	 * units: *C
+	 * offset 40
+	 */
+	float hellaOilLevel_tempC;
 };
-static_assert(sizeof(oil_level_s) == 8);
+static_assert(sizeof(hella_oil_level_s) == 44);
 
 // start of ThermistorConf
 struct ThermistorConf {

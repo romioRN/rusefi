@@ -1234,7 +1234,7 @@
 #define GPPWM_NOTE_SIZE 16
 #define GPPWM_RPM_COUNT 8
 #define HD_MENU_NAME "Harley"
-#define hella_oil_level_s_size 12
+#define hella_oil_level_s_size 44
 #define hpfp_cam_e_auto_enum 0="HPFP_CAM_NONE",2="HPFP_CAM_EX1",4="HPFP_CAM_EX2",1="HPFP_CAM_IN1",3="HPFP_CAM_IN2"
 #define hpfp_cam_e_enum "NONE", "Intake 1", "Exhaust 1", "Intake 2", "Exhaust 2"
 #define hpfp_cam_e_HPFP_CAM_EX1 2
@@ -1399,7 +1399,6 @@
 #define nitrous_arming_method_e_DIGITAL_SWITCH_INPUT 0
 #define nitrous_arming_method_e_enum "Digital Switch Input", "Lua Gauge"
 #define nitrous_arming_method_e_LUA_GAUGE 1
-#define oil_level_s_size 8
 #define operation_mode_e_FOUR_STROKE_CAM_SENSOR 2
 #define operation_mode_e_FOUR_STROKE_CRANK_SENSOR 1
 #define operation_mode_e_FOUR_STROKE_SIX_TIMES_CRANK_SENSOR 7
@@ -1514,7 +1513,7 @@
 #define SentInput_NONE 0
 #define show_tcu_gauges false
 #define show_vvt_output_pin true
-#define SIGNATURE_HASH 1062047207
+#define SIGNATURE_HASH 2370218669
 #define SIMULATOR_TUNE_BIN_FILE_NAME "generated/simulator_tune_image.bin"
 #define SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX "generated/simulator_tune_image"
 #define SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX ".bin"
@@ -2069,7 +2068,7 @@
 #define ts_show_wastegate_sensor true
 #define ts_show_wbo_canbus_index true
 #define ts_show_wbo_canbus_set_index true
-#define TS_SIGNATURE "rusEFI master.2025.09.09.uaefi.1062047207"
+#define TS_SIGNATURE "rusEFI master.2025.09.09.uaefi.2370218669"
 #define TS_SIMULATE_CAN '>'
 #define TS_SIMULATE_CAN_char >
 #define TS_TEST_COMMAND 't'
