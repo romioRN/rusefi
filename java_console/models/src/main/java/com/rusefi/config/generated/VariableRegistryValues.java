@@ -683,6 +683,9 @@ public class VariableRegistryValues {
 	public static final String GAUGE_NAME_FW_VERSION = "ECU: Software Version";
 	public static final String GAUGE_NAME_GEAR_RATIO = "Gearbox Ratio";
 	public static final String GAUGE_NAME_GYRO_YAW = "Gyro: Yaw rate";
+	public static final String GAUGE_NAME_HELLA_OIL_LEVEL = "hellaOilLevelGauge";
+	public static final String GAUGE_NAME_HELLA_OIL_RAW_PULSE = "hellaOilLevelRawPulseGauge";
+	public static final String GAUGE_NAME_HELLA_OIL_TEMP = "hellaOilLevelTempGauge";
 	public static final String GAUGE_NAME_IAC = "Idle: Position";
 	public static final String GAUGE_NAME_IAT = "IAT";
 	public static final String GAUGE_NAME_IDLE_POSITION = "Idle: Position sensor";
@@ -1410,7 +1413,6 @@ public class VariableRegistryValues {
 	public static final int SentInput_INPUT6 = 6;
 	public static final int SentInput_INPUT7 = 7;
 	public static final int SentInput_NONE = 0;
-	public static final int SIGNATURE_HASH = 1778403939;
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME = "generated/simulator_tune_image.bin";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX = "generated/simulator_tune_image";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX = ".bin";
@@ -1711,7 +1713,7 @@ public class VariableRegistryValues {
 	public static final int TS_RESPONSE_UNRECOGNIZED_COMMAND = 0x83;
 	public static final int TS_SCATTER_OFFSETS_COUNT = 128;
 	public static final char TS_SET_LOGGER_SWITCH = 'l';
-	public static final String TS_SIGNATURE = "rusEFI master.2025.09.09.f429-discovery.1778403939";
+	public static final String TS_SIGNATURE = "rusEFI master.2025.09.09.f429-discovery.3338964070";
 	public static final char TS_SIMULATE_CAN = '>';
 	public static final char TS_TEST_COMMAND = 't';
 	public static final int TS_TOTAL_OUTPUT_SIZE = 2048;
