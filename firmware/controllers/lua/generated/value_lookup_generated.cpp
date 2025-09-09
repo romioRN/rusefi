@@ -13,24 +13,33 @@ float getConfigValueByHash(const int hash) {
 // hellaOilLevel.maxLevelMm
 		case 1967206925:
 			return engineConfiguration->hellaOilLevel.maxLevelMm;
-// hellaOilLevel.minPulseUs
-		case 924877290:
-			return engineConfiguration->hellaOilLevel.minPulseUs;
-// hellaOilLevel.maxPulseUs
-		case -842052948:
-			return engineConfiguration->hellaOilLevel.maxPulseUs;
+// hellaOilLevel.minPulseUsLevel
+		case -1102315454:
+			return engineConfiguration->hellaOilLevel.minPulseUsLevel;
+// hellaOilLevel.maxPulseUsLevel
+		case -33516988:
+			return engineConfiguration->hellaOilLevel.maxPulseUsLevel;
 // hellaOilLevel.minTempC
 		case -1233382990:
 			return engineConfiguration->hellaOilLevel.minTempC;
 // hellaOilLevel.maxTempC
 		case 1711129076:
 			return engineConfiguration->hellaOilLevel.maxTempC;
+// hellaOilLevel.minPulseUsTemp
+		case -163266816:
+			return engineConfiguration->hellaOilLevel.minPulseUsTemp;
+// hellaOilLevel.maxPulseUsTemp
+		case 1691228354:
+			return engineConfiguration->hellaOilLevel.maxPulseUsTemp;
 // hellaOilLevel.smoothing
 		case 877480141:
 			return engineConfiguration->hellaOilLevel.smoothing;
-// hellaOilLevel.rawPulseUs
-		case -171816080:
-			return engineConfiguration->hellaOilLevel.rawPulseUs;
+// hellaOilLevel.rawPulseUsLevel
+		case -553210488:
+			return engineConfiguration->hellaOilLevel.rawPulseUsLevel;
+// hellaOilLevel.rawPulseUsTemp
+		case 1545329542:
+			return engineConfiguration->hellaOilLevel.rawPulseUsTemp;
 // hellaOilLevel.levelMm
 		case -1346278329:
 			return engineConfiguration->hellaOilLevel.levelMm;
@@ -1432,9 +1441,6 @@ float getConfigValueByHash(const int hash) {
 // oilPressure.value2
 		case -505257057:
 			return engineConfiguration->oilPressure.value2;
-// hellaOilLevelInverted
-		case -480425560:
-			return engineConfiguration->hellaOilLevelInverted;
 // auxFrequencyFilter
 		case 383307083:
 			return engineConfiguration->auxFrequencyFilter;
@@ -2114,14 +2120,14 @@ bool setConfigValueByName(const char *name, float value) {
 		engineConfiguration->hellaOilLevel.maxLevelMm = (int)value;
 		return 1;
 	}
-		case 924877290:
+		case -1102315454:
 	{
-		engineConfiguration->hellaOilLevel.minPulseUs = (int)value;
+		engineConfiguration->hellaOilLevel.minPulseUsLevel = (int)value;
 		return 1;
 	}
-		case -842052948:
+		case -33516988:
 	{
-		engineConfiguration->hellaOilLevel.maxPulseUs = (int)value;
+		engineConfiguration->hellaOilLevel.maxPulseUsLevel = (int)value;
 		return 1;
 	}
 		case -1233382990:
@@ -2134,14 +2140,29 @@ bool setConfigValueByName(const char *name, float value) {
 		engineConfiguration->hellaOilLevel.maxTempC = (int)value;
 		return 1;
 	}
+		case -163266816:
+	{
+		engineConfiguration->hellaOilLevel.minPulseUsTemp = (int)value;
+		return 1;
+	}
+		case 1691228354:
+	{
+		engineConfiguration->hellaOilLevel.maxPulseUsTemp = (int)value;
+		return 1;
+	}
 		case 877480141:
 	{
 		engineConfiguration->hellaOilLevel.smoothing = (int)value;
 		return 1;
 	}
-		case -171816080:
+		case -553210488:
 	{
-		engineConfiguration->hellaOilLevel.rawPulseUs = (int)value;
+		engineConfiguration->hellaOilLevel.rawPulseUsLevel = (int)value;
+		return 1;
+	}
+		case 1545329542:
+	{
+		engineConfiguration->hellaOilLevel.rawPulseUsTemp = (int)value;
 		return 1;
 	}
 		case -1346278329:
@@ -4477,11 +4498,6 @@ bool setConfigValueByName(const char *name, float value) {
 		case -505257057:
 	{
 		engineConfiguration->oilPressure.value2 = value;
-		return 1;
-	}
-		case -480425560:
-	{
-		engineConfiguration->hellaOilLevelInverted = (int)value;
 		return 1;
 	}
 		case 383307083:

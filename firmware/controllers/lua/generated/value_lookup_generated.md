@@ -7,11 +7,11 @@
 ### hellaOilLevel.maxLevelMm
 "Calibration: max liquid level, mm"
 
-### hellaOilLevel.minPulseUs
-"Calibration: min pulse, us"
+### hellaOilLevel.minPulseUsLevel
+"Calibration: min pulse for level, us"
 
-### hellaOilLevel.maxPulseUs
-"Calibration: max pulse, us"
+### hellaOilLevel.maxPulseUsLevel
+"Calibration: max pulse for level, us"
 
 ### hellaOilLevel.minTempC
 "Calibration: min temp, C"
@@ -19,11 +19,20 @@
 ### hellaOilLevel.maxTempC
 "Calibration: max temp, C"
 
+### hellaOilLevel.minPulseUsTemp
+"Calibration: min pulse for temp, us"
+
+### hellaOilLevel.maxPulseUsTemp
+"Calibration: max pulse for temp, us"
+
 ### hellaOilLevel.smoothing
 "Filtering coeff, 0..255"
 
-### hellaOilLevel.rawPulseUs
-"Raw last pulse, us (output only)"
+### hellaOilLevel.rawPulseUsLevel
+"Raw last pulse for level, us (output only)"
+
+### hellaOilLevel.rawPulseUsTemp
+"Raw last pulse for temp, us (output only)"
 
 ### hellaOilLevel.levelMm
 "Decoded level, mm (output only)"
@@ -1425,9 +1434,6 @@ Minimum coolant temperature to activate VVT
 
 ### oilPressure.value2
 
-
-### hellaOilLevelInverted
-Invert Hella Oil Level sensor input
 
 ### auxFrequencyFilter
 
