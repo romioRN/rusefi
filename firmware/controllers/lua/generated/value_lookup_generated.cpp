@@ -4,6 +4,39 @@
 #include "value_lookup.h"
 float getConfigValueByHash(const int hash) {
 	switch(hash) {
+// hellaOilLevel.hellaOilLevelInverted
+		case -1070418952:
+			return engineConfiguration->hellaOilLevel.hellaOilLevelInverted;
+// hellaOilLevel.minLevelMm
+		case -560830133:
+			return engineConfiguration->hellaOilLevel.minLevelMm;
+// hellaOilLevel.maxLevelMm
+		case 1967206925:
+			return engineConfiguration->hellaOilLevel.maxLevelMm;
+// hellaOilLevel.minPulseUs
+		case 924877290:
+			return engineConfiguration->hellaOilLevel.minPulseUs;
+// hellaOilLevel.maxPulseUs
+		case -842052948:
+			return engineConfiguration->hellaOilLevel.maxPulseUs;
+// hellaOilLevel.minTempC
+		case -1233382990:
+			return engineConfiguration->hellaOilLevel.minTempC;
+// hellaOilLevel.maxTempC
+		case 1711129076:
+			return engineConfiguration->hellaOilLevel.maxTempC;
+// hellaOilLevel.smoothing
+		case 877480141:
+			return engineConfiguration->hellaOilLevel.smoothing;
+// hellaOilLevel.rawPulseUs
+		case -171816080:
+			return engineConfiguration->hellaOilLevel.rawPulseUs;
+// hellaOilLevel.levelMm
+		case -1346278329:
+			return engineConfiguration->hellaOilLevel.levelMm;
+// hellaOilLevel.tempC
+		case -1999231570:
+			return engineConfiguration->hellaOilLevel.tempC;
 // startButtonSuppressOnStartUpMs
 		case 1856486116:
 			return engineConfiguration->startButtonSuppressOnStartUpMs;
@@ -2066,6 +2099,61 @@ float getConfigValueByName(const char *name) {
 bool setConfigValueByName(const char *name, float value) {
 	int hash = djb2lowerCase(name);
 	switch(hash) {
+		case -1070418952:
+	{
+		engineConfiguration->hellaOilLevel.hellaOilLevelInverted = (int)value;
+		return 1;
+	}
+		case -560830133:
+	{
+		engineConfiguration->hellaOilLevel.minLevelMm = (int)value;
+		return 1;
+	}
+		case 1967206925:
+	{
+		engineConfiguration->hellaOilLevel.maxLevelMm = (int)value;
+		return 1;
+	}
+		case 924877290:
+	{
+		engineConfiguration->hellaOilLevel.minPulseUs = (int)value;
+		return 1;
+	}
+		case -842052948:
+	{
+		engineConfiguration->hellaOilLevel.maxPulseUs = (int)value;
+		return 1;
+	}
+		case -1233382990:
+	{
+		engineConfiguration->hellaOilLevel.minTempC = (int)value;
+		return 1;
+	}
+		case 1711129076:
+	{
+		engineConfiguration->hellaOilLevel.maxTempC = (int)value;
+		return 1;
+	}
+		case 877480141:
+	{
+		engineConfiguration->hellaOilLevel.smoothing = (int)value;
+		return 1;
+	}
+		case -171816080:
+	{
+		engineConfiguration->hellaOilLevel.rawPulseUs = (int)value;
+		return 1;
+	}
+		case -1346278329:
+	{
+		engineConfiguration->hellaOilLevel.levelMm = value;
+		return 1;
+	}
+		case -1999231570:
+	{
+		engineConfiguration->hellaOilLevel.tempC = value;
+		return 1;
+	}
 		case 1856486116:
 	{
 		engineConfiguration->startButtonSuppressOnStartUpMs = (int)value;
