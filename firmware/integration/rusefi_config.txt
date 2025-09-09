@@ -1437,10 +1437,6 @@ custom stepper_num_micro_steps_e 1 bits, U08,	@OFFSET@,	[0:3], @@stepper_num_mic
 
 	linear_sensor_s oilPressure;
 
-
-  brain_input_pin_e hellaOilLevelPin;Hella Oil Level sensor input pin
-  bit hellaOilLevelInverted;Invert Hella Oil Level sensor input
-
 	spi_device_e accelerometerSpiDevice;
 
 #define SCRIPT_CURVE_COUNT 6
