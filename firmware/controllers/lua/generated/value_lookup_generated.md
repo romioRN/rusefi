@@ -1,3 +1,36 @@
+### hellaOilLevel.hellaOilLevelInverted
+"Invert signal from sensor"; ""
+
+### hellaOilLevel.minLevelMm
+"Calibration: min liquid level, mm"
+
+### hellaOilLevel.maxLevelMm
+"Calibration: max liquid level, mm"
+
+### hellaOilLevel.minPulseUs
+"Calibration: min pulse, us"
+
+### hellaOilLevel.maxPulseUs
+"Calibration: max pulse, us"
+
+### hellaOilLevel.minTempC
+"Calibration: min temp, C"
+
+### hellaOilLevel.maxTempC
+"Calibration: max temp, C"
+
+### hellaOilLevel.smoothing
+"Filtering coeff, 0..255"
+
+### hellaOilLevel.rawPulseUs
+"Raw last pulse, us (output only)"
+
+### hellaOilLevel.levelMm
+"Decoded level, mm (output only)"
+
+### hellaOilLevel.tempC
+"Decoded temp, C (output only)"
+
 ### startButtonSuppressOnStartUpMs
 null
 
