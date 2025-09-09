@@ -93,6 +93,17 @@
 ! This is the version of the data stored in flash configuration
 ! Any time an incompatible change is made to the configuration format stored in flash,
 ! update this string to the current date!
+variable = hellaOilLevelPullup, int, 10
+variable = hellaOilLevel_minLevelMm, int, 0
+variable = hellaOilLevel_maxLevelMm, int, 100
+variable = hellaOilLevel_minPulseUs, int, 1000
+variable = hellaOilLevel_maxPulseUs, int, 2000
+variable = hellaOilLevel_minTempC, int, -40
+variable = hellaOilLevel_maxTempC, int, 150
+variable = hellaOilLevel_rawPulseUs, int, 0
+variable = hellaOilLevel_levelMm, int, 0
+variable = hellaOilLevel_tempC, int, 0
+
 #define FLASH_DATA_VERSION 250826
 
 ! Remove next line when Java toolset gets adjusted to load those from json config into VariablesRegistry
@@ -283,16 +294,7 @@ struct_no_prefix engine_configuration_s
 
 #define CAN_WBO_COUNT 2
 
-variable = hellaOilLevelPullup, int, 10
-variable = hellaOilLevel_minLevelMm, int, 0
-variable = hellaOilLevel_maxLevelMm, int, 100
-variable = hellaOilLevel_minPulseUs, int, 1000
-variable = hellaOilLevel_maxPulseUs, int, 2000
-variable = hellaOilLevel_minTempC, int, -40
-variable = hellaOilLevel_maxTempC, int, 150
-variable = hellaOilLevel_rawPulseUs, int, 0
-variable = hellaOilLevel_levelMm, int, 0
-variable = hellaOilLevel_tempC, int, 0
+
 
 struct stft_cell_cfg_s
 	uint8_t autoscale maxAdd;Maximum % that the short term fuel trim can add;"%", 0.1, 0, 0, 25, 1
