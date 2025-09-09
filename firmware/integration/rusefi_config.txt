@@ -93,16 +93,7 @@
 ! This is the version of the data stored in flash configuration
 ! Any time an incompatible change is made to the configuration format stored in flash,
 ! update this string to the current date!
-variable = hellaOilLevelPullup, int, 10
-variable = hellaOilLevel_minLevelMm, int, 0
-variable = hellaOilLevel_maxLevelMm, int, 100
-variable = hellaOilLevel_minPulseUs, int, 1000
-variable = hellaOilLevel_maxPulseUs, int, 2000
-variable = hellaOilLevel_minTempC, int, -40
-variable = hellaOilLevel_maxTempC, int, 150
-variable = hellaOilLevel_rawPulseUs, int, 0
-variable = hellaOilLevel_levelMm, int, 0
-variable = hellaOilLevel_tempC, int, 0
+
 
 #define FLASH_DATA_VERSION 250826
 
@@ -480,6 +471,18 @@ struct linear_sensor_s
 	float value1;;"", 1, 0, -100000, 1000000, 2
 	float v2;;"volts", 1, 0, 0, 10, 2
 	float value2;;"", 1, 0, -100000, 1000000, 2
+end_struct
+
+struct hella_oil_level_s
+    int hellaOilLevelPullup
+    int hellaOilLevel_minLevelMm
+    int hellaOilLevel_maxLevelMm
+end_struct
+
+struct oil_level_s
+    int16_t hellaOilLevelPullup; Oil level pullup value;"Ohm",1,0,0,10000,0
+    int16_t minLevelMm; Minimum oil level, mm;"mm",1,0,0,10000,0
+    int16_t maxLevelMm; Maximum oil level, mm;"mm",1,0,0,10000,0
 end_struct
 
 struct ThermistorConf
