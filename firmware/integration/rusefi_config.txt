@@ -473,18 +473,29 @@ struct linear_sensor_s
 	float value2;;"", 1, 0, -100000, 1000000, 2
 end_struct
 
+
+
 struct hella_oil_level_s
     brain_input_pin_e hellaOilLevelPin; "Digital pin for Hella oil sensor"; ""
     bit hellaOilLevelInverted; "Invert signal from sensor"; ""
-   
+
     uint16_t minLevelMm; "Calibration: min liquid level, mm"; "mm", 1, 0, 0, 400, 0
     uint16_t maxLevelMm; "Calibration: max liquid level, mm"; "mm", 1, 0, 0, 400, 0
-    uint32_t minPulseUs; "Calibration: min pulse, us"; "us", 1, 0, 0, 100000, 0
-    uint32_t maxPulseUs; "Calibration: max pulse, us"; "us", 1, 0, 0, 100000, 0
+
+    uint32_t minPulseUsLevel; "Calibration: min pulse for level, us"; "us", 1, 0, 0, 100000, 0
+    uint32_t maxPulseUsLevel; "Calibration: max pulse for level, us"; "us", 1, 0, 0, 100000, 0
+
     int16_t minTempC; "Calibration: min temp, C"; "*C", 1, 0, -40, 200, 0
     int16_t maxTempC; "Calibration: max temp, C"; "*C", 1, 0, -40, 200, 0
+
+    uint32_t minPulseUsTemp; "Calibration: min pulse for temp, us"; "us", 1, 0, 0, 100000, 0
+    uint32_t maxPulseUsTemp; "Calibration: max pulse for temp, us"; "us", 1, 0, 0, 100000, 0
+
     uint8_t smoothing; "Filtering coeff, 0..255"; "", 1, 0, 0, 255, 0
-    uint32_t rawPulseUs; "Raw last pulse, us (output only)"; "us", 1, 0, 0, 100000, 0
+
+    uint32_t rawPulseUsLevel; "Raw last pulse for level, us (output only)"; "us", 1, 0, 0, 100000, 0
+    uint32_t rawPulseUsTemp; "Raw last pulse for temp, us (output only)"; "us", 1, 0, 0, 100000, 0
+
     float levelMm; "Decoded level, mm (output only)"; "mm", 1, 0, 0, 400, 1
     float tempC; "Decoded temp, C (output only)"; "*C", 1, 0, -40, 200, 1
 end_struct
