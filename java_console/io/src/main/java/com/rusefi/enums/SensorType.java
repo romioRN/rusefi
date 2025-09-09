@@ -41,7 +41,6 @@ public enum SensorType {
 	BatteryVoltage,
 	BarometricPressure,
 	FuelLevel,
-	OilLevel,
 	VehicleSpeed,
 	WheelSlipRatio,
 	TurbochargerSpeed,
@@ -98,5 +97,7 @@ public enum SensorType {
 	AuxLinear4,
 	AuxSpeed1,
 	AuxSpeed2,
+	HellaOilLevel,
+	HellaOilTemperature,
 	PlaceholderLast,
 }
