@@ -525,6 +525,52 @@ struct linear_sensor_s {
 };
 static_assert(sizeof(linear_sensor_s) == 20);
 
+// start of hella_oil_level_s
+struct hella_oil_level_s {
+	/**
+	 * offset 0
+	 */
+	int hellaOilLevelPullup;
+	/**
+	 * offset 4
+	 */
+	int hellaOilLevel_minLevelMm;
+	/**
+	 * offset 8
+	 */
+	int hellaOilLevel_maxLevelMm;
+};
+static_assert(sizeof(hella_oil_level_s) == 12);
+
+// start of oil_level_s
+struct oil_level_s {
+	/**
+	 * Oil level pullup value
+	 * units: Ohm
+	 * offset 0
+	 */
+	int16_t hellaOilLevelPullup;
+	/**
+	 * Minimum oil level, mm
+	 * units: mm
+	 * offset 2
+	 */
+	int16_t minLevelMm;
+	/**
+	 * Maximum oil level, mm
+	 * units: mm
+	 * offset 4
+	 */
+	int16_t maxLevelMm;
+	/**
+	 * need 4 byte alignment
+	 * units: units
+	 * offset 6
+	 */
+	uint8_t alignmentFill_at_6[2] = {};
+};
+static_assert(sizeof(oil_level_s) == 8);
+
 // start of ThermistorConf
 struct ThermistorConf {
 	/**
