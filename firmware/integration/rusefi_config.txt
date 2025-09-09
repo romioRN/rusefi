@@ -489,6 +489,8 @@ struct hella_oil_level_s
     float hellaOilLevel_tempC; "Decoded temp, C (output only)"; "*C", 1, 0, -40, 200, 1
 end_struct
 
+hella_oil_level_s hellaOilLevel
+
 struct ThermistorConf
 	thermistor_conf_s config;
 	adc_channel_e adcChannel;
