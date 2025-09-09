@@ -283,6 +283,17 @@ struct_no_prefix engine_configuration_s
 
 #define CAN_WBO_COUNT 2
 
+variable = hellaOilLevelPullup, int, 10
+variable = hellaOilLevel_minLevelMm, int, 0
+variable = hellaOilLevel_maxLevelMm, int, 100
+variable = hellaOilLevel_minPulseUs, int, 1000
+variable = hellaOilLevel_maxPulseUs, int, 2000
+variable = hellaOilLevel_minTempC, int, -40
+variable = hellaOilLevel_maxTempC, int, 150
+variable = hellaOilLevel_rawPulseUs, int, 0
+variable = hellaOilLevel_levelMm, int, 0
+variable = hellaOilLevel_tempC, int, 0
+
 struct stft_cell_cfg_s
 	uint8_t autoscale maxAdd;Maximum % that the short term fuel trim can add;"%", 0.1, 0, 0, 25, 1
 	uint8_t autoscale maxRemove;Maximum % that the short term fuel trim can remove;"%", 0.1, 0, 0, 25, 1
@@ -2528,16 +2539,7 @@ end_struct
 #define GAUGE_NAME_HELLA_OIL_RAW_PULSE  "hellaOilLevelRawPulseGauge"
 #define GAUGE_NAME_HELLA_OIL_TEMP       "hellaOilLevelTempGauge"
 
-variable = hellaOilLevelPullup, int, 10
-variable = hellaOilLevel_minLevelMm, int, 0
-variable = hellaOilLevel_maxLevelMm, int, 100
-variable = hellaOilLevel_minPulseUs, int, 1000
-variable = hellaOilLevel_maxPulseUs, int, 2000
-variable = hellaOilLevel_minTempC, int, -40
-variable = hellaOilLevel_maxTempC, int, 150
-variable = hellaOilLevel_rawPulseUs, int, 0
-variable = hellaOilLevel_levelMm, int, 0
-variable = hellaOilLevel_tempC, int, 0
+
 
 #define ENGINE_MAKE_HONDA "Honda"
 #define ENGINE_MAKE_MAZDA "Mazda"
