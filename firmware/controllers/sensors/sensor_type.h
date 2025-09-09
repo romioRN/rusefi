@@ -83,7 +83,7 @@ enum class SensorType : unsigned char {
 	BarometricPressure,
 
 	FuelLevel,
-  OilLevel,
+  
   
 	VehicleSpeed,
 	WheelSlipRatio,
@@ -169,6 +169,9 @@ enum class SensorType : unsigned char {
 
 	// Let's always have all auxiliary sensors at the end - please add specific sensors above auxiliary
 
+  HellaOilLevel,           // уровень масла для датчика Hella Oil Level
+  HellaOilTemperature,     // температура масла для датчика Hella Oil Level
+  
 	// Leave me at the end!
 	PlaceholderLast,
 };
