@@ -476,8 +476,8 @@ end_struct
 
 
 struct hella_oil_level_s
-    brain_input_pin_e hellaOilLevelPin; "Digital pin for Hella oil sensor"; ""
-    bit hellaOilLevelInverted; "Invert signal from sensor"; ""
+    brain_input_pin_e Pin; "Digital pin for Hella oil sensor"; ""
+    bit Inverted; "Invert signal from sensor"; ""
 
     uint16_t minLevelMm; "Calibration: min liquid level, mm"; "mm", 1, 0, 0, 400, 0
     uint16_t maxLevelMm; "Calibration: max liquid level, mm"; "mm", 1, 0, 0, 400, 0
@@ -2553,9 +2553,10 @@ end_struct
 #define GAUGE_NAME_DEBUG_I4 "debug i4"
 #define GAUGE_NAME_DEBUG_I5 "debug i5"
 
-#define GAUGE_NAME_HELLA_OIL_LEVEL      "hellaOilLevelGauge"
-#define GAUGE_NAME_HELLA_OIL_RAW_PULSE  "hellaOilLevelRawPulseGauge"
-#define GAUGE_NAME_HELLA_OIL_TEMP       "hellaOilLevelTempGauge"
+#define GAUGE_NAME_HELLA_OIL_LEVEL          "hellaOilLevelGaugeLevel"
+#define GAUGE_NAME_HELLA_OIL_RAW_PULSE_LEVEL "hellaOilLevelRawPulseGaugeLevel"
+#define GAUGE_NAME_HELLA_OIL_TEMP           "hellaOilLevelTempGauge"
+#define GAUGE_NAME_HELLA_OIL_RAW_PULSE_TEMP "hellaOilLevelRawPulseGaugeTemp"
 
 
 

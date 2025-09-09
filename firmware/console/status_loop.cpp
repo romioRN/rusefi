@@ -557,6 +557,19 @@ static void updateMiscSensors() {
 #endif /* HAL_USE_ADC */
 }
 
+static void updateHellaOilSensors() {
+    // Получить значения новых сенсоров с помощью Sensor::get или getOrZero
+    SensorResult level = Sensor::get(SensorType::HellaOilLevel);
+    SensorResult temp = Sensor::get(SensorType::HellaOilTemperature);
+
+    // Записать значения в outputChannels для отображения в UI/тюнерстудио
+    engine->outputChannels.hellaOilLevelValue = level.value_or(0);
+    engine->outputChannels.hellaOilLevelValid = level.Valid;
+
+    engine->outputChannels.hellaOilTempValue = temp.value_or(0);
+    engine->outputChannels.hellaOilTempValid = temp.Valid;
+}
+
 static void updateSensors() {
 	updateTempSensors();
 	updateThrottles();
@@ -568,6 +581,7 @@ static void updateSensors() {
 	updateVehicleSpeed();
 	updatePressures();
 	updateMiscSensors();
+  updateHellaOilSensors()
 }
 
 static void updateFuelCorrections() {
