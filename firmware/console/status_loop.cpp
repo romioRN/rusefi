@@ -581,7 +581,7 @@ static void updateSensors() {
 	updateVehicleSpeed();
 	updatePressures();
 	updateMiscSensors();
-  updateHellaOilSensors()
+  updateHellaOilSensors();
 }
 
 static void updateFuelCorrections() {
