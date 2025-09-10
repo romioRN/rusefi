@@ -4,7 +4,7 @@
 #include "digital_input_exti.h"
 
 #if EFI_HELLA_OIL
-static HellaOilLevelSensor hellaSensor(SensorType::OilLevel);
+static HellaOilLevelSensor hellaSensor(SensorType::HellaOilLevel);
 
 void initHellaOilLevelSensor(bool isFirstTime) {
     // HellaOilLevelSensor::init() внутри включает EXTI и вызывает Register()

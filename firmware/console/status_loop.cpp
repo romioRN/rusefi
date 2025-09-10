@@ -558,16 +558,19 @@ static void updateMiscSensors() {
 }
 
 static void updateHellaOilSensors() {
-    // Получить значения новых сенсоров с помощью Sensor::get или getOrZero
     SensorResult level = Sensor::get(SensorType::HellaOilLevel);
-    SensorResult temp = Sensor::get(SensorType::HellaOilTemperature);
-
-    // Записать значения в outputChannels для отображения в UI/тюнерстудио
     engine->outputChannels.hellaOilLevelValue = level.value_or(0);
-   // engine->outputChannels.hellaOilLevelValid = level.Valid;
+    engine->outputChannels.hellaOilLevelValid = level.Valid;
 
+    SensorResult temp = Sensor::get(SensorType::HellaOilTemperature);
     engine->outputChannels.hellaOilTempValue = temp.value_or(0);
-   // engine->outputChannels.hellaOilTempValid = temp.Valid;
+    engine->outputChannels.hellaOilTempValid = temp.Valid;
+
+    SensorResult rawLevel = Sensor::get(SensorType::HellaOilLevelRawPulse);
+    engine->outputChannels.hellaOilLevelRawPulseUs = rawLevel.value_or(0);
+
+    SensorResult rawTemp = Sensor::get(SensorType::HellaOilTempRawPulse);
+    engine->outputChannels.hellaOilTempRawPulseUs = rawTemp.value_or(0);
 }
 
 static void updateSensors() {

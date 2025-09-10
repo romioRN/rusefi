@@ -47,8 +47,9 @@ bit sd_formating; SD: formating is in progress
   bit isMapAveraging
 
   int16_t autoscale hellaOilLevelValue;@@GAUGE_NAME_HELLA_OIL_LEVEL@@;"mm", {1/@@PACK_MULT_DISTANCE@@}, 0, 0, 400, 1
- 
   int16_t autoscale hellaOilTempValue;@@GAUGE_NAME_HELLA_OIL_TEMP@@;"deg C", {1/@@PACK_MULT_TEMPERATURE@@}, -40, 0, 200, 1
+  int16_t autoscale hellaOilLevelRawPulseMs;@@GAUGE_NAME_HELLA_OIL_RAW_PULSE_LEVEL@@;"ms", 1, 0, 0, 1000, 0
+  int16_t autoscale hellaOilTempRawPulseMs;@@GAUGE_NAME_HELLA_OIL_RAW_PULSE_TEMP@@;"ms", 1, 0, 0, 1000, 0
 
   uint16_t RPMValue;@@GAUGE_NAME_RPM@@;"RPM",1, 0, 0, 8000, 0
 
