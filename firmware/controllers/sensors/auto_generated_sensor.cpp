@@ -1,6 +1,6 @@
 #include "global.h"
 #include "sensor_type.h"
-// was generated automatically by rusEFI tool  from sensor_type.h // by enum_to_string.jar tool on Tue Sep 09 22:59:13 UTC 2025
+// was generated automatically by rusEFI tool  from sensor_type.h // by enum_to_string.jar tool on Wed Sep 10 20:46:43 UTC 2025
 // see also gen_config_and_enums.bat
 
 
@@ -103,6 +103,10 @@ case SensorType::FuelTemperature:
   return "FuelTemperature";
 case SensorType::HellaOilLevel:
   return "HellaOilLevel";
+case SensorType::HellaOilLevelRawPulse:
+  return "HellaOilLevelRawPulse";
+case SensorType::HellaOilTempRawPulse:
+  return "HellaOilTempRawPulse";
 case SensorType::HellaOilTemperature:
   return "HellaOilTemperature";
 case SensorType::Iat:
