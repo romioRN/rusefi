@@ -154,11 +154,13 @@ struct output_channels_s {
 	offset 0 bit 31 */
 	bool isMapAveraging : 1 {};
 	/**
+	 * @@GAUGE_NAME_HELLA_OIL_LEVEL@@
 	 * units: mm
 	 * offset 4
 	 */
 	scaled_channel<int16_t, 1, 1> hellaOilLevelValue = (int16_t)0;
 	/**
+	 * @@GAUGE_NAME_HELLA_OIL_TEMP@@
 	 * units: deg C
 	 * offset 6
 	 */

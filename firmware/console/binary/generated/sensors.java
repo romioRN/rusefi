@@ -1,5 +1,5 @@
-hellaOilLevelValue("hellaOilLevelValue", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 4, 1.0, 0.0, 400.0, "mm"),
-hellaOilTempValue("hellaOilTempValue", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 6, 0.01, 0.0, 200.0, "deg C"),
+hellaOilLevelValue("hellaOilLevelGaugeLevel", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 4, 1.0, 0.0, 400.0, "mm"),
+hellaOilTempValue("hellaOilLevelTempGauge", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 6, 0.01, 0.0, 200.0, "deg C"),
 RPMValue("RPM", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 8, 1.0, 0.0, 8000.0, "RPM"),
 rpmAcceleration("dRPM", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 10, 1.0, 0.0, 5.0, "RPM acceleration/Rate of Change/ROC"),
 speedToRpmRatio("Gearbox Ratio", SensorCategory.SENSOR_INPUTS, FieldType.INT16, 12, 0.01, 0.0, 0.0, "value"),
