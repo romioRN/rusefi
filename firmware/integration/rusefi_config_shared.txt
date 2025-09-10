@@ -241,3 +241,7 @@
 #define GAUGE_NAME_DEBUG_I4 "debug i4"
 #define GAUGE_NAME_DEBUG_I5 "debug i5"
 
+#define GAUGE_NAME_HELLA_OIL_LEVEL          "hellaOilLevelGaugeLevel"
+#define GAUGE_NAME_HELLA_OIL_RAW_PULSE_LEVEL "hellaOilLevelRawPulseGaugeLevel"
+#define GAUGE_NAME_HELLA_OIL_TEMP           "hellaOilLevelTempGauge"
+#define GAUGE_NAME_HELLA_OIL_RAW_PULSE_TEMP "hellaOilLevelRawPulseGaugeTemp"
