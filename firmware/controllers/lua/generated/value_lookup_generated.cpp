@@ -4,9 +4,9 @@
 #include "value_lookup.h"
 float getConfigValueByHash(const int hash) {
 	switch(hash) {
-// hellaOilLevel.hellaOilLevelInverted
-		case -1070418952:
-			return engineConfiguration->hellaOilLevel.hellaOilLevelInverted;
+// hellaOilLevel.Inverted
+		case -1745289034:
+			return engineConfiguration->hellaOilLevel.Inverted;
 // hellaOilLevel.minLevelMm
 		case -560830133:
 			return engineConfiguration->hellaOilLevel.minLevelMm;
@@ -2105,9 +2105,9 @@ float getConfigValueByName(const char *name) {
 bool setConfigValueByName(const char *name, float value) {
 	int hash = djb2lowerCase(name);
 	switch(hash) {
-		case -1070418952:
+		case -1745289034:
 	{
-		engineConfiguration->hellaOilLevel.hellaOilLevelInverted = (int)value;
+		engineConfiguration->hellaOilLevel.Inverted = (int)value;
 		return 1;
 	}
 		case -560830133:

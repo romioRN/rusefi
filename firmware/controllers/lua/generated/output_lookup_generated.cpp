@@ -103,6 +103,12 @@ float getOutputValueByHash(const int hash) {
 // isMapAveraging
 		case -1626840525:
 			return engine->outputChannels.isMapAveraging;
+// hellaOilLevelValue
+		case 935182276:
+			return engine->outputChannels.hellaOilLevelValue;
+// hellaOilTempValue
+		case 1487770786:
+			return engine->outputChannels.hellaOilTempValue;
 // RPMValue
 		case 1699696209:
 			return engine->outputChannels.RPMValue;

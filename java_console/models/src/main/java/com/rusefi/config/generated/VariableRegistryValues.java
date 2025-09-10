@@ -683,8 +683,9 @@ public class VariableRegistryValues {
 	public static final String GAUGE_NAME_FW_VERSION = "ECU: Software Version";
 	public static final String GAUGE_NAME_GEAR_RATIO = "Gearbox Ratio";
 	public static final String GAUGE_NAME_GYRO_YAW = "Gyro: Yaw rate";
-	public static final String GAUGE_NAME_HELLA_OIL_LEVEL = "hellaOilLevelGauge";
-	public static final String GAUGE_NAME_HELLA_OIL_RAW_PULSE = "hellaOilLevelRawPulseGauge";
+	public static final String GAUGE_NAME_HELLA_OIL_LEVEL = "hellaOilLevelGaugeLevel";
+	public static final String GAUGE_NAME_HELLA_OIL_RAW_PULSE_LEVEL = "hellaOilLevelRawPulseGaugeLevel";
+	public static final String GAUGE_NAME_HELLA_OIL_RAW_PULSE_TEMP = "hellaOilLevelRawPulseGaugeTemp";
 	public static final String GAUGE_NAME_HELLA_OIL_TEMP = "hellaOilLevelTempGauge";
 	public static final String GAUGE_NAME_IAC = "Idle: Position";
 	public static final String GAUGE_NAME_IAT = "IAT";
@@ -1328,6 +1329,7 @@ public class VariableRegistryValues {
 	public static final int PACK_MULT_AFR = 1000;
 	public static final int PACK_MULT_AFR_CFG = 10;
 	public static final int PACK_MULT_ANGLE = 50;
+	public static final int PACK_MULT_DISTANCE = 1;
 	public static final int PACK_MULT_EGTEMPERATURE = 4;
 	public static final int PACK_MULT_FLEX = 2;
 	public static final int PACK_MULT_FUEL_FLOW = 200;
@@ -1414,6 +1416,7 @@ public class VariableRegistryValues {
 	public static final int SentInput_INPUT6 = 6;
 	public static final int SentInput_INPUT7 = 7;
 	public static final int SentInput_NONE = 0;
+	public static final int SIGNATURE_HASH = 1219620542;
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME = "generated/simulator_tune_image.bin";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX = "generated/simulator_tune_image";
 	public static final String SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX = ".bin";
@@ -1714,10 +1717,10 @@ public class VariableRegistryValues {
 	public static final int TS_RESPONSE_UNRECOGNIZED_COMMAND = 0x83;
 	public static final int TS_SCATTER_OFFSETS_COUNT = 128;
 	public static final char TS_SET_LOGGER_SWITCH = 'l';
-	public static final String TS_SIGNATURE = "rusEFI master.2025.09.10.f429-discovery.2967815766";
+	public static final String TS_SIGNATURE = "rusEFI master.2025.09.10.f429-discovery.1219620542";
 	public static final char TS_SIMULATE_CAN = '>';
 	public static final char TS_TEST_COMMAND = 't';
-	public static final int TS_TOTAL_OUTPUT_SIZE = 2048;
+	public static final int TS_TOTAL_OUTPUT_SIZE = 2052;
 	public static final String TS_TRIGGER_SCOPE_CHANNEL_1_NAME = "Channel 1";
 	public static final String TS_TRIGGER_SCOPE_CHANNEL_2_NAME = "Channel 2";
 	public static final int TS_TRIGGER_SCOPE_DISABLE = 5;

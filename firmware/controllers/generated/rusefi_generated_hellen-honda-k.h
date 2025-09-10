@@ -736,8 +736,9 @@
 #define GAUGE_NAME_FW_VERSION "ECU: Software Version"
 #define GAUGE_NAME_GEAR_RATIO "Gearbox Ratio"
 #define GAUGE_NAME_GYRO_YAW "Gyro: Yaw rate"
-#define GAUGE_NAME_HELLA_OIL_LEVEL "hellaOilLevelGauge"
-#define GAUGE_NAME_HELLA_OIL_RAW_PULSE "hellaOilLevelRawPulseGauge"
+#define GAUGE_NAME_HELLA_OIL_LEVEL "hellaOilLevelGaugeLevel"
+#define GAUGE_NAME_HELLA_OIL_RAW_PULSE_LEVEL "hellaOilLevelRawPulseGaugeLevel"
+#define GAUGE_NAME_HELLA_OIL_RAW_PULSE_TEMP "hellaOilLevelRawPulseGaugeTemp"
 #define GAUGE_NAME_HELLA_OIL_TEMP "hellaOilLevelTempGauge"
 #define GAUGE_NAME_IAC "Idle: Position"
 #define GAUGE_NAME_IAT "IAT"
@@ -1417,6 +1418,7 @@
 #define PACK_MULT_AFR 1000
 #define PACK_MULT_AFR_CFG 10
 #define PACK_MULT_ANGLE 50
+#define PACK_MULT_DISTANCE 1
 #define PACK_MULT_EGTEMPERATURE 4
 #define PACK_MULT_FLEX 2
 #define PACK_MULT_FUEL_FLOW 200
@@ -1517,7 +1519,7 @@
 #define SentInput_NONE 0
 #define show_tcu_gauges false
 #define show_vvt_output_pin true
-#define SIGNATURE_HASH 1584509213
+#define SIGNATURE_HASH 2787449333
 #define SIMULATOR_TUNE_BIN_FILE_NAME "generated/simulator_tune_image.bin"
 #define SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX "generated/simulator_tune_image"
 #define SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX ".bin"
@@ -2074,12 +2076,12 @@
 #define ts_show_wastegate_sensor true
 #define ts_show_wbo_canbus_index true
 #define ts_show_wbo_canbus_set_index true
-#define TS_SIGNATURE "rusEFI master.2025.09.10.hellen-honda-k.1584509213"
+#define TS_SIGNATURE "rusEFI master.2025.09.10.hellen-honda-k.2787449333"
 #define TS_SIMULATE_CAN '>'
 #define TS_SIMULATE_CAN_char >
 #define TS_TEST_COMMAND 't'
 #define TS_TEST_COMMAND_char t
-#define TS_TOTAL_OUTPUT_SIZE 2048
+#define TS_TOTAL_OUTPUT_SIZE 2052
 #define TS_TRIGGER_SCOPE_CHANNEL_1_NAME "Channel 1"
 #define TS_TRIGGER_SCOPE_CHANNEL_2_NAME "Channel 2"
 #define TS_TRIGGER_SCOPE_DISABLE 5
