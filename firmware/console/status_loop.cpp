@@ -564,10 +564,10 @@ static void updateHellaOilSensors() {
 
     // Записать значения в outputChannels для отображения в UI/тюнерстудио
     engine->outputChannels.hellaOilLevelValue = level.value_or(0);
-    engine->outputChannels.hellaOilLevelValid = level.Valid;
+   // engine->outputChannels.hellaOilLevelValid = level.Valid;
 
-    //engine->outputChannels.hellaOilTempValue = temp.value_or(0);
-    engine->outputChannels.hellaOilTempValid = temp.Valid;
+    engine->outputChannels.hellaOilTempValue = temp.value_or(0);
+   // engine->outputChannels.hellaOilTempValid = temp.Valid;
 }
 
 static void updateSensors() {
