@@ -46,6 +46,11 @@ bit sd_formating; SD: formating is in progress
 
   bit isMapAveraging
 
+int16_t autoscale hellaOilLevelValue;;"mm", {1/@@PACK_MULT_DISTANCE@@}, 0, 0, 400, 1
+bit hellaOilLevelValid;;"valid", 1, 0, 0, 0, 0
+int16_t autoscale hellaOilTempValue;;"deg C", {1/@@PACK_MULT_TEMPERATURE@@}, -40, 0, 200, 1
+bit hellaOilTempValid;;"valid", 1, 0, 0, 0, 0
+
 uint16_t RPMValue;@@GAUGE_NAME_RPM@@;"RPM",1, 0, 0, 8000, 0
 
 int16_t rpmAcceleration;dRPM;"RPM acceleration/Rate of Change/ROC",1, 0, 0, 5, 2
@@ -464,11 +469,10 @@ float mapFast
 end_struct
 
 
-struct_no_prefix output_channels_s
+
 
 int16_t autoscale hellaOilLevelValue;;"mm", {1/@@PACK_MULT_DISTANCE@@}, 0, 0, 400, 1
 bit hellaOilLevelValid;;"valid", 1, 0, 0, 0, 0
 int16_t autoscale hellaOilTempValue;;"deg C", {1/@@PACK_MULT_TEMPERATURE@@}, -40, 0, 200, 1
 bit hellaOilTempValid;;"valid", 1, 0, 0, 0, 0
 
-end_struct
