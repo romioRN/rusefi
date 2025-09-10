@@ -46,13 +46,13 @@ bit sd_formating; SD: formating is in progress
 
   bit isMapAveraging
 
- int16_t autoscale hellaOilLevelValue;@@GAUGE_NAME_HELLA_OIL_LEVEL@@;"mm", {1/@@PACK_MULT_DISTANCE@@}, 0, 0, 400, 1
+  int16_t autoscale hellaOilLevelValue;@@GAUGE_NAME_HELLA_OIL_LEVEL@@;"mm", {1/@@PACK_MULT_DISTANCE@@}, 0, 0, 400, 1
  
- int16_t autoscale hellaOilTempValue;@@GAUGE_NAME_HELLA_OIL_TEMP@@;"deg C", {1/@@PACK_MULT_TEMPERATURE@@}, -40, 0, 200, 1
+  int16_t autoscale hellaOilTempValue;@@GAUGE_NAME_HELLA_OIL_TEMP@@;"deg C", {1/@@PACK_MULT_TEMPERATURE@@}, -40, 0, 200, 1
 
-uint16_t RPMValue;@@GAUGE_NAME_RPM@@;"RPM",1, 0, 0, 8000, 0
+  uint16_t RPMValue;@@GAUGE_NAME_RPM@@;"RPM",1, 0, 0, 8000, 0
 
-int16_t rpmAcceleration;dRPM;"RPM acceleration/Rate of Change/ROC",1, 0, 0, 5, 2
+  int16_t rpmAcceleration;dRPM;"RPM acceleration/Rate of Change/ROC",1, 0, 0, 5, 2
 
 	uint16_t autoscale speedToRpmRatio;@@GAUGE_NAME_GEAR_RATIO@@;"value",{1/@@PACK_MULT_PERCENT@@}, 0, 0, 0, 2
 	uint8_t unusedVehicleSpeedKph;@@GAUGE_NAME_VVS@@;"kph",1, 0, 0, 0, 1
