@@ -99,5 +99,7 @@ public enum SensorType {
 	AuxSpeed2,
 	HellaOilLevel,
 	HellaOilTemperature,
+	HellaOilLevelRawPulse,
+	HellaOilTempRawPulse,
 	PlaceholderLast,
 }

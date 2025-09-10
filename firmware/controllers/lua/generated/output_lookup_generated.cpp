@@ -109,6 +109,12 @@ float getOutputValueByHash(const int hash) {
 // hellaOilTempValue
 		case 1487770786:
 			return engine->outputChannels.hellaOilTempValue;
+// hellaOilLevelRawPulseUs
+		case -1419994910:
+			return engine->outputChannels.hellaOilLevelRawPulseUs;
+// hellaOilTempRawPulseUs
+		case 1160390784:
+			return engine->outputChannels.hellaOilTempRawPulseUs;
 // RPMValue
 		case 1699696209:
 			return engine->outputChannels.RPMValue;
