@@ -566,7 +566,7 @@ static void updateHellaOilSensors() {
     engine->outputChannels.hellaOilLevelValue = level.value_or(0);
     engine->outputChannels.hellaOilLevelValid = level.Valid;
 
-    engine->outputChannels.hellaOilTempValue = temp.value_or(0);
+    //engine->outputChannels.hellaOilTempValue = temp.value_or(0);
     engine->outputChannels.hellaOilTempValid = temp.Valid;
 }
 
