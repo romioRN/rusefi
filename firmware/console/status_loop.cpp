@@ -560,11 +560,11 @@ static void updateMiscSensors() {
 static void updateHellaOilSensors() {
     SensorResult level = Sensor::get(SensorType::HellaOilLevel);
     engine->outputChannels.hellaOilLevelValue = level.value_or(0);
-    engine->outputChannels.hellaOilLevelValid = level.Valid;
+   // engine->outputChannels.hellaOilLevelValid = level.Valid;
 
     SensorResult temp = Sensor::get(SensorType::HellaOilTemperature);
     engine->outputChannels.hellaOilTempValue = temp.value_or(0);
-    engine->outputChannels.hellaOilTempValid = temp.Valid;
+  //  engine->outputChannels.hellaOilTempValid = temp.Valid;
 
     SensorResult rawLevel = Sensor::get(SensorType::HellaOilLevelRawPulse);
     engine->outputChannels.hellaOilLevelRawPulseUs = rawLevel.value_or(0);
