@@ -476,8 +476,8 @@ end_struct
 
 
 struct hella_oil_level_s
-    brain_input_pin_e pin; "Digital pin for Hella oil sensor"; ""
-    bit inverted; "Invert signal from sensor"; ""
+    brain_input_pin_e Spin; "Digital pin for Hella oil sensor"; ""
+    bit Sinverted; "Invert signal from sensor"; ""
 
     uint16_t minLevelMm; "Calibration: min liquid level, mm"; "mm", 1, 0, 0, 400, 0
     uint16_t maxLevelMm; "Calibration: max liquid level, mm"; "mm", 1, 0, 0, 400, 0
