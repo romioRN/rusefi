@@ -18,12 +18,14 @@ static void hellaOilLevelExtiCallback(void*, efitick_t nowNt) {
 
 void initHellaOilLevelSensor(bool isFirstTime) {
 #if EFI_PROD_CODE
-    if (!isBrainPinValid(engineConfiguration->hellaOilLevelPin))
+    if (!isBrainPinValid(engineConfiguration->hellaOilLevelPin)) {
         return;
+    }
 
     if (efiExtiEnablePin("hellaOilLevel", engineConfiguration->hellaOilLevelPin,
-                         PAL_EVENT_MODE_BOTH_EDGES, hellaOilLevelExtiCallback, nullptr) < 0)
+                         PAL_EVENT_MODE_BOTH_EDGES, hellaOilLevelExtiCallback, nullptr) < 0) {
         return;
+    }
 
     hellaLevelPin = engineConfiguration->hellaOilLevelPin;
     hellaLevelInverted = engineConfiguration->hellaOilLevelInverted;
@@ -36,8 +38,10 @@ void deInitHellaOilLevelSensor() {
     hellaSensor.unregister();
 
 #if EFI_PROD_CODE
-    if (isBrainPinValid(hellaLevelPin))
+    if (isBrainPinValid(hellaLevelPin)) {
         efiExtiDisablePin(hellaLevelPin);
+        hellaLevelPin = Gpio::Unassigned;
+    }
 
     hellaLevelPin = Gpio::Unassigned;
 #endif
