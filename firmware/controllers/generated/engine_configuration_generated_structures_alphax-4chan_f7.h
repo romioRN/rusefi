@@ -531,7 +531,7 @@ struct hella_oil_level_s {
 	 * "Digital pin for Hella oil sensor"
 	 * offset 0
 	 */
-	brain_input_pin_e pin;
+	brain_input_pin_e Spin;
 	/**
 	 * need 4 byte alignment
 	 * units: units
@@ -541,7 +541,7 @@ struct hella_oil_level_s {
 	/**
 	 * "Invert signal from sensor"; ""
 	offset 4 bit 0 */
-	bool inverted : 1 {};
+	bool Sinverted : 1 {};
 	/**
 	offset 4 bit 1 */
 	bool unusedBit_3_1 : 1 {};
