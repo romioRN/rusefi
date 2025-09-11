@@ -1,6 +1,3 @@
-### hellaOilLevel.Sinverted
-"Invert signal from sensor"; ""
-
 ### hellaOilLevel.minLevelMm
 "Calibration: min liquid level, mm"
 
@@ -1160,6 +1157,9 @@ Send out board statistics
 global_can_data performance hack
 
 ### flexSensorInverted
+
+
+### hellaOilLevel_inverted
 
 
 ### useHardSkipInTraction
