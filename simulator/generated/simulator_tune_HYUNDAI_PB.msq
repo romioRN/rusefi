@@ -561,7 +561,7 @@
         <constant name="brakePedalPin">"NONE"</constant>
         <constant name="brakePedalPinMode">"PULLUP"</constant>
         <constant digits="0" name="byFirmwareVersion" units="index">0.0</constant>
-        <constant digits="0" name="calibrationBirthday" units="">2.025091E7</constant>
+        <constant digits="0" name="calibrationBirthday" units="">2.0250911E7</constant>
         <constant digits="0" name="camDecoder2jzPosition" units="angle">95.0</constant>
         <constant digits="0" name="camDecoder2jzPrecision" units="">40.0</constant>
         <constant name="camInputs1">"NONE"</constant>
@@ -1386,7 +1386,7 @@
         <constant name="gpPwmNote2">GPPWM1</constant>
         <constant name="gpPwmNote3">GPPWM2</constant>
         <constant name="gpPwmNote4">GPPWM3</constant>
-        <constant name="hellaOilLevel_Inverted">"false"</constant>
+        <constant name="hellaOilLevel_inverted">"false"</constant>
         <constant digits="1" name="hellaOilLevel_levelMm" units="mm">0.0</constant>
         <constant digits="0" name="hellaOilLevel_maxLevelMm" units="mm">0.0</constant>
         <constant digits="0" name="hellaOilLevel_maxPulseUsLevel" units="us">0.0</constant>
@@ -1396,7 +1396,7 @@
         <constant digits="0" name="hellaOilLevel_minPulseUsLevel" units="us">0.0</constant>
         <constant digits="0" name="hellaOilLevel_minPulseUsTemp" units="us">0.0</constant>
         <constant digits="0" name="hellaOilLevel_minTempC" units="*C">0.0</constant>
-        <constant name="hellaOilLevel_Pin">"NONE"</constant>
+        <constant name="hellaOilLevel_pin">"NONE"</constant>
         <constant digits="0" name="hellaOilLevel_rawPulseUsLevel" units="us">0.0</constant>
         <constant digits="0" name="hellaOilLevel_rawPulseUsTemp" units="us">0.0</constant>
         <constant digits="0" name="hellaOilLevel_smoothing" units="">0.0</constant>
@@ -5195,7 +5195,7 @@ end</constant>
 </constant>
         <constant name="yesUnderstandLocking">"no"</constant>
     </page>
-    <versionInfo firmwareInfo="20250905" nPages="1" signature="rusEFI master.2025.09.11.f407-discovery.2102497000" version="5.0"/>
+    <versionInfo firmwareInfo="20250905" nPages="1" signature="rusEFI master.2025.09.11.f407-discovery.2463606410" version="5.0"/>
     <bibliography author="rusEFI 20250905" writeDate="date"/>
     <settings/>
     <userComments/>
