@@ -476,8 +476,8 @@ end_struct
 
 
 struct hella_oil_level_s
-    brain_input_pin_e Spin; "Digital pin for Hella oil sensor"; ""
-    bit Sinverted; "Invert signal from sensor"; ""
+    
+   
 
     uint16_t minLevelMm; "Calibration: min liquid level, mm"; "mm", 1, 0, 0, 400, 0
     uint16_t maxLevelMm; "Calibration: max liquid level, mm"; "mm", 1, 0, 0, 400, 0
@@ -957,6 +957,7 @@ spi_device_e digitalPotentiometerSpiDevice;Digital Potentiometer is used by stoc
 	pin_input_mode_e clutchUpPinMode;
 
 	Gpio[EGT_CHANNEL_COUNT iterate] max31855_cs;
+	brain_input_pin_e hellaOilLevel_pin; "Digital pin for Hella oil sensor"; 
 	brain_input_pin_e flexSensorPin;Continental/GM flex fuel sensor, 50-150hz type;
 	uint16_t torqueReductionArmingRpm;Since torque reduction pin is usually shared with launch control, most people have an RPM where behavior under that is Launch Control, over that is Flat Shift/Torque Reduction;"rpm", 1, 0, 0, 20000, 0
 	pin_output_mode_e stepperDirectionPinMode;
@@ -1268,6 +1269,7 @@ int16_t tps2Max;Full throttle#2. tpsMax value as 10 bit ADC value. Not Voltage!\
 ! temporary for too much CAN RX processing kills Lua script #5841
 	bit luaCanRxWorkaround;global_can_data performance hack
 	bit flexSensorInverted,"Inverted","Normal"
+	bit hellaOilLevel_inverted,"Inverted","Normal"
 	bit useHardSkipInTraction
 	bit useAuxSpeedForSlipRatio;Use Aux Speed 1 as one of speeds for wheel slip ratio?
 	bit useVssAsSecondWheelSpeed;VSS and Aux Speed 1 or Aux Speed 1 with Aux Speed 2?
