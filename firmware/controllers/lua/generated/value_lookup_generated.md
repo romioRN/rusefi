@@ -1,4 +1,4 @@
-### hellaOilLevel.Inverted
+### hellaOilLevel.inverted
 "Invert signal from sensor"; ""
 
 ### hellaOilLevel.minLevelMm
