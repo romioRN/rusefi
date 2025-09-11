@@ -40,9 +40,12 @@ void deInitHellaOilLevelSensor() {
         efiExtiDisablePin(hellaOilLevelPin);
 
     hellaOilLevelPin = Gpio::Unassigned;
+#endif
 }
-#else
+
+#else  
+
 void initHellaOilLevelSensor(bool /*isFirstTime*/) {}
 void deInitHellaOilLevelSensor() {}
-#endif
-#endif
+
+#endif  
