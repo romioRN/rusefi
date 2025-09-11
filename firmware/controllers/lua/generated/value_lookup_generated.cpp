@@ -4,9 +4,6 @@
 #include "value_lookup.h"
 float getConfigValueByHash(const int hash) {
 	switch(hash) {
-// hellaOilLevel.Sinverted
-		case 1167462089:
-			return engineConfiguration->hellaOilLevel.Sinverted;
 // hellaOilLevel.minLevelMm
 		case -560830133:
 			return engineConfiguration->hellaOilLevel.minLevelMm;
@@ -1168,6 +1165,9 @@ float getConfigValueByHash(const int hash) {
 // flexSensorInverted
 		case 512911183:
 			return engineConfiguration->flexSensorInverted;
+// hellaOilLevel_inverted
+		case -473259545:
+			return engineConfiguration->hellaOilLevel_inverted;
 // useHardSkipInTraction
 		case -1495799741:
 			return engineConfiguration->useHardSkipInTraction;
@@ -2105,11 +2105,6 @@ float getConfigValueByName(const char *name) {
 bool setConfigValueByName(const char *name, float value) {
 	int hash = djb2lowerCase(name);
 	switch(hash) {
-		case 1167462089:
-	{
-		engineConfiguration->hellaOilLevel.Sinverted = (int)value;
-		return 1;
-	}
 		case -560830133:
 	{
 		engineConfiguration->hellaOilLevel.minLevelMm = (int)value;
@@ -4043,6 +4038,11 @@ bool setConfigValueByName(const char *name, float value) {
 		case 512911183:
 	{
 		engineConfiguration->flexSensorInverted = (int)value;
+		return 1;
+	}
+		case -473259545:
+	{
+		engineConfiguration->hellaOilLevel_inverted = (int)value;
 		return 1;
 	}
 		case -1495799741:
