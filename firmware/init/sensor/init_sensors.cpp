@@ -100,7 +100,7 @@ static void sensorStartUpOrReconfiguration(bool isFirstTime) {
 	initAuxSensors();
 	initAuxSpeedSensors();
 	initInputShaftSpeedSensor();
-  initHellaOilLevelSensor(isFirstTime);
+	initHellaOilLevelSensor(isFirstTime);
 #if EFI_TCU
 	initRangeSensors();
 #endif
@@ -157,7 +157,7 @@ void stopSensors() {
 	deinitFluidPressure();
 	deinitThermistors();
 	deInitFlexSensor();
-  deInitHellaOilLevelSensor();
+	deInitHellaOilLevelSensor();
 	deinitAuxSensors();
 	deInitVehicleSpeedSensor();
 	deinitTurbochargerSpeedSensor();

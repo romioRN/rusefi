@@ -5,10 +5,6 @@
 
 #if EFI_HELLA_OIL
 
-// Глобальные статусы для EXTI и инверсии
-static Gpio hellaOilLevelPin = Gpio::Unassigned;
-static bool hellaOilLevelInverted = false;
-
 // Объекты для сырых каналов и температуры
 static HellaOilTempSensor hellaOilTempSensor;
 static HellaOilLevelRawPulseSensor hellaOilLevelRawPulseSensor;
@@ -16,13 +12,6 @@ static HellaOilTempRawPulseSensor hellaOilTempRawPulseSensor;
 
 // Основной объект сенсора уровня масла
 HellaOilLevelSensor hellaSensor(SensorType::HellaOilLevel);
-
-#if EFI_PROD_CODE
-static void hellaOilLevelExtiCallback(void*, efitick_t nowNt) {
-    bool value = efiReadPin(hellaOilLevelPin) ^ hellaOilLevelInverted;
-    hellaSensor.onEdge(nowNt, value);
-}
-#endif
 
 HellaOilLevelSensor::HellaOilLevelSensor(SensorType sensorType)
     : StoredValueSensor(sensorType, MS2NT(2000)) {}

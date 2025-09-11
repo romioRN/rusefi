@@ -61,7 +61,7 @@
 #endif
 
 #ifndef EFI_HELLA_OIL
-#define EFI_HELLA_OIL FALSE
+#define EFI_HELLA_OIL TRUE
 #endif
 
 #ifndef EFI_USE_OPENBLT
