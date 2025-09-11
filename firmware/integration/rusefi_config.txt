@@ -272,6 +272,7 @@ struct_no_prefix engine_configuration_s
 
 #define TPS_TPS_ACCEL_TABLE 8
 #define ADC_CHANNEL_NONE 0
+#define DIGIPOT_PIN_NONE 0
 #define TPS_TPS_ACCEL_CLT_CORR_TABLE 4
 
 #define BARO_CORR_SIZE 4
@@ -2437,7 +2438,7 @@ end_struct
 #define ts_show_sync_cam true
 #define INJECTOR_1_NAME "Injector #1"
 #define INJECTOR_2_NAME "Injector #2"
-#define ts_show_hellaoillevel NONE
+#define ts_show_hellaoillevel 0
 
 #define SD_CARD_LABEL "rusEFI logs"
 
