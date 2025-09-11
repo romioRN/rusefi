@@ -1159,7 +1159,7 @@ global_can_data performance hack
 ### flexSensorInverted
 
 
-### hellaOilLevel_inverted
+### hellaOilLevelInverted
 
 
 ### useHardSkipInTraction

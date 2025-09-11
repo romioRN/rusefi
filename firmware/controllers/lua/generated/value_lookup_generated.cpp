@@ -1165,9 +1165,9 @@ float getConfigValueByHash(const int hash) {
 // flexSensorInverted
 		case 512911183:
 			return engineConfiguration->flexSensorInverted;
-// hellaOilLevel_inverted
-		case -473259545:
-			return engineConfiguration->hellaOilLevel_inverted;
+// hellaOilLevelInverted
+		case -480425560:
+			return engineConfiguration->hellaOilLevelInverted;
 // useHardSkipInTraction
 		case -1495799741:
 			return engineConfiguration->useHardSkipInTraction;
@@ -4040,9 +4040,9 @@ bool setConfigValueByName(const char *name, float value) {
 		engineConfiguration->flexSensorInverted = (int)value;
 		return 1;
 	}
-		case -473259545:
+		case -480425560:
 	{
-		engineConfiguration->hellaOilLevel_inverted = (int)value;
+		engineConfiguration->hellaOilLevelInverted = (int)value;
 		return 1;
 	}
 		case -1495799741:

@@ -2499,7 +2499,7 @@ struct engine_configuration_s {
 	 * "Digital pin for Hella oil sensor"
 	 * offset 872
 	 */
-	brain_input_pin_e hellaOilLevel_pin;
+	brain_input_pin_e hellaOilLevelPin;
 	/**
 	 * Continental/GM flex fuel sensor, 50-150hz type
 	 * offset 874
@@ -3549,7 +3549,7 @@ struct engine_configuration_s {
 	bool flexSensorInverted : 1 {};
 	/**
 	offset 1568 bit 8 */
-	bool hellaOilLevel_inverted : 1 {};
+	bool hellaOilLevelInverted : 1 {};
 	/**
 	offset 1568 bit 9 */
 	bool useHardSkipInTraction : 1 {};
