@@ -2437,6 +2437,7 @@ end_struct
 #define ts_show_sync_cam true
 #define INJECTOR_1_NAME "Injector #1"
 #define INJECTOR_2_NAME "Injector #2"
+#define ts_show_hellaoillevel true
 
 #define SD_CARD_LABEL "rusEFI logs"
 
