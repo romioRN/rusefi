@@ -4,26 +4,44 @@
 #include "digital_input_exti.h"
 
 #if EFI_HELLA_OIL
+
 static HellaOilLevelSensor hellaSensor(SensorType::HellaOilLevel);
+static Gpio hellaOilLevelPin = Gpio::Unassigned;
+static bool hellaOilLevelInverted = false;
+
+#if EFI_PROD_CODE
+static void hellaOilLevelExtiCallback(void*, efitick_t nowNt) {
+    bool value = efiReadPin(hellaOilLevelPin) ^ hellaOilLevelInverted;
+    hellaSensor.onEdge(nowNt, value);
+}
+#endif
 
 void initHellaOilLevelSensor(bool isFirstTime) {
-    // HellaOilLevelSensor::init() внутри включает EXTI и вызывает Register()
-    // поэтому здесь достаточно только инициализации с пином
 #if EFI_PROD_CODE
-    hellaSensor.init(engineConfiguration->hellaOilLevelPin);
+    if (!isBrainPinValid(engineConfiguration->hellaOilLevelPin))
+        return;
+
+    if (efiExtiEnablePin("hellaOilLevel", engineConfiguration->hellaOilLevelPin,
+                         PAL_EVENT_MODE_BOTH_EDGES, hellaOilLevelExtiCallback, nullptr) < 0)
+        return;
+
+    hellaOilLevelPin = engineConfiguration->hellaOilLevelPin;
+    hellaOilLevelInverted = engineConfiguration->hellaOilLevelInverted;
 #endif
+    
+    hellaSensor.init(engineConfiguration->hellaOilLevelPin);
 }
 
 void deInitHellaOilLevelSensor() {
-    // Сначала де-регистрируем в системе, затем освобождаем ресурсы пина
     hellaSensor.unregister();
 
 #if EFI_PROD_CODE
-    hellaSensor.deInit();
-#endif
+    if (isBrainPinValid(hellaOilLevelPin))
+        efiExtiDisablePin(hellaOilLevelPin);
+
+    hellaOilLevelPin = Gpio::Unassigned;
 }
 #else
-// Если фича выключена, предоставить пустые заглушки (чтобы линковка была корректной)
-void initHellaOilLevelSensor(bool /*isFirstTime*/) { }
-void deInitHellaOilLevelSensor() { }
+void initHellaOilLevelSensor(bool /*isFirstTime*/) {}
+void deInitHellaOilLevelSensor() {}
 #endif

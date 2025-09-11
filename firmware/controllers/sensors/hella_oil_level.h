@@ -7,16 +7,26 @@ class HellaOilLevelSensor : public StoredValueSensor {
 public:
     explicit HellaOilLevelSensor(SensorType sensorType = SensorType::HellaOilLevel);
 
+    // Инициализация с передачей пина (EXTI) и регистрация сенсора
     void init(brain_pin_e pin);
-    void deInit();
-    void onEdge(efitick_t nowNt);
 
+    // Очистка ресурсов пина и дерегистрация
+    void deInit();
+
+    // Обработчик прерывания с передачей времени и уровня сигнала (true = High, false = Low)
+    void onEdge(efitick_t nowNt, bool value);
+
+    // Получение уровня масла в мм
     float getLevelMm() const;
+
+    // Получение температуры масла в градусах Цельсия
     float getTempC() const;
 
+    // Флаги валидности измерений
     bool isLevelValid() const;
     bool isTempValid() const;
 
+    // Сырые значения импульсов (микросекунды)
     int32_t getLevelRawPulseUs() const;
     int32_t getTempRawPulseUs() const;
 
@@ -40,3 +50,4 @@ private:
     void setLevel(float level, bool valid);
     void setTemp(float temp, bool valid);
 };
+
