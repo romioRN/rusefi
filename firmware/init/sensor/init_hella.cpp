@@ -45,3 +45,4 @@ void deInitHellaOilLevelSensor() {
 void initHellaOilLevelSensor(bool /*isFirstTime*/) {}
 void deInitHellaOilLevelSensor() {}
 #endif
+#endif
