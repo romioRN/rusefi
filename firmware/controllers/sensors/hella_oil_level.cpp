@@ -40,7 +40,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         prevFall = callback_ms;
         efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms", cb_num, callback_ms, width);
     }
-   /*
+   
     if (value) {
         pulseTimer.reset(nowNt);
         float dt = betweenTimer.getElapsedSecondsAndReset(nowNt);
@@ -91,7 +91,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
             engineConfiguration->hellaOilLevel.rawPulseUsLevel = lastPulseWidthLevelUs;
             engineConfiguration->hellaOilLevel.rawPulseUsTemp = lastPulseWidthTempUs;
         }
-    } */
+    } 
 }
 
 static void hellaExtiCallback(void*, efitick_t nowNt) {
