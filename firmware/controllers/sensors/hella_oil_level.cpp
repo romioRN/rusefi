@@ -95,13 +95,14 @@ void initHellaOilLevelSensor(bool isFirstTime) {
     hellaPin = engineConfiguration->hellaOilLevelPin;
     
    if (isFirstTime) {
-     addConsoleAction("hellainfo", []() {
-        efiPrintf("HellaOil Level=%.1fmm[%s] Temp=%.1f°C[%s] RawL=%uμs RawT=%uμs",
+    addConsoleAction("hellainfo", []() {
+        efiPrintf("HellaOil Level=%.1fmm[%s] Temp=%.1f°C[%s] RawL=%luμs RawT=%luμs",
                   lastLevelMm, levelValid ? "OK" : "NO",
                   lastTempC, tempValid ? "OK" : "NO",
-                  lastPulseWidthLevelUs, lastPulseWidthTempUs);
-     });
-   }
+                  static_cast<unsigned long>(lastPulseWidthLevelUs), 
+                  static_cast<unsigned long>(lastPulseWidthTempUs));
+    });
+  }
 #endif // EFI_PROD_CODE
 
     levelSensor.Register();
