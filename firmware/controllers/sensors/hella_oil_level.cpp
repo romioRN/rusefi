@@ -30,7 +30,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
   cb_num++;
     
     //float callback_ms = nowNt / OSAL_ST_FREQUENCY;
-    float callback_ms = nowNt / 100000.0f;
+    float callback_ms = nowNt / 1000000.0f;
 
     if (value) {
         float dt = callback_ms - prevRise;
