@@ -558,19 +558,29 @@ static void updateMiscSensors() {
 }
 
 static void updateHellaOilSensors() {
+#if EFI_HELLA_OIL
+    // Обновляем основные значения
     SensorResult level = Sensor::get(SensorType::HellaOilLevel);
-    engine->outputChannels.hellaOilLevelValue = level.value_or(0);
-   // engine->outputChannels.hellaOilLevelValid = level.Valid;
-
+    engine->outputChannels.hellaOilLevelMm = level.value_or(0);
+    
     SensorResult temp = Sensor::get(SensorType::HellaOilTemperature);
-    engine->outputChannels.hellaOilTempValue = temp.value_or(0);
-  //  engine->outputChannels.hellaOilTempValid = temp.Valid;
-
+    engine->outputChannels.hellaOilTempC = temp.value_or(0);
+    
+    // Обновляем сырые значения
     SensorResult rawLevel = Sensor::get(SensorType::HellaOilLevelRawPulse);
-    engine->outputChannels.hellaOilLevelRawPulseUs = rawLevel.value_or(0);
-
+    engine->outputChannels.hellaOilLevelRawUs = static_cast<uint32_t>(rawLevel.value_or(0));
+    
     SensorResult rawTemp = Sensor::get(SensorType::HellaOilTempRawPulse);
-    engine->outputChannels.hellaOilTempRawPulseUs = rawTemp.value_or(0);
+    engine->outputChannels.hellaOilTempRawUs = static_cast<uint32_t>(rawTemp.value_or(0));
+    
+    // Синхронизируем с конфигурацией для вывода в TunerStudio
+    if (engineConfiguration) {
+        engineConfiguration->hellaOilLevel.levelMm = level.value_or(0);
+        engineConfiguration->hellaOilLevel.tempC = temp.value_or(0);
+        engineConfiguration->hellaOilLevel.rawPulseUsLevel = static_cast<uint32_t>(rawLevel.value_or(0));
+        engineConfiguration->hellaOilLevel.rawPulseUsTemp = static_cast<uint32_t>(rawTemp.value_or(0));
+    }
+#endif // EFI_HELLA_OIL
 }
 
 static void updateSensors() {
