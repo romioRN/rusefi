@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stored_value_sensor.h"
-#include "timer.h"
+// НЕ НУЖЕН include для Timer - он уже есть в pch.h или где-то еще
 
 class HellaOilLevelSensor : public StoredValueSensor {
 public:
@@ -26,8 +26,8 @@ public:
 
 private:
     brain_pin_e m_pin = Gpio::Unassigned;
-    Timer m_pulseTimer;
-    Timer m_betweenPulseTimer;
+    Timer m_pulseTimer;         // КАК В FREQUENCY SENSOR
+    Timer m_betweenPulseTimer;  // КАК В FREQUENCY SENSOR
 
     enum class NextPulse { None, Temp, Level, Diag };
     NextPulse m_nextPulse = NextPulse::None;
@@ -44,5 +44,4 @@ private:
     void setTemp(float temp, bool valid);
 };
 
-// Глобальный экземпляр
 extern HellaOilLevelSensor hellaSensor;
