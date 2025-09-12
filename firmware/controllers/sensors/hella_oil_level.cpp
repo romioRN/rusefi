@@ -20,7 +20,7 @@ void HellaOilLevelSensor::init(brain_pin_e pin) {
     // Регистрируем основной сенсор
     Register();
     
-    // Регистрируем функциональные сенсоры через лямбды (САМЫЙ ПРОСТОЙ СПОСОБ)
+    // Регистрируем функциональные сенсоры через лямбды (ТОЧНО КАК В FREQUENCY SENSOR)
     registerFunctionalSensor(SensorType::HellaOilTemperature, 
                             [this]() { return getTempC(); }, 
                             [this]() { return isTempValid(); });
@@ -36,14 +36,15 @@ void HellaOilLevelSensor::init(brain_pin_e pin) {
 
 void HellaOilLevelSensor::deInit() {
     unregister();
-    // Функциональные сенсоры автоматически отключаются при unregister основного
     m_pin = Gpio::Unassigned;
 }
 
 void HellaOilLevelSensor::onEdge(efitick_t nowNt, bool value) {
     if (value) {
-        // Rising edge: начинаем измерение импульса
+        // Rising edge: начинаем измерение импульса (КАК В FREQUENCY SENSOR)
         m_pulseTimer.reset(nowNt);
+        
+        // Измеряем время между импульсами (КАК В FREQUENCY SENSOR)
         float timeBetweenPulses = m_betweenPulseTimer.getElapsedSecondsAndReset(nowNt);
         
         // Определяем тип импульса по паузе между импульсами
@@ -65,7 +66,7 @@ void HellaOilLevelSensor::onEdge(efitick_t nowNt, bool value) {
             m_nextPulse = NextPulse::None;
         }
     } else {
-        // Falling edge: конец импульса, измеряем длительность
+        // Falling edge: конец импульса, измеряем длительность (КАК В FREQUENCY SENSOR)
         float lastPulseMs = 1000.0f * m_pulseTimer.getElapsedSeconds(nowNt);
         
         // Проверка валидности импульса
@@ -106,13 +107,11 @@ void HellaOilLevelSensor::onEdge(efitick_t nowNt, bool value) {
             setLevel(levelMm, true);
             setValidValue(levelMm, nowNt);
             
-            // Синхронизируем с конфигурацией для output_channels
-            if (engineConfiguration) {
-                engineConfiguration->hellaOilLevel.levelMm = getLevelMm();
-                engineConfiguration->hellaOilLevel.tempC = getTempC();
-                engineConfiguration->hellaOilLevel.rawPulseUsLevel = getLevelRawPulseUs();
-                engineConfiguration->hellaOilLevel.rawPulseUsTemp = getTempRawPulseUs();
-            }
+            // Синхронизируем с конфигурацией
+            engineConfiguration->hellaOilLevel.levelMm = getLevelMm();
+            engineConfiguration->hellaOilLevel.tempC = getTempC();
+            engineConfiguration->hellaOilLevel.rawPulseUsLevel = getLevelRawPulseUs();
+            engineConfiguration->hellaOilLevel.rawPulseUsTemp = getTempRawPulseUs();
         }
     }
 }
