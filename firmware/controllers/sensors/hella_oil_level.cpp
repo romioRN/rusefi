@@ -4,6 +4,9 @@
 
 #if EFI_HELLA_OIL
 
+static int cb_num = 0;
+static float prevRise = 0;
+static float prevFall = 0;
 
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
@@ -22,10 +25,6 @@ static bool tempValid = false;
 
 #if EFI_PROD_CODE
 static Gpio hellaPin = Gpio::Unassigned;
-
-static int cb_num = 0;
-static float prevRise = 0.0f;
-static float prevFall = 0.0f;
 
 static void hellaOilCallback(efitick_t nowNt, bool value) {
     cb_num++;
@@ -99,6 +98,10 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
     }
 }
 
+
+static void hellaExtiCallback(void*, efitick_t nowNt) {
+    hellaOilCallback(nowNt, efiReadPin(hellaPin) ^ engineConfiguration->hellaOilLevelInverted);
+}
 #endif // EFI_PROD_CODE
 
 
