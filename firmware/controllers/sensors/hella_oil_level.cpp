@@ -85,27 +85,27 @@ static void hellaExtiCallback(void*, efitick_t nowNt) {
 void initHellaOilLevelSensor(bool isFirstTime) {
     efiPrintf("***** HELLA INIT CALLED! isFirstTime=%d *****", isFirstTime);
     efiPrintf("***** EFI_HELLA_OIL = %d *****", EFI_HELLA_OIL);
-    
+
 #if EFI_HELLA_OIL
     efiPrintf("***** HELLA: Starting real initialization *****");
-    
+
 #if EFI_PROD_CODE
     if (!isBrainPinValid(engineConfiguration->hellaOilLevelPin)) {
-        efiPrintf("***** HELLA ERROR: Pin not valid: %d *****", engineConfiguration->hellaOilLevelPin);
+        efiPrintf("***** HELLA ERROR: Pin not valid: %s *****", hwPortname(engineConfiguration->hellaOilLevelPin));
         return;
     }
-    
+
     efiPrintf("***** HELLA: Pin is valid: %s *****", hwPortname(engineConfiguration->hellaOilLevelPin));
-    
+
     if (efiExtiEnablePin("hellaOil", engineConfiguration->hellaOilLevelPin,
                         PAL_EVENT_MODE_BOTH_EDGES, hellaExtiCallback, nullptr) < 0) {
         efiPrintf("***** HELLA ERROR: Failed to enable EXTI! *****");
         return;
     }
-    
+
     hellaPin = engineConfiguration->hellaOilLevelPin;
     efiPrintf("***** HELLA: EXTI enabled successfully! *****");
-    
+
     if (isFirstTime) {
         addConsoleAction("hellainfo", []() {
             efiPrintf("HellaOil Level=%.1fmm[%s] Temp=%.1f°C[%s] RawL=%luμs RawT=%luμs",
@@ -125,11 +125,12 @@ void initHellaOilLevelSensor(bool isFirstTime) {
     rawLevelSensor.Register();
     rawTempSensor.Register();
     efiPrintf("***** HELLA: All sensors registered! *****");
-    
+
 #else
     efiPrintf("***** HELLA: EFI_HELLA_OIL is disabled *****");
 #endif // EFI_HELLA_OIL
 }
+
 
 
 void deInitHellaOilLevelSensor() {
