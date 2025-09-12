@@ -4,9 +4,6 @@
 
 #if EFI_HELLA_OIL
 
-static int cb_num = 0;
-static float prevRise = 0;
-static float prevFall = 0;
 
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
@@ -26,28 +23,27 @@ static bool tempValid = false;
 #if EFI_PROD_CODE
 static Gpio hellaPin = Gpio::Unassigned;
 
+static int cb_num = 0;
+static float prevRise = 0.0f;
+static float prevFall = 0.0f;
+
 static void hellaOilCallback(efitick_t nowNt, bool value) {
-  cb_num++;
-    
-    //float callback_ms = nowNt / OSAL_ST_FREQUENCY;
-    float callback_ms = nowNt / 1000000.0f;
+    cb_num++;
+    // 1 tick = 1 us ⇒ ms = nowNt / 1000.f
+    float callback_ms = nowNt / 1000.0f;
 
     if (value) {
         float dt = callback_ms - prevRise;
         prevRise = callback_ms;
         efiPrintf("CB #%d RISE @ %.3f ms, dt=%.3f ms", cb_num, callback_ms, dt);
-    } else {
-        float width = callback_ms - prevFall;
-        prevFall = callback_ms;
-        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms", cb_num, callback_ms, width);
-    }
-   
-    if (value) {
+
+        // Переводим time между RISE
         pulseTimer.reset(nowNt);
-        float dt = betweenTimer.getElapsedSecondsAndReset(nowNt);
-        if (dt > 0.696f && dt < 0.864f) {
+        float dt_sec = betweenTimer.getElapsedSecondsAndReset(nowNt); // dt_sec в секундах
+        float dt_ms = dt_sec * 1000.0f; // Переводим секунды в миллисекунды для фильтрации
+        if (dt_ms > 696.0f && dt_ms < 864.0f) {
             nextPulse = NextPulse::Temp;
-        } else if (dt > 0.098f && dt < 0.122f) {
+        } else if (dt_ms > 98.0f && dt_ms < 122.0f) {
             switch (nextPulse) {
                 case NextPulse::Temp: nextPulse = NextPulse::Level; break;
                 case NextPulse::Level: nextPulse = NextPulse::Diag; break;
@@ -57,12 +53,18 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
             nextPulse = NextPulse::None;
         }
     } else {
+        float width = callback_ms - prevFall;
+        prevFall = callback_ms;
+        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms", cb_num, callback_ms, width);
+
+        // Правильная ширина импульса (мс)
         float ms = 1000.0f * pulseTimer.getElapsedSeconds(nowNt);
-        if (ms < 20.0f || ms > 100.0f) { 
-            nextPulse = NextPulse::None; 
-            return; 
+        // ms уже в миллисекундах
+        if (ms < 1.0f || ms > 100.0f) { // Можно корректировать диапазон
+            nextPulse = NextPulse::None;
+            return;
         }
-        
+
         if (nextPulse == NextPulse::Temp) {
             lastPulseWidthTempUs = static_cast<uint32_t>(ms * 1000.0f);
             lastTempC = interpolateClamped(
@@ -71,6 +73,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
                 engineConfiguration->hellaOilLevel.maxPulseUsTemp / 1000.0f,
                 engineConfiguration->hellaOilLevel.maxTempC,
                 ms);
+
             tempValid = true;
             tempSensor.setValidValue(lastTempC, nowNt);
             rawTempSensor.setValidValue(static_cast<float>(lastPulseWidthTempUs), nowNt);
@@ -82,22 +85,20 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
                 engineConfiguration->hellaOilLevel.maxPulseUsLevel / 1000.0f,
                 engineConfiguration->hellaOilLevel.maxLevelMm,
                 ms);
+
             levelValid = true;
             levelSensor.setValidValue(lastLevelMm, nowNt);
             rawLevelSensor.setValidValue(static_cast<float>(lastPulseWidthLevelUs), nowNt);
-            
-            // Синхронизация с конфигурацией для TunerStudio
+
+            // TunerStudio sync
             engineConfiguration->hellaOilLevel.levelMm = lastLevelMm;
             engineConfiguration->hellaOilLevel.tempC = lastTempC;
             engineConfiguration->hellaOilLevel.rawPulseUsLevel = lastPulseWidthLevelUs;
-            engineConfiguration->hellaOilLevel.rawPulseUsTemp = lastPulseWidthTempUs;
+            engineConfiguration->hellaOilLevel.rawPulseUsTemp  = lastPulseWidthTempUs;
         }
-    } 
+    }
 }
 
-static void hellaExtiCallback(void*, efitick_t nowNt) {
-    hellaOilCallback(nowNt, efiReadPin(hellaPin) ^ engineConfiguration->hellaOilLevelInverted);
-}
 #endif // EFI_PROD_CODE
 
 
