@@ -28,18 +28,18 @@ static Gpio hellaPin = Gpio::Unassigned;
 
 static void hellaOilCallback(efitick_t nowNt, bool value) {
    cb_num++;
-    // Переводим tick-время в миллисекунды
-    float ms = TIME_TO_MS(nowNt);  // если нет такой макроса: ms = nowNt * (1000.0 / ST_FREQUENCY)
+    float callback_ms = nowNt * (1000.0f / ST_FREQUENCY);
+
     if (value) {
-        float dt = ms - prevRise;
-        prevRise = ms;
-        efiPrintf("CB #%d RISE @ %.3f ms, dt=%.3f ms", cb_num, ms, dt);
+        float dt = callback_ms - prevRise;
+        prevRise = callback_ms;
+        efiPrintf("CB #%d RISE @ %.3f ms, dt=%.3f ms", cb_num, callback_ms, dt);
     } else {
-        float width = ms - prevFall;
-        prevFall = ms;
-        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms", cb_num, ms, width);
+        float width = callback_ms - prevFall;
+        prevFall = callback_ms;
+        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms", cb_num, callback_ms, width);
     }
-   
+   /*
     if (value) {
         pulseTimer.reset(nowNt);
         float dt = betweenTimer.getElapsedSecondsAndReset(nowNt);
@@ -90,7 +90,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
             engineConfiguration->hellaOilLevel.rawPulseUsLevel = lastPulseWidthLevelUs;
             engineConfiguration->hellaOilLevel.rawPulseUsTemp = lastPulseWidthTempUs;
         }
-    }
+    } */
 }
 
 static void hellaExtiCallback(void*, efitick_t nowNt) {
