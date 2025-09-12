@@ -9,29 +9,24 @@ static Gpio hellaLevelPin = Gpio::Unassigned;
 static bool hellaLevelInverted = false;
 
 #if EFI_PROD_CODE
-static void hellaOilLevelExtiCallback(void*, efitick_t nowNt) {
-    bool value = efiReadPin(hellaLevelPin) ^ hellaLevelInverted;
-    hellaSensor.onEdge(nowNt, value);
-}
+// Внешний callback из hella_oil_level.cpp
+extern void hellaExtiCallback(void*, efitick_t nowNt);
 #endif
 
 void initHellaOilLevelSensor(bool isFirstTime) {
-    // Сначала деинициализируем если это не первый раз
+    // Деинициализация при повторном вызове
     if (!isFirstTime) {
         deInitHellaOilLevelSensor();
     }
 
 #if EFI_PROD_CODE
-    // Проверяем валидность пина
     if (!isBrainPinValid(engineConfiguration->hellaOilLevelPin)) {
-        criticalError("Hella oil level sensor: invalid pin configuration");
         return;
     }
 
-    // Настраиваем внешнее прерывание
     if (efiExtiEnablePin("hellaOilLevel", engineConfiguration->hellaOilLevelPin,
-                        PAL_EVENT_MODE_BOTH_EDGES, hellaOilLevelExtiCallback, nullptr) < 0) {
-        criticalError("Hella oil level sensor: failed to enable EXTI");
+                        PAL_EVENT_MODE_BOTH_EDGES, hellaExtiCallback, nullptr) < 0) {
+        criticalError("Hella oil sensor: failed to enable EXTI");
         return;
     }
 
@@ -42,25 +37,16 @@ void initHellaOilLevelSensor(bool isFirstTime) {
               hwPortname(engineConfiguration->hellaOilLevelPin));
 #endif
     
-    // Инициализируем сенсор
-    hellaSensor.init(engineConfiguration->hellaOilLevelPin);
-    
-    // Обновляем калибровку из конфигурации
-    hellaSensor.updateCalibrationFromConfig();
-    
-    efiPrintf("Hella oil level sensor calibration updated");
+    // Инициализируем сенсор (теперь это функция, а не метод класса)
+    // Вся логика инициализации перенесена в hella_oil_level.cpp
 }
 
 void deInitHellaOilLevelSensor() {
-    // Деинициализируем сенсор
-    hellaSensor.deInit();
-
 #if EFI_PROD_CODE
     if (isBrainPinValid(hellaLevelPin)) {
         efiExtiDisablePin(hellaLevelPin);
         efiPrintf("Hella oil level sensor EXTI disabled");
     }
-    
     hellaLevelPin = Gpio::Unassigned;
 #endif
     
@@ -68,7 +54,6 @@ void deInitHellaOilLevelSensor() {
 }
 
 #else 
-
 void initHellaOilLevelSensor(bool /*isFirstTime*/) {
     // Заглушка для случая когда EFI_HELLA_OIL отключен
 }
@@ -76,5 +61,4 @@ void initHellaOilLevelSensor(bool /*isFirstTime*/) {
 void deInitHellaOilLevelSensor() {
     // Заглушка для случая когда EFI_HELLA_OIL отключен
 }
-
 #endif // EFI_HELLA_OIL
