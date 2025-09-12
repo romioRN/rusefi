@@ -29,7 +29,7 @@ static Gpio hellaPin = Gpio::Unassigned;
 static void hellaOilCallback(efitick_t nowNt, bool value) {
   cb_num++;
     // Используй OSAL_ST_FREQUENCY  
-    float callback_ms = nowNt * (1000.0f / OSAL_ST_FREQUENCY);
+    float callback_ms = nowNt / OSAL_ST_FREQUENCY;
 
     if (value) {
         float dt = callback_ms - prevRise;
