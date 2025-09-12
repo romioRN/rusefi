@@ -4,6 +4,10 @@
 
 #if EFI_HELLA_OIL
 
+static int cb_num = 0;
+static float prevRise = 0;
+static float prevFall = 0;
+
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
 static StoredValueSensor rawLevelSensor(SensorType::HellaOilLevelRawPulse, MS2NT(2000));
@@ -23,6 +27,19 @@ static bool tempValid = false;
 static Gpio hellaPin = Gpio::Unassigned;
 
 static void hellaOilCallback(efitick_t nowNt, bool value) {
+   cb_num++;
+    // Переводим tick-время в миллисекунды
+    float ms = TIME_TO_MS(nowNt);  // если нет такой макроса: ms = nowNt * (1000.0 / ST_FREQUENCY)
+    if (value) {
+        float dt = ms - prevRise;
+        prevRise = ms;
+        efiPrintf("CB #%d RISE @ %.3f ms, dt=%.3f ms", cb_num, ms, dt);
+    } else {
+        float width = ms - prevFall;
+        prevFall = ms;
+        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms", cb_num, ms, width);
+    }
+   
     if (value) {
         pulseTimer.reset(nowNt);
         float dt = betweenTimer.getElapsedSecondsAndReset(nowNt);
