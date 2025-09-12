@@ -30,6 +30,17 @@ public:
     int32_t getLevelRawPulseUs() const;
     int32_t getTempRawPulseUs() const;
 
+    // Калибровочные параметры для уровня масла (по двум точкам)
+    void setLevelCalibration(float minPulseMs, float maxPulseMs, float minLevelMm, float maxLevelMm);
+    void getLevelCalibration(float& minPulseMs, float& maxPulseMs, float& minLevelMm, float& maxLevelMm) const;
+
+    // Калибровочные параметры для температуры
+    void setTempCalibration(float minPulseMs, float maxPulseMs, float minTempC, float maxTempC);
+    void getTempCalibration(float& minPulseMs, float& maxPulseMs, float& minTempC, float& maxTempC) const;
+
+    // Обновление калибровки из конфигурации
+    void updateCalibrationFromConfig();
+
 private:
     brain_pin_e m_pin = Gpio::Unassigned;
     Timer m_pulseTimer;
@@ -47,7 +58,21 @@ private:
     bool m_levelValid = false;
     bool m_tempValid = false;
 
+    // Калибровочные переменные для уровня
+    float m_levelMinPulseMs = 23.0f;   // мин. длительность импульса (мс)
+    float m_levelMaxPulseMs = 87.86f;  // макс. длительность импульса (мс)
+    float m_levelMinMm = 0.0f;         // мин. уровень (мм)
+    float m_levelMaxMm = 150.0f;       // макс. уровень (мм)
+
+    // Калибровочные переменные для температуры
+    float m_tempMinPulseMs = 23.0f;    // мин. длительность импульса (мс)
+    float m_tempMaxPulseMs = 87.0f;    // макс. длительность импульса (мс)
+    float m_tempMinC = -40.0f;         // мин. температура (°C)
+    float m_tempMaxC = 160.0f;         // макс. температура (°C)
+
     void setLevel(float level, bool valid);
     void setTemp(float temp, bool valid);
 };
 
+// Глобальный экземпляр для доступа из других модулей
+extern HellaOilLevelSensor hellaSensor;
