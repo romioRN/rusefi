@@ -105,8 +105,8 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
 
             engineConfiguration->hellaOilLevel.levelMm = lastLevelMm;
             engineConfiguration->hellaOilLevel.tempC = lastTempC;
-            engineConfiguration->hellaOilLevel.rawPulseUsLevel = lastPulseWidthLevelUs;
-            engineConfiguration->hellaOilLevel.rawPulseUsTemp  = lastPulseWidthTempUs;
+            engineConfiguration->hellaOilLevel.rawPulseUsLevel = lastPulseWidthLevelUs / 1000.0f;
+            engineConfiguration->hellaOilLevel.rawPulseUsTemp  = lastPulseWidthTempUs / 1000.0f;
         } else {
             efiPrintf("  Fall with FSM=%d: not recognized pulse, skip.", (int)nextPulse);
         }
