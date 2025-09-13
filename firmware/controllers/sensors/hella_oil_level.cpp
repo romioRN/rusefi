@@ -15,7 +15,7 @@ static StoredValueSensor rawLevelSensor(SensorType::HellaOilLevelRawPulse, MS2NT
 static StoredValueSensor rawTempSensor(SensorType::HellaOilTempRawPulse, MS2NT(2000));
 
 static Timer pulseTimer, betweenTimer;
-1static enum class NextPulse { None, Temp, Level, Diag } nextPulse = NextPulse::None;
+static enum class NextPulse { None, Temp, Level, Diag } nextPulse = NextPulse::None;
 
 static float lastLevelMm = 0.0f;
 static float lastTempC = 0.0f;
