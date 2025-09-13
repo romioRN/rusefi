@@ -26,92 +26,62 @@ static bool tempValid = false;
 #if EFI_PROD_CODE
 static Gpio hellaPin = Gpio::Unassigned;
 
+static float lastRiseMs = 0;
+static float lastFallMs = 0;
+
 static void hellaOilCallback(efitick_t nowNt, bool value) {
     cb_num++;
     float callback_ms = nowNt / 1000.0f;
 
-    if (value) { // RISE
-        float dt = callback_ms - prevRise;
-        prevRise = callback_ms;
-        efiPrintf("CB #%d RISE @ %.3f ms, dt=%.3f ms, FSM=%d", cb_num, callback_ms, dt, (int)nextPulse);
+    if (value) { // RISE фронт
+        float pause_ms = callback_ms - lastFallMs; // пауза LOW между TEMP-импульсами
+        lastRiseMs = callback_ms;
 
-        pulseTimer.reset(nowNt);
-        float dt_sec = betweenTimer.getElapsedSecondsAndReset(nowNt);
-        float dt_ms = dt_sec * 1000.0f;
-
-        efiPrintf("  RISE(dt_ms)=%.3f, FSM before=%d", dt_ms, (int)nextPulse);
-
-        if (dt_ms > 95.0f && dt_ms < 600.0f) {
-            nextPulse = NextPulse::Temp;
-            efiPrintf("  FSM set to TEMP: nextPulse=%d", (int)nextPulse);
-        } else if (dt_ms >35.0f && dt_ms < 90.0f) {
-            switch (nextPulse) {
-                case NextPulse::Temp:
-                    nextPulse = NextPulse::Level;
-                    efiPrintf("  FSM TEMP->LEVEL: nextPulse=%d", (int)nextPulse);
-                    break;
-                case NextPulse::Level:
-                    nextPulse = NextPulse::Diag;
-                    efiPrintf("  FSM LEVEL->DIAG: nextPulse=%d", (int)nextPulse);
-                    break;
-                default:
-                    nextPulse = NextPulse::None;
-                    efiPrintf("  FSM set NONE: nextPulse=%d", (int)nextPulse);
-            }
-        } else {
-            nextPulse = NextPulse::None;
-            efiPrintf("  FSM out of bounds, set NONE: nextPulse=%d", (int)nextPulse);
-        }
-    } else { // FALL
-        float width = callback_ms - prevFall;
-        prevFall = callback_ms;
-        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms, FSM=%d", cb_num, callback_ms, width, (int)nextPulse);
-
-        float ms = 1000.0f * pulseTimer.getElapsedSeconds(nowNt);
-        efiPrintf("  FALL(ms_width)=%.3f, FSM before=%d", ms, (int)nextPulse);
-
-        if (ms < 1.0f || ms > 100.0f) {
-            efiPrintf("  Impulse width %.3f out of range (1–100 ms), ignore!", ms);
-            nextPulse = NextPulse::None;
-            return;
-        }
-
-        if (nextPulse == NextPulse::Temp) {
-            lastPulseWidthTempUs = static_cast<uint32_t>(ms * 1000.0f);
-            lastTempC = interpolateClamped(
-                engineConfiguration->hellaOilLevel.minPulseUsTemp / 1000.0f,
-                engineConfiguration->hellaOilLevel.minTempC,
-                engineConfiguration->hellaOilLevel.maxPulseUsTemp / 1000.0f,
-                engineConfiguration->hellaOilLevel.maxTempC,
-                ms);
-            efiPrintf("  TEMP: ms=%.3f, us=%.0f, temp=%.3fC", ms, ms*1000.0f, lastTempC);
-
-            tempValid = true;
-            tempSensor.setValidValue(lastTempC, nowNt);
-            rawTempSensor.setValidValue(static_cast<float>(lastPulseWidthTempUs), nowNt);
-        } else if (nextPulse == NextPulse::Level) {
-            lastPulseWidthLevelUs = static_cast<uint32_t>(ms * 1000.0f);
-            lastLevelMm = interpolateClamped(
-                engineConfiguration->hellaOilLevel.minPulseUsLevel / 1000.0f,
-                engineConfiguration->hellaOilLevel.minLevelMm,
-                engineConfiguration->hellaOilLevel.maxPulseUsLevel / 1000.0f,
-                engineConfiguration->hellaOilLevel.maxLevelMm,
-                ms);
-            efiPrintf("  LEVEL: ms=%.3f, us=%.0f, level=%.3fmm", ms, ms*1000.0f, lastLevelMm);
+        // LEVEL: пауза между TEMP-импульсами 90–500 мс
+        if (pause_ms > 90.0f && pause_ms < 500.0f) {
+            float level = interpolateClamped(
+                engineConfiguration->hellaOilLevel.minPauseMsLevel,        // например 90
+                engineConfiguration->hellaOilLevel.minLevelMm,             // min мм
+                engineConfiguration->hellaOilLevel.maxPauseMsLevel,        // например 500
+                engineConfiguration->hellaOilLevel.maxLevelMm,             // max мм
+                pause_ms );
+            efiPrintf("LEVEL: pause=%.3f ms, level=%.3fmm", pause_ms, level);
 
             levelValid = true;
-            levelSensor.setValidValue(lastLevelMm, nowNt);
-            rawLevelSensor.setValidValue(static_cast<float>(lastPulseWidthLevelUs), nowNt);
+            levelSensor.setValidValue(level, nowNt);
+            rawLevelSensor.setValidValue(pause_ms, nowNt);
 
-            engineConfiguration->hellaOilLevel.levelMm = lastLevelMm;
-            engineConfiguration->hellaOilLevel.tempC = lastTempC;
-            engineConfiguration->hellaOilLevel.rawPulseUsLevel = lastPulseWidthLevelUs / 1000.0f;
-            engineConfiguration->hellaOilLevel.rawPulseUsTemp  = lastPulseWidthTempUs / 1000.0f;
-        } else {
-            efiPrintf("  Fall with FSM=%d: not recognized pulse, skip.", (int)nextPulse);
+            engineConfiguration->hellaOilLevel.levelMm = level;
+        }
+    }
+    else { // FALL фронт
+        float width_ms = callback_ms - lastRiseMs;        // ширина HIGH
+        lastFallMs = callback_ms;
+
+        // TEMP: ширина 5–15 мс (короткий HIGH)
+        if (width_ms > 5.0f && width_ms < 15.0f) {
+            float temp = interpolateClamped(
+                engineConfiguration->hellaOilLevel.minPulseMsTemp,         // например 5
+                engineConfiguration->hellaOilLevel.minTempC,
+                engineConfiguration->hellaOilLevel.maxPulseMsTemp,         // например 15
+                engineConfiguration->hellaOilLevel.maxTempC,
+                width_ms );
+            efiPrintf("TEMP: width=%.3f ms, temp=%.3fC", width_ms, temp);
+
+            tempValid = true;
+            tempSensor.setValidValue(temp, nowNt);
+            rawTempSensor.setValidValue(width_ms, nowNt);
+
+            engineConfiguration->hellaOilLevel.tempC = temp;
+        }
+        // DIAG: ширина 20–40 мс
+        else if (width_ms > 20.0f && width_ms < 40.0f) {
+            efiPrintf("DIAG: width=%.3f ms (diagnostic pulse)", width_ms);
+            // если нужно — обработка диагностики
         }
     }
 }
+
 
 
 
