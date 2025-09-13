@@ -92,9 +92,9 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         } else if (nextPulse == NextPulse::Level) {
             lastPulseWidthLevelUs = static_cast<uint32_t>(ms * 1000.0f);
             lastLevelMm = interpolateClamped(
-                engineConfiguration->hellaOilLevel.minPulseUsLevel / 1000.0f,
+                engineConfiguration->hellaOilLevel.minPulseUsLevel / 100000.0f,
                 engineConfiguration->hellaOilLevel.minLevelMm,
-                engineConfiguration->hellaOilLevel.maxPulseUsLevel / 1000.0f,
+                engineConfiguration->hellaOilLevel.maxPulseUsLevel / 100000.0f,
                 engineConfiguration->hellaOilLevel.maxLevelMm,
                 ms);
             efiPrintf("  LEVEL: ms=%.3f, us=%.0f, level=%.3fmm", ms, ms*1000.0f, lastLevelMm);
