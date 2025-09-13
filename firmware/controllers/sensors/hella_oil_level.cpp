@@ -5,8 +5,8 @@
 #if EFI_HELLA_OIL
 
 static int cb_num = 0;
-static float prevRise = 0;
-static float prevFall = 0;
+//static float prevRise = 0;
+//static float prevFall = 0;
 
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
