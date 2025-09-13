@@ -44,7 +44,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         if (dt_ms > 30.0f && dt_ms < 95.0f) {
             nextPulse = NextPulse::Temp;
             efiPrintf("  FSM set to TEMP: nextPulse=%d", (int)nextPulse);
-        } else if (dt_ms > 96.0f && dt_ms < 150.0f) {
+        } else if (dt_ms > 96.0f && dt_ms < 500.0f) {
             switch (nextPulse) {
                 case NextPulse::Temp:
                     nextPulse = NextPulse::Level;
