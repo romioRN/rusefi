@@ -4,7 +4,7 @@
 
 #if EFI_HELLA_OIL
 
-static int cb_num = 0;
+//static int cb_num = 0;
 //static float prevRise = 0;
 //static float prevFall = 0;
 
@@ -25,11 +25,6 @@ static bool tempValid = false;
 
 #if EFI_PROD_CODE
 static Gpio hellaPin = Gpio::Unassigned;
-
-static float lastRiseMs = 0;
-static float lastFallMs = 0;
-
-
 
 static int cb_num = 0;
 static float lastRiseMs = 0;
