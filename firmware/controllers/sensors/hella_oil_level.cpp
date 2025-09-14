@@ -5,9 +5,8 @@
 #if EFI_HELLA_OIL
 
 static int cb_num = 0;
-static float prevRise = 0;
-static float prevFall = 0;
-static float lastTempImpulseEnd = 0;  // время окончания последнего TEMP импульса
+static float lastRise = 0;
+static float lastTempStart = 0;  // время начала последнего TEMP импульса
 
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
@@ -28,16 +27,9 @@ static bool tempValid = false;
 static Gpio hellaPin = Gpio::Unassigned;
 
 
-static int cb_num = 0;
-static float prevRise = 0;
-static float prevFall = 0;
-static float lastTempImpulseEnd = 0;
-static float lastTempImpulseStart = 0;
-static enum class NextPulse { None, Temp, Level, Diag } nextPulse = NextPulse::None;
 
-static int cb_num = 0;
-static float lastRise = 0;
-static float lastTempStart = 0;  // время начала последнего TEMP импульса
+
+
 
 static void hellaOilCallback(efitick_t nowNt, bool value) {
     cb_num++;
