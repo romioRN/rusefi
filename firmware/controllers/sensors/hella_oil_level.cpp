@@ -28,96 +28,76 @@ static bool tempValid = false;
 static Gpio hellaPin = Gpio::Unassigned;
 
 
+static int cb_num = 0;
+static float prevRise = 0;
+static float prevFall = 0;
+static float lastTempImpulseEnd = 0;
+static float lastTempImpulseStart = 0;
+static enum class NextPulse { None, Temp, Level, Diag } nextPulse = NextPulse::None;
+
+static int cb_num = 0;
+static float lastRise = 0;
+static float lastTempStart = 0;  // время начала последнего TEMP импульса
+
 static void hellaOilCallback(efitick_t nowNt, bool value) {
     cb_num++;
-    float callback_ms = nowNt / 1000.0f;
-    
-    if (value) { // RISE
-        float dt = callback_ms - prevRise;
-        prevRise = callback_ms;
-        efiPrintf("CB #%d RISE @ %.3f ms, dt=%.3f ms, FSM=%d", cb_num, callback_ms, dt, (int)nextPulse);
-        
-        // Если есть предыдущий TEMP импульс, вычисляем уровень по LOW паузе
-        if (lastTempImpulseEnd > 0) {
-            float low_pause = callback_ms - lastTempImpulseEnd;
-            efiPrintf("  LOW pause=%.3f ms since last TEMP", low_pause);
-            
-            // LOW time пропорционален уровню масла (по документации)
-            if (low_pause > 20.0f && low_pause < 200.0f) {  // разумный диапазон пауз
-                float level = interpolateClamped(
-                    engineConfiguration->hellaOilLevel.minPulseUsLevel / 1000.0f,  // min пауза мс
-                    engineConfiguration->hellaOilLevel.minLevelMm,                  // min уровень
-                    engineConfiguration->hellaOilLevel.maxPulseUsLevel / 1000.0f,  // max пауза мс
-                    engineConfiguration->hellaOilLevel.maxLevelMm,                  // max уровень
-                    low_pause
-                );
-                efiPrintf("  LEVEL: pause=%.3f ms, level=%.3fmm", low_pause, level);
-                
-                levelValid = true;
-                levelSensor.setValidValue(level, nowNt);
-                rawLevelSensor.setValidValue(low_pause, nowNt);
-                engineConfiguration->hellaOilLevel.levelMm = level;
-            }
-        }
-        
-        pulseTimer.reset(nowNt);
-        float dt_sec = betweenTimer.getElapsedSecondsAndReset(nowNt);
-        float dt_ms = dt_sec * 1000.0f;
-        efiPrintf("  RISE(dt_ms)=%.3f, FSM before=%d", dt_ms, (int)nextPulse);
-        
-        // Определяем тип следующего импульса
-        if (dt_ms > 95.0f && dt_ms < 600.0f) {
-            nextPulse = NextPulse::Temp;
-            efiPrintf("  FSM set to TEMP: nextPulse=%d", (int)nextPulse);
-        } else if (dt_ms > 35.0f && dt_ms < 95.0f) {
-            nextPulse = NextPulse::Diag;  // или другая логика
-            efiPrintf("  FSM set to DIAG: nextPulse=%d", (int)nextPulse);
-        } else {
-            nextPulse = NextPulse::None;
-            efiPrintf("  FSM out of bounds, set NONE: nextPulse=%d", (int)nextPulse);
-        }
+    float t_ms = nowNt / 1000.0f;
+
+    if (value) {  // RISE
+        lastRise = t_ms;
     } 
-    else { // FALL
-        float width = callback_ms - prevFall;
-        prevFall = callback_ms;
-        efiPrintf("CB #%d FALL @ %.3f ms, width=%.3f ms, FSM=%d", cb_num, callback_ms, width, (int)nextPulse);
-        
-        float ms = 1000.0f * pulseTimer.getElapsedSeconds(nowNt);
-        efiPrintf("  FALL(ms_width)=%.3f, FSM before=%d", ms, (int)nextPulse);
-        
-        if (ms < 1.0f || ms > 700.0f) {
-            efiPrintf("  Impulse width %.3f out of range (1–700 ms), ignore!", ms);
-            nextPulse = NextPulse::None;
-            return;
-        }
-        
-        if (nextPulse == NextPulse::Temp) {
-            // HIGH time зависит от температуры масла (по документации)
-            lastPulseWidthTempUs = static_cast<uint32_t>(ms * 1000.0f);
-            lastTempC = interpolateClamped(
+    else {  // FALL
+        float width_ms = t_ms - lastRise;
+        efiPrintf("CB #%d FALL @ %.3f ms, HIGH width=%.3f ms", cb_num, t_ms, width_ms);
+
+        // TEMP = ширина 1-20 ms (фактически ~10.7 мс)
+        if (width_ms >= 1.0f && width_ms <= 22.0f) {
+            float temp = interpolateClamped(
                 engineConfiguration->hellaOilLevel.minPulseUsTemp / 1000.0f,
                 engineConfiguration->hellaOilLevel.minTempC,
                 engineConfiguration->hellaOilLevel.maxPulseUsTemp / 1000.0f,
                 engineConfiguration->hellaOilLevel.maxTempC,
-                ms);
-            efiPrintf("  TEMP: HIGH=%.3f ms, temp=%.3fC", ms, lastTempC);
+                width_ms
+            );
+            efiPrintf("  TEMP: width=%.3f ms → temp=%.3f °C", width_ms, temp);
             
             tempValid = true;
-            tempSensor.setValidValue(lastTempC, nowNt);
-            rawTempSensor.setValidValue(static_cast<float>(lastPulseWidthTempUs), nowNt);
-            engineConfiguration->hellaOilLevel.tempC = lastTempC;
+            tempSensor.setValidValue(temp, nowNt);
+            rawTempSensor.setValidValue(width_ms, nowNt);
+            engineConfiguration->hellaOilLevel.tempC = temp;
             
-            // Запоминаем время окончания TEMP импульса для расчета уровня
-            lastTempImpulseEnd = callback_ms;
-        } 
-        else if (nextPulse == NextPulse::Diag) {
-            efiPrintf("  DIAG: ms=%.3f (diagnostic)", ms);
+            // Уровень масла = время между началами TEMP импульсов
+            if (lastTempStart > 0) {
+                float levelTime = lastRise - lastTempStart;  // ~213 мс из данных
+                
+                float level = interpolateClamped(
+                    engineConfiguration->hellaOilLevel.minPulseUsLevel / 1000.0f,  // мин интервал
+                    engineConfiguration->hellaOilLevel.minLevelMm,
+                    engineConfiguration->hellaOilLevel.maxPulseUsLevel / 1000.0f,  // макс интервал
+                    engineConfiguration->hellaOilLevel.maxLevelMm,
+                    levelTime
+                );
+                efiPrintf("  LEVEL: interval=%.3f ms → level=%.3f mm", levelTime, level);
+                
+                levelValid = true;
+                levelSensor.setValidValue(level, nowNt);
+                rawLevelSensor.setValidValue(levelTime, nowNt);
+                engineConfiguration->hellaOilLevel.levelMm = level;
+            }
+            
+            // Запоминаем время начала этого TEMP импульса
+            lastTempStart = lastRise;
+        }
+        // DIAG = ширина 35-80 ms
+        else if (width_ms >= 35.0f && width_ms <= 80.0f) {
+            efiPrintf("  DIAG: width=%.3f ms", width_ms);
         }
         else {
-            efiPrintf("  Fall with FSM=%d: not recognized pulse, skip.", (int)nextPulse);
+            efiPrintf("  Unknown pulse: width=%.3f ms", width_ms);
         }
     }
 }
+
 
 
 
