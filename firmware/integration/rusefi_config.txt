@@ -494,7 +494,7 @@ struct hella_oil_level_s
 
     uint8_t smoothing; "Filtering coeff, 0..255"; "", 1, 0, 0, 255, 0
 
-    uint32_t rawPulseUsLevel; "Raw last pulse for level, us (output only)"; "us", 1, 0, 0, 100000, 0
+    uint32_t rawPulseUsLevel; "Raw last pulse for level, us (output only)"; "us", 1, 0, 0, 1000000, 0
     uint32_t rawPulseUsTemp; "Raw last pulse for temp, us (output only)"; "us", 1, 0, 0, 1000000, 0
 
     float levelMm; "Decoded level, mm (output only)"; "mm", 1, 0, 0, 400, 1
