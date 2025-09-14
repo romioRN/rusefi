@@ -79,7 +79,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         else if (width_ms >= 35.0f && width_ms <= 45.0f) {
             efiPrintf("  DIAG: width=%.3f ms", width_ms);
         }
-        else if (width_ms >= 155.0f && width_ms <= 165.0f) {
+        else if (width_ms >= 155.0f && width_ms <= 500.0f) {
             efiPrintf("  DATA: width=%.3f ms", width_ms);
         }
         else {
