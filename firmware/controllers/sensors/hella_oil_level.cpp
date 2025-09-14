@@ -41,9 +41,9 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         // TEMP = ширина ~93 ms (подтверждено данными!)
         if (width_ms >= 10.0f && width_ms <= 130.0f) {
             float temp = interpolateClamped(
-                engineConfiguration->hellaOilLevel.minPulseUsTemp / 1000.0f,
+                engineConfiguration->hellaOilLevel.minPulseUsTemp // 1000.0f,
                 engineConfiguration->hellaOilLevel.minTempC,
-                engineConfiguration->hellaOilLevel.maxPulseUsTemp / 1000.0f,
+                engineConfiguration->hellaOilLevel.maxPulseUsTemp // 1000.0f,
                 engineConfiguration->hellaOilLevel.maxTempC,
                 width_ms
             );
@@ -59,9 +59,9 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
                 float levelTime = lastRise - lastTempStart;
                 
                 float level = interpolateClamped(
-                    engineConfiguration->hellaOilLevel.minPulseUsLevel / 1000.0f,  // 1000 мс
+                    engineConfiguration->hellaOilLevel.minPulseUsLevel //1000.0f,  // 1000 мс
                     engineConfiguration->hellaOilLevel.minLevelMm,                  // 0 мм
-                    engineConfiguration->hellaOilLevel.maxPulseUsLevel / 1000.0f,  // 3500 мс  
+                    engineConfiguration->hellaOilLevel.maxPulseUsLevel // 1000.0f,  // 3500 мс  
                     engineConfiguration->hellaOilLevel.maxLevelMm,                  // 100 мм
                     levelTime
                 );
