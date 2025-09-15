@@ -64,9 +64,6 @@
 #define EFI_HELLA_OIL_BMW TRUE
 #endif
 
-#ifndef EFI_HELLA_OIL
-#define EFI_HELLA_OIL FALSE
-#endif
 
 #ifndef EFI_USE_OPENBLT
 #define EFI_USE_OPENBLT FALSE
