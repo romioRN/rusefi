@@ -39,7 +39,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         float width_ms = t_ms - lastRise;
         efiPrintf("CB #%d FALL @ %.3f ms, HIGH width=%.3f ms", cb_num, t_ms, width_ms);
 
-        // TEMP = ширина ~93 ms (подтверждено данными!)
+        // TEMP = ширина 
         if (width_ms >= 5.0f && width_ms <= 140.0f) {
             float temp = interpolateClamped(
                 engineConfiguration->hellaOilLevel.minPulseUsTemp, 
