@@ -49,9 +49,6 @@
 #define EFI_SENT_SUPPORT FALSE
 
 
-#define EFI_HELLA_OIL_BMW FALSE
-
-
 /**
  * todo: we *plan* an (integration) test
  */

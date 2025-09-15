@@ -9,10 +9,10 @@ static float lastRise = 0;
 static float lastTempStart = 0;  // время начала последнего TEMP импульса
 
 
-static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
-static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
-static StoredValueSensor rawLevelSensor(SensorType::HellaOilLevelRawPulse, MS2NT(2000));
-static StoredValueSensor rawTempSensor(SensorType::HellaOilTempRawPulse, MS2NT(2000));
+static StoredValueSensor levelSensor(SensorType::HellaOilLevel_2, MS2NT(2000));
+static StoredValueSensor tempSensor(SensorType::HellaOilTemperature_2, MS2NT(2000));
+static StoredValueSensor rawLevelSensor(SensorType::HellaOilLevelRawPulse_2, MS2NT(2000));
+static StoredValueSensor rawTempSensor(SensorType::HellaOilTempRawPulse_2, MS2NT(2000));
 
 static Timer pulseTimer, betweenTimer;
 
