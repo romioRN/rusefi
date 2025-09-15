@@ -60,8 +60,8 @@
 #define EFI_BACKUP_SRAM TRUE
 #endif
 
-#ifndef EFI_HELLA_OIL_BMW
-#define EFI_HELLA_OIL_BMW TRUE
+#ifndef EFI_HELLA_OIL
+#define EFI_HELLA_OIL TRUE
 #endif
 
 #ifndef EFI_USE_OPENBLT

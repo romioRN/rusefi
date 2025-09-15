@@ -2,7 +2,7 @@
 #include "hella_oil_level_bmw.h"
 #include "digital_input_exti.h"  
 
-#if EFI_HELLA_OIL_BMW
+#if EFI_HELLA_OIL
 
 static int cb_num = 0;
 static float lastRise = 0;
@@ -106,7 +106,7 @@ void initHellaOilLevelSensor(bool isFirstTime) {
     efiPrintf("***** HELLA INIT CALLED! isFirstTime=%d *****", isFirstTime);
     efiPrintf("***** EFI_HELLA_OIL = %d *****", EFI_HELLA_OIL);
 
-#if EFI_HELLA_OIL_BMW
+#if EFI_HELLA_OIL
     efiPrintf("***** HELLA: Starting real initialization *****");
 
 #if EFI_PROD_CODE
