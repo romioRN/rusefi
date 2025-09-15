@@ -2,7 +2,7 @@
 #include "hella_oil_level_bmw.h"
 #include "digital_input_exti.h"  
 
-#if EFI_HELLA_OIL
+#if EFI_HELLA_OIL_BMW
 
 static int cb_num = 0;
 static float lastRise = 0;
@@ -104,7 +104,7 @@ void initHellaOilLevelSensor(bool isFirstTime) {
     efiPrintf("***** HELLA INIT CALLED! isFirstTime=%d *****", isFirstTime);
     efiPrintf("***** EFI_HELLA_OIL = %d *****", EFI_HELLA_OIL);
 
-#if EFI_HELLA_OIL
+#if EFI_HELLA_OIL_BMW
     efiPrintf("***** HELLA: Starting real initialization *****");
 
 #if EFI_PROD_CODE
@@ -146,7 +146,7 @@ void initHellaOilLevelSensor(bool isFirstTime) {
 
 #else
     efiPrintf("***** HELLA: EFI_HELLA_OIL is disabled *****");
-#endif // EFI_HELLA_OIL
+#endif // EFI_HELLA_OIL_BMW
 }
 
 
@@ -183,4 +183,4 @@ bool isHellaOilLevelValid() { return false; }
 bool isHellaOilTempValid() { return false; }
 uint32_t getHellaOilLevelRawUs() { return 0; }
 uint32_t getHellaOilTempRawUs() { return 0; }
-#endif // EFI_HELLA_OIL
+#endif // EFI_HELLA_OIL_BMW
