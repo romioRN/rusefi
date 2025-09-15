@@ -4,9 +4,6 @@
 
 #if EFI_HELLA_OIL_BMW
 
-static int cb_num = 0;
-static float lastRise = 0;
-static float lastTempStart = 0;  // время начала последнего TEMP импульса
 
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
@@ -25,6 +22,10 @@ static bool tempValid = false;
 
 #if EFI_PROD_CODE
 static Gpio hellaPin = Gpio::Unassigned;
+
+static int cb_num = 0;
+static float lastRise = 0;
+static float lastTempStart = 0;  // время начала последнего TEMP импульса
 
 
 static void hellaOilCallback(efitick_t nowNt, bool value) {
