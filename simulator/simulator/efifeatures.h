@@ -49,7 +49,8 @@
 #define EFI_SENT_SUPPORT FALSE
 
 
-#define EFI_ENGINE_EMULATOR TRUE
+#define EFI_HELLA_OIL_BMW TRUE
+
 
 /**
  * todo: we *plan* an (integration) test
