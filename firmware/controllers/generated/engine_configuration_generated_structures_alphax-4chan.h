@@ -102,11 +102,12 @@ static_assert(sizeof(stft_s) == 28);
 // start of ltft_s
 struct ltft_s {
 	/**
-	 * Enables lambda sensor long term fuel corrections learning
+	 * Enables lambda sensor long term fuel corrections data gathering into LTFT trim tables
 	offset 0 bit 0 */
 	bool enabled : 1 {};
 	/**
-	 * Enables applying long term fuel corrections
+	 * Apply LTFT trims into fuel calculation on top of VE table.
+	 * We do not adjust VE table automatically, please click 'Apply to VE' if you want to adjust your VE tables and reset trims.
 	offset 0 bit 1 */
 	bool correctionEnabled : 1 {};
 	/**
@@ -1422,14 +1423,14 @@ struct engine_configuration_s {
 	 * units: ADC
 	 * offset 240
 	 */
-	int16_t tpsMin;
+	tps_limit_t tpsMin;
 	/**
 	 * Full throttle.
 	 * See also tps1_1AdcChannel
 	 * units: ADC
 	 * offset 242
 	 */
-	int16_t tpsMax;
+	tps_limit_t tpsMax;
 	/**
 	 * TPS error detection: what throttle % is unrealistically low?
 	 * Also used for accelerator pedal error detection if so equipped.
@@ -2612,12 +2613,12 @@ struct engine_configuration_s {
 	 * units: ADC
 	 * offset 908
 	 */
-	uint16_t tps1SecondaryMin;
+	tps_limit_t tps1SecondaryMin;
 	/**
 	 * units: ADC
 	 * offset 910
 	 */
-	uint16_t tps1SecondaryMax;
+	tps_limit_t tps1SecondaryMax;
 	/**
 	 * Maximum time to crank starter when start/stop button is pressed
 	 * units: Seconds
