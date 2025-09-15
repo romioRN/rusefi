@@ -16,7 +16,6 @@ static StoredValueSensor rawTempSensor(SensorType::HellaOilTempRawPulse_2, MS2NT
 
 static Timer pulseTimer, betweenTimer;
 
-
 static float lastLevelMm = 0.0f;
 static float lastTempC = 0.0f;
 static uint32_t lastPulseWidthLevelUs = 0;
