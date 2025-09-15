@@ -3,7 +3,7 @@
 void initHellaOilLevelSensor(bool isFirstTime);
 void deInitHellaOilLevelSensor();
 
-#if EFI_HELLA_OIL_BMW
+#if EFI_HELLA_OIL
 float getHellaOilLevelMm();
 float getHellaOilTempC();
 bool  isHellaOilLevelValid();
