@@ -97,7 +97,7 @@ static void hellaExtiCallback(void*, efitick_t nowNt) {
 
 void initHellaOilLevelSensor(bool isFirstTime) {
     efiPrintf("***** HELLA INIT CALLED! isFirstTime=%d *****", isFirstTime);
-    efiPrintf("***** EFI_HELLA_OIL = %d *****", EFI_HELLA_OIL);
+    efiPrintf("***** EFI_HELLA_OIL_BMW = %d *****", EFI_HELLA_OIL_BMW);
 
 #if EFI_HELLA_OIL_BMW
     efiPrintf("***** HELLA: Starting real initialization *****");
@@ -140,8 +140,8 @@ void initHellaOilLevelSensor(bool isFirstTime) {
     efiPrintf("***** HELLA: All sensors registered! *****");
 
 #else
-    efiPrintf("***** HELLA: EFI_HELLA_OIL is disabled *****");
-#endif // EFI_HELLA_OIL
+    efiPrintf("***** HELLA: EFI_HELLA_OIL_BMW is disabled *****");
+#endif // EFI_HELLA_OIL_BMW
 }
 
 
@@ -169,7 +169,7 @@ uint32_t getHellaOilLevelRawUs() { return lastPulseWidthLevelUs; }
 uint32_t getHellaOilTempRawUs() { return lastPulseWidthTempUs; }
 
 #else
-// Заглушки когда EFI_HELLA_OIL отключен
+// Заглушки когда EFI_HELLA_OIL_BMW отключен
 void initHellaOilLevelSensor(bool /*isFirstTime*/) {}
 void deInitHellaOilLevelSensor() {}
 float getHellaOilLevelMm() { return 0.0f; }
@@ -178,4 +178,4 @@ bool isHellaOilLevelValid() { return false; }
 bool isHellaOilTempValid() { return false; }
 uint32_t getHellaOilLevelRawUs() { return 0; }
 uint32_t getHellaOilTempRawUs() { return 0; }
-#endif // EFI_HELLA_OIL
+#endif // EFI_HELLA_OIL_bMW
