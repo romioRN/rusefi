@@ -8,13 +8,13 @@ static int cb_num = 0;
 static float lastRise = 0;
 static float lastTempStart = 0;  // время начала последнего TEMP импульса
 
-
 static StoredValueSensor levelSensor(SensorType::HellaOilLevel, MS2NT(2000));
 static StoredValueSensor tempSensor(SensorType::HellaOilTemperature, MS2NT(2000));
 static StoredValueSensor rawLevelSensor(SensorType::HellaOilLevelRawPulse, MS2NT(2000));
 static StoredValueSensor rawTempSensor(SensorType::HellaOilTempRawPulse, MS2NT(2000));
 
 static Timer pulseTimer, betweenTimer;
+
 
 static float lastLevelMm = 0.0f;
 static float lastTempC = 0.0f;
@@ -25,7 +25,6 @@ static bool tempValid = false;
 
 #if EFI_PROD_CODE
 static Gpio hellaPin = Gpio::Unassigned;
-
 
 
 static void hellaOilCallback(efitick_t nowNt, bool value) {
@@ -39,12 +38,12 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         float width_ms = t_ms - lastRise;
         efiPrintf("CB #%d FALL @ %.3f ms, HIGH width=%.3f ms", cb_num, t_ms, width_ms);
 
-        // TEMP = ширина 
-        if (width_ms >= 5.0f && width_ms <= 140.0f) {
+        // TEMP = ширина ~93 ms (подтверждено данными!)
+        if (width_ms >= 10.0f && width_ms <= 130.0f) {
             float temp = interpolateClamped(
-                engineConfiguration->hellaOilLevel.minPulseUsTemp, 
+                engineConfiguration->hellaOilLevel.minPulseUsTemp, // 1000.0f,
                 engineConfiguration->hellaOilLevel.minTempC,
-                engineConfiguration->hellaOilLevel.maxPulseUsTemp, 
+                engineConfiguration->hellaOilLevel.maxPulseUsTemp, // 1000.0f,
                 engineConfiguration->hellaOilLevel.maxTempC,
                 width_ms
             );
@@ -60,10 +59,10 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
                 float levelTime = lastRise - lastTempStart;
                 
                 float level = interpolateClamped(
-                    engineConfiguration->hellaOilLevel.minPulseUsLevel, // 1000 мс
-                    engineConfiguration->hellaOilLevel.minLevelMm,      // 0 мм
-                    engineConfiguration->hellaOilLevel.maxPulseUsLevel, // 3500 мс  
-                    engineConfiguration->hellaOilLevel.maxLevelMm,      // 100 мм
+                    engineConfiguration->hellaOilLevel.minPulseUsLevel, //1000.0f,  // 1000 мс
+                    engineConfiguration->hellaOilLevel.minLevelMm,                  // 0 мм
+                    engineConfiguration->hellaOilLevel.maxPulseUsLevel, // 1000.0f,  // 3500 мс  
+                    engineConfiguration->hellaOilLevel.maxLevelMm,                  // 100 мм
                     levelTime
                 );
                 efiPrintf("  LEVEL: interval=%.3f ms → level=%.3f mm", levelTime, level);
@@ -80,7 +79,7 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         else if (width_ms >= 35.0f && width_ms <= 45.0f) {
             efiPrintf("  DIAG: width=%.3f ms", width_ms);
         }
-        else if (width_ms >= 155.0f && width_ms <= 500.0f) {
+        else if (width_ms >= 155.0f && width_ms <= 165.0f) {
             efiPrintf("  DATA: width=%.3f ms", width_ms);
         }
         else {
@@ -88,11 +87,6 @@ static void hellaOilCallback(efitick_t nowNt, bool value) {
         }
     }
 }
-
-
-
-
-
 
 
 static void hellaExtiCallback(void*, efitick_t nowNt) {
@@ -147,7 +141,7 @@ void initHellaOilLevelSensor(bool isFirstTime) {
 
 #else
     efiPrintf("***** HELLA: EFI_HELLA_OIL is disabled *****");
-#endif // EFI_HELLA_OIL_BMW
+#endif // EFI_HELLA_OIL
 }
 
 
@@ -184,4 +178,4 @@ bool isHellaOilLevelValid() { return false; }
 bool isHellaOilTempValid() { return false; }
 uint32_t getHellaOilLevelRawUs() { return 0; }
 uint32_t getHellaOilTempRawUs() { return 0; }
-#endif // EFI_HELLA_OIL_BMW
+#endif // EFI_HELLA_OIL
