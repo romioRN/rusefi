@@ -170,10 +170,10 @@ enum class SensorType : unsigned char {
 	// Let's always have all auxiliary sensors at the end - please add specific sensors above auxiliary
 
  
-  HellaOilLevel_2,
-  HellaOilLevelRawPulse_2,
-  HellaOilTemperature_2,
-  HellaOilTempRawPulse_2,         
+  HellaOilLevel,
+  HellaOilLevelRawPulse,
+  HellaOilTemperature,
+  HellaOilTempRawPulse,         
   // Leave me at the end!
 	PlaceholderLast,
 };
