@@ -23,6 +23,7 @@ CONTROLLERS_SRC_CPP = \
 	$(CONTROLLERS_DIR)/actuators/gppwm_channel_reader.cpp \
 	$(CONTROLLERS_DIR)/actuators/gppwm/gppwm_channel.cpp \
 	$(CONTROLLERS_DIR)/actuators/gppwm/gppwm.cpp \
+	$(CONTROLLERS_DIR)/actuators/bldc_servo_controller.cpp \
 	$(CONTROLLERS_DIR)/gauges/speedometer.cpp \
 	$(CONTROLLERS_DIR)/gauges/malfunction_indicator.cpp \
 	$(CONTROLLERS_DIR)/system/timer/single_timer_executor.cpp \
