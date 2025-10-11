@@ -64,6 +64,10 @@
 #define EFI_HELLA_OIL FALSE
 #endif
 
+#ifndef EFI_BLDC_SERVO
+#define EFI_BLDC_SERVO TRUE
+#endif
+
 #ifndef EFI_USE_OPENBLT
 #define EFI_USE_OPENBLT FALSE
 #endif

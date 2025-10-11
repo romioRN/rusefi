@@ -145,6 +145,82 @@ static void printTsStats(void) {
 	efiPrintf("Primary UART TX %s", hwPortname(EFI_CONSOLE_TX_BRAIN_PIN));
 #endif /* EFI_CONSOLE_RX_BRAIN_PIN */
 
+// FIND command handler function and ADD:
+
+#if EFI_BLDC_SERVO
+    // Basic BLDC commands
+    if (strEqualCaseInsensitive(signature, "bldc_enable")) {
+        getBldcServoController().enableController(true);
+        scheduleMsg(&logger, "BLDC controller enabled");
+        return;
+    }
+    
+    if (strEqualCaseInsensitive(signature, "bldc_disable")) {
+        getBldcServoController().enableController(false);
+        scheduleMsg(&logger, "BLDC controller disabled");
+        return;
+    }
+    
+    if (strEqualCaseInsensitive(signature, "bldc_home")) {
+        bool success = getBldcServoController().performHoming();
+        scheduleMsg(&logger, success ? "BLDC homing started" : "BLDC homing failed to start");
+        return;
+    }
+    
+    if (strEqualCaseInsensitive(signature, "bldc_reverse")) {
+        getBldcServoController().reverseDirection();
+        scheduleMsg(&logger, "BLDC direction reversed");
+        return;
+    }
+    
+    if (strEqualCaseInsensitive(signature, "bldc_clear_faults")) {
+        getBldcServoController().clearFaults();
+        scheduleMsg(&logger, "BLDC faults cleared");
+        return;
+    }
+    
+    // ETB mode commands
+    if (strEqualCaseInsensitive(signature, "bldc_etb_enable")) {
+        bool success = getBldcServoController().setEtbMode(true);
+        scheduleMsg(&logger, success ? "BLDC ETB mode enabled" : "BLDC ETB mode enable failed");
+        return;
+    }
+    
+    if (strEqualCaseInsensitive(signature, "bldc_etb_disable")) {
+        getBldcServoController().setEtbMode(false);
+        scheduleMsg(&logger, "BLDC ETB mode disabled");
+        return;
+    }
+    
+    if (strEqualCaseInsensitive(signature, "bldc_etb_sync")) {
+        // Manual sync command
+        float etbPos = engine->outputChannels.throttlePosition;
+        getBldcServoController().setTargetPosition(etbPos);
+        scheduleMsg(&logger, "BLDC synced to ETB position: %.1f%%", etbPos);
+        return;
+    }
+    
+    // Position commands
+    if (strStartsWith(signature, "bldc_set_position ")) {
+        float position = atoff(signature + 18);
+        bool success = getBldcServoController().setTargetPosition(position);
+        scheduleMsg(&logger, success ? "BLDC position set to %.1f%%" : "BLDC position set failed", position);
+        return;
+    }
+    
+    if (strStartsWith(signature, "bldc_etb_test ")) {
+        float testPosition = atoff(signature + 15);
+        if (getBldcServoController().isEtbMode()) {
+            getBldcServoController().setThrottlePosition(testPosition);
+            scheduleMsg(&logger, "BLDC ETB test position set to %.1f%%", testPosition);
+        } else {
+            scheduleMsg(&logger, "BLDC not in ETB mode");
+        }
+        return;
+    }
+#endif
+
+
 #if EFI_USB_SERIAL
 	printUsbConnectorStats();
 #endif // EFI_USB_SERIAL
@@ -1070,3 +1146,4 @@ void startTunerStudioConnectivity() {
 }
 
 #endif // EFI_TUNER_STUDIO
+

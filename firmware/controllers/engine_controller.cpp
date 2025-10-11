@@ -63,6 +63,11 @@
 #include "tuner_detector_utils.h"
 
 
+// ADD TO TOP OF FILE (after existing includes):
+#if EFI_BLDC_SERVO
+#include "bldc_servo_controller.h"
+#endif /* EFI_BLDC_SERVO */
+
 #if EFI_TUNER_STUDIO
 #include "tunerstudio.h"
 #endif /* EFI_TUNER_STUDIO */
@@ -765,3 +770,26 @@ int getRusEfiVersion() {
 	return VCS_DATE;
 }
 #endif /* EFI_UNIT_TEST */
+
+
+// FIND initEngineContoller() function and ADD:
+void initEngineContoller() {
+    // ... existing initialization code ...
+    
+#if EFI_BLDC_SERVO
+    getBldcServoController().init();
+#endif
+    
+    // ... rest of existing code ...
+}
+
+// FIND updateSlowSensors() function and ADD:
+void updateSlowSensors() {
+    // ... existing sensor updates ...
+    
+#if EFI_BLDC_SERVO
+    getBldcServoController().onSlowCallback();
+#endif
+    
+    // ... rest of existing code ...
+}
