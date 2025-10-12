@@ -50,13 +50,13 @@ uint16_t RPMValue;@@GAUGE_NAME_RPM@@;"RPM",1, 0, 0, 8000, 0
 
 
 ! BLDC Servo Controller status channels
-bldc_state_e bldcState;BLDC Servo State
+uint8_t bldcState;BLDC Servo State;"", 1, 0, 0, 5, 0
 float bldcCurrentPosition;BLDC Current Position;"%", 1, 0, 0, 100, 1  
 float bldcTargetPosition;BLDC Target Position;"%", 1, 0, 0, 100, 1
 uint16_t autoscale bldcCurrentMa;BLDC Motor Current;"mA", 1, 0, 0, 10000, 0
 uint8_t bldcHallState;BLDC Hall Sensor State;"state", 1, 0, 0, 7, 0
 uint32_t bldcFaultFlags;BLDC Fault Flags;"flags", 1, 0, 0, 255, 0
-homing_state_e bldcHomingState;BLDC Homing State  
+uint8_t bldcHomingState;BLDC Homing State;"", 1, 0, 0, 6, 0
 float bldcPidOutput;BLDC PID Controller Output;"", 1, 0, -100, 100, 2
 uint16_t autoscale bldcPeakCurrent;BLDC Peak Current;"mA", 1, 0, 0, 10000, 0
 
