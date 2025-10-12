@@ -1070,7 +1070,11 @@ void startTunerStudioConnectivity() {
     
     addConsoleAction("bldc_home", []() {
         bool success = getBldcServoController().performHoming();
-        efiPrintf(success ? "BLDC homing started" : "BLDC homing failed to start");
+        if (success) {
+        efiPrintf("BLDC homing started");
+        } else {
+        efiPrintf("BLDC homing failed to start");
+       }
     });
     
     addConsoleAction("bldc_reverse", []() {
@@ -1084,13 +1088,21 @@ void startTunerStudioConnectivity() {
     });
     
     addConsoleActionF("bldc_set_position", [](float position) {
-        bool success = getBldcServoController().setTargetPosition(position);
-        efiPrintf(success ? "BLDC position set to %.1f%%" : "BLDC position set failed", position);
+       bool success = getBldcServoController().setTargetPosition(position);
+       if (success) {
+       efiPrintf("BLDC position set to %.1f%%", position);
+       } else {
+       efiPrintf("BLDC position set failed");
+      }
     });
     
     addConsoleAction("bldc_etb_enable", []() {
         bool success = getBldcServoController().setEtbMode(true);
-        efiPrintf(success ? "BLDC ETB mode enabled" : "BLDC ETB mode enable failed");
+        if (success) {
+        efiPrintf("BLDC ETB mode enabled");
+        } else {
+        efiPrintf("BLDC ETB mode enable failed");
+        }
     });
     
     addConsoleAction("bldc_etb_disable", []() {
@@ -1099,7 +1111,7 @@ void startTunerStudioConnectivity() {
     });
     
     addConsoleAction("bldc_etb_sync", []() {
-        float etbPos = engine->outputChannels.throttlePosition;
+        float etbPos = engine->outputChannels.throttlePedalPosition;
         getBldcServoController().setTargetPosition(etbPos);
         efiPrintf("BLDC synced to ETB position: %.1f%%", etbPos);
     });
