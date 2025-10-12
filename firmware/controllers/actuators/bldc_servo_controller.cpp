@@ -14,7 +14,7 @@
 #include "engine.h"
 #include "efi_gpio.h"
 #include "adc_inputs.h"
-#include "interpolation.h"
+#include "util/math/interpolation.h"
 #include "idle_thread.h"
 #include "electronic_throttle_impl.h"
 
