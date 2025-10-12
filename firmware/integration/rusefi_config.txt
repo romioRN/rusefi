@@ -457,17 +457,16 @@ end_struct
 
 
 struct bldc_servo_s
-    bit enabled;Enable BLDC Servo
-    bit homingEnabled;Enable Auto Homing
-    bit reverseDirection;Reverse Direction
-    bit etbModeEnabled;Enable ETB Mode
-    bit etbFailsafeEnabled;Enable ETB Failsafe
+    uint8_t enabled;Enable BLDC Servo;"", 1, 0, 0, 1, 0
+    uint8_t homingEnabled;Enable Auto Homing;"", 1, 0, 0, 1, 0
+    uint8_t reverseDirection;Reverse Direction;"", 1, 0, 0, 1, 0
+    uint8_t etbModeEnabled;Enable ETB Mode;"", 1, 0, 0, 1, 0
+    uint8_t etbFailsafeEnabled;Enable ETB Failsafe;"", 1, 0, 0, 1, 0
     
     uint16_t minStallCurrent;Min Stall Current;"mA", 1, 0, 100, 5000, 0
     uint16_t maxCurrent;Max Current Limit;"mA", 1, 0, 100, 10000, 0
     uint16_t homingSpeed;Homing Speed;"RPM", 1, 0, 10, 1000, 0
     uint16_t stallTimeMs;Stall Detection Time;"ms", 1, 0, 10, 2000, 0
-    
     uint16_t etbTransitionRate;ETB Transition Rate;"%/s", 1, 0, 10, 200, 0
     uint16_t autoscale etbDeadband;ETB Position Deadband;"%", 0.1, 0, 1, 50, 1
     
