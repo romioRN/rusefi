@@ -2,12 +2,12 @@
 
 
 #include "periodic_thread_controller.h"
-#include "engine_configuration_generated_structures.h"
+#include "engine_configuration.h"
 #include "closed_loop_controller.h"
 #include "timer.h"
 #include "pid.h"
 #include "sensor.h"
-#include "etb_impl.h"
+#include "electronic_throttle_impl.h"
 
 #if EFI_BLDC_SERVO
 
