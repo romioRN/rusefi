@@ -48,6 +48,27 @@ bit sd_formating; SD: formating is in progress
 
 uint16_t RPMValue;@@GAUGE_NAME_RPM@@;"RPM",1, 0, 0, 8000, 0
 
+
+! BLDC Servo Controller status channels
+bldc_state_e bldcState;BLDC Servo State
+float bldcCurrentPosition;BLDC Current Position;"%", 1, 0, 0, 100, 1  
+float bldcTargetPosition;BLDC Target Position;"%", 1, 0, 0, 100, 1
+uint16_t autoscale bldcCurrentMa;BLDC Motor Current;"mA", 1, 0, 0, 10000, 0
+uint8_t bldcHallState;BLDC Hall Sensor State;"state", 1, 0, 0, 7, 0
+uint32_t bldcFaultFlags;BLDC Fault Flags;"flags", 1, 0, 0, 255, 0
+homing_state_e bldcHomingState;BLDC Homing State  
+float bldcPidOutput;BLDC PID Controller Output;"", 1, 0, -100, 100, 2
+uint16_t autoscale bldcPeakCurrent;BLDC Peak Current;"mA", 1, 0, 0, 10000, 0
+
+! ETB mode status
+bit bldcEtbMode;BLDC ETB Mode Active
+bit bldcEtbFailsafe;BLDC ETB Failsafe Active
+float bldcThrottleTarget;BLDC Throttle Target Position;"%", 1, 0, 0, 100, 1
+float bldcThrottleError;BLDC Throttle Position Error;"%", 1, 0, -100, 100, 1
+
+
+
+
 int16_t rpmAcceleration;dRPM;"RPM acceleration/Rate of Change/ROC",1, 0, 0, 5, 2
 
 	uint16_t autoscale speedToRpmRatio;@@GAUGE_NAME_GEAR_RATIO@@;"value",{1/@@PACK_MULT_PERCENT@@}, 0, 0, 0, 2

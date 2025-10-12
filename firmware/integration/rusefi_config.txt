@@ -125,6 +125,10 @@ struct_no_prefix engine_configuration_s
 
 #define MAP_UPPER_LIMIT 650
 
+! BLDC Servo Controller constants
+#define BLDC_HALL_STATES 8
+#define BLDC_FAULT_COUNT 8
+
 #define LUA_PWM_COUNT 8
 #define LUA_DIGITAL_INPUT_COUNT 8
 
@@ -431,6 +435,51 @@ struct gppwm_channel
 	uint8_t[GPPWM_LOAD_COUNT x GPPWM_RPM_COUNT] autoscale table;;"duty", 0.5, 0, 0, 100, 1
 end_struct
 
+
+! BLDC Servo Controller configuration
+struct bldc_servo_s
+    ! Basic control flags
+    bit enabled;Enable BLDC servo motor control
+    bit homingEnabled;Enable automatic homing on startup  
+    bit reverseDirection;Reverse motor rotation direction
+    bit etbModeEnabled;Enable ETB (Electronic Throttle Body) mode
+    bit etbFailsafeEnabled;Enable automatic failsafe to regular ETB on BLDC fault
+
+    ! Current and timing limits
+    uint16_t minStallCurrent;Current threshold to detect mechanical stops;"mA", 1, 0, 100, 5000, 0
+    uint16_t maxCurrent;Maximum allowed motor current for protection;"mA", 1, 0, 100, 10000, 0  
+    uint16_t homingSpeed;Motor speed during homing procedure;"RPM", 1, 0, 10, 1000, 0
+    uint16_t stallTimeMs;Time current must exceed threshold to confirm stall;"ms", 1, 0, 10, 2000, 0
+    
+    ! ETB mode parameters
+    uint16_t etbTransitionRate;Maximum rate of throttle position changes in ETB mode;"%/s", 1, 0, 10, 200, 0
+    uint8_t autoscale etbDeadband;Position tolerance for ETB control;"%", 0.1, 0, 0.1, 5.0, 1
+
+    ! PID controller for position control
+    pid_s positionPid;
+
+    ! TLE7183F hardware pins
+    output_pin_e highSide1Pin;TLE7183F High Side 1 control pin
+    output_pin_e highSide2Pin;TLE7183F High Side 2 control pin  
+    output_pin_e highSide3Pin;TLE7183F High Side 3 control pin
+    output_pin_e lowSide1Pin;TLE7183F Low Side 1 control pin
+    output_pin_e lowSide2Pin;TLE7183F Low Side 2 control pin
+    output_pin_e lowSide3Pin;TLE7183F Low Side 3 control pin
+    output_pin_e enablePin1;TLE7183F Enable pin 1
+    output_pin_e enablePin2;TLE7183F Enable pin 2  
+    output_pin_e inhibitPin;TLE7183F Inhibit pin
+    
+    ! Sensor pins
+    brain_input_pin_e hallSensor1Pin;Hall effect sensor 1 input
+    brain_input_pin_e hallSensor2Pin;Hall effect sensor 2 input
+    brain_input_pin_e hallSensor3Pin;Hall effect sensor 3 input
+    adc_channel_e currentSensePin;Motor current measurement ADC channel
+end_struct
+
+! Add BLDC servo to engine configuration
+struct bldc_servo_s bldcServo;
+
+
 custom air_pressure_sensor_type_e 1 bits, U08, @OFFSET@, [0:4], "Custom", "DENSO183", "MPX4250", "HONDA3BAR", "NEON_2003", "22012AA090", "GM 3 Bar", "MPX4100", "Toyota 89420-02010", "MPX4250A", "Bosch 2.5", "Mazda1Bar", "GM 2 Bar", "GM 1 Bar", "MPXH6400", "MPXH6300"
 
 !
@@ -447,6 +496,43 @@ air_pressure_sensor_type_e type;
 adc_channel_e hwChannel;
 
 end_struct
+
+
+struct tle7183f_config_s {
+    output_pin_e highSide1Pin;;"High Side 1 Pin";
+    output_pin_e highSide2Pin;;"High Side 2 Pin";
+    output_pin_e highSide3Pin;;"High Side 3 Pin";
+    output_pin_e lowSide1Pin;;"Low Side 1 Pin";
+    output_pin_e lowSide2Pin;;"Low Side 2 Pin";
+    output_pin_e lowSide3Pin;;"Low Side 3 Pin";
+    output_pin_e enablePin1;;"Enable Pin 1";
+    output_pin_e enablePin2;;"Enable Pin 2";
+    output_pin_e inhibitPin;;"Inhibit Pin";
+}
+
+struct bldc_servo_s {
+    bit enabled;;"Enable BLDC Servo";
+    bit homingEnabled;;"Enable Auto Homing";
+    bit reverseDirection;;"Reverse Direction";
+    bit etbModeEnabled;;"Enable ETB Mode";
+    bit etbFailsafeEnabled;;"Enable ETB Failsafe";
+    
+    uint16_t minStallCurrent;mA;;"Min Stall Current";{100:5000}
+    uint16_t maxCurrent;mA;;"Max Current Limit";{100:10000}
+    uint16_t homingSpeed;RPM;;"Homing Speed";{10:1000}
+    uint16_t stallTimeMs;ms;;"Stall Detection Time";{10:2000}
+    
+    uint16_t etbTransitionRate;%/s;;"ETB Transition Rate";{10:200}
+    uint16_t etbDeadband;%;;"ETB Position Deadband";{1:50}, 0.1
+    
+    pid_s positionPid;
+    tle7183f_config_s hardware;
+    
+    brain_input_pin_e hallSensor1Pin;;"Hall Sensor 1 Pin";
+    brain_input_pin_e hallSensor2Pin;;"Hall Sensor 2 Pin";
+    brain_input_pin_e hallSensor3Pin;;"Hall Sensor 3 Pin";
+    adc_channel_e currentSensePin;;"Current Sense ADC Pin";
+}
 
 struct MAP_sensor_config_s
 float[MAP_ANGLE_SIZE] samplingAngleBins;;"", 1, 0, 0, 18000, 2
