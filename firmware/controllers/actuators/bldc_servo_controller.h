@@ -78,7 +78,7 @@ namespace HomingState {
 class BldcServoController : public PeriodicController<256> {
 public:    
     // ThreadController interface - правильный метод для переопределения
-    void ThreadTask() override;
+    void PeriodicTask() override;
     
     // Собственные методы (БЕЗ override)
     void onSlowCallback();
