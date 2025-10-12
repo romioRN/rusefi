@@ -1,5 +1,5 @@
 /*
- * BLDC_control.h
+ * bldc_servo_controller.h
  *
  *  Created on: 12. oct. 2025
  *      Author: Raman Ruzhkou

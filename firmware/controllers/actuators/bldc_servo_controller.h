@@ -1,5 +1,8 @@
 #pragma once
 
+
+#if EFI_BLDC_SERVO
+
 #include "periodic_thread_controller.h"
 #include "engine_configuration.h"
 #include "closed_loop_controller.h"  
@@ -7,8 +10,7 @@
 #include "sensor.h"
 #include "electronic_throttle_impl.h"
 #include "rusefi_types.h"
-
-#if EFI_BLDC_SERVO
+#include "engine.h"  // Содержит класс Timer
 
 enum class BldcState_e {
     DISABLED = 0,
@@ -75,14 +77,17 @@ namespace HomingState {
  */
 class BldcServoController : public PeriodicController<256> {
 public:    
-    // PeriodicController interface
-    void onSlowCallback() override;
-    void onConfigurationChange() override;
+    // ThreadController interface - правильный метод для переопределения
+    void ThreadTask() override;
     
-    // Closed loop controller interface  
-    expected<float> observePlant() override;
-    expected<float> getSetpoint() override;
-    void setOutput(float output) override;
+    // Собственные методы (БЕЗ override)
+    void onSlowCallback();
+    void onConfigurationChange();
+    
+    // Closed loop controller interface (БЕЗ override - это не наследование от интерфейса)  
+    expected<float> observePlant();
+    expected<float> getSetpoint();
+    void setOutput(float output);
     
     // Basic servo control API
     void init();
