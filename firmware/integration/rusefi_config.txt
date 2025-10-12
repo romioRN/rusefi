@@ -490,7 +490,7 @@ struct bldc_servo_s
     uint8_t currentSensePin;Current Sense ADC Pin;"", 1, 0, 0, 20, 0
 end_struct
 
-struct bldc_servo_s bldcServo;
+
 
 struct MAP_sensor_config_s
 float[MAP_ANGLE_SIZE] samplingAngleBins;;"", 1, 0, 0, 18000, 2
