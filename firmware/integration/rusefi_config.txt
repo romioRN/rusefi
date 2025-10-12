@@ -456,7 +456,7 @@ end_struct
 
 
 
-struct bldc_servo_s {
+struct bldc_servo_s
     bit enabled;Enable BLDC Servo
     bit homingEnabled;Enable Auto Homing
     bit reverseDirection;Reverse Direction
@@ -487,7 +487,7 @@ struct bldc_servo_s {
     uint8_t enablePin1;Enable Pin 1;"", 1, 0, 0, 255, 0
     uint8_t enablePin2;Enable Pin 2;"", 1, 0, 0, 255, 0
     uint8_t inhibitPin;Inhibit Pin;"", 1, 0, 0, 255, 0
-}
+end_struct
 
 bldc_servo_s bldcServo;
 
