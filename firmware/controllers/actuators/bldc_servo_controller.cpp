@@ -13,8 +13,7 @@
 #include "engine.h"
 #include "efi_gpio.h"
 #include "adc_inputs.h"
-#include "idle_controller.h"
-#include "launch_control.h"
+#include "idle_thread.h"
 #include "electronic_throttle_impl.h"
 #include "interpolation.h"
 
@@ -378,7 +377,8 @@ float BldcServoController::applyEngineProtections(float baseTarget) {
 }
 
 float BldcServoController::applyLaunchControl(float target) {
-    if (!engine->launchController.isLaunchCondition) {
+    // Простая проверка TPS без launch controller
+    if (Sensor::getOrZero(SensorType::Tps1) > 5.0f) {  // TPS > 5% - не launch
         return target;
     }
     
