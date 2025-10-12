@@ -5,7 +5,7 @@
  *      Author: Raman Ruzhkou
  */
 #include "pch.h"
-#include "util/math/interpolation.h"
+#include "interpolation.h"
 
 #if EFI_BLDC_SERVO
 
