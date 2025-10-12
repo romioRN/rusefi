@@ -5,7 +5,6 @@
  *      Author: Raman Ruzhkou
  */
 #include "pch.h"
-#include "interpolation.h"
 
 #if EFI_BLDC_SERVO
 
