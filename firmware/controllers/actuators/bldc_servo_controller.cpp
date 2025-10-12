@@ -1,8 +1,13 @@
-
+/*
+ * BLDC_control.h
+ *
+ *  Created on: 12. oct. 2025
+ *      Author: Raman Ruzhkou
+ */
+#include "pch.h"
 
 #if EFI_BLDC_SERVO
 
-#include "pch.h"
 #include "bldc_servo_controller.h"
 #include "pwm_generator_logic.h"
 #include "engine.h"
