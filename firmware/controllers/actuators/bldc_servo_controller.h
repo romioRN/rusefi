@@ -1,6 +1,7 @@
 #pragma once
 
-#include "periodic_controller.h"
+
+#include "periodic_thread_controller.h"
 #include "engine_configuration_generated_structures.h"
 #include "closed_loop_controller.h"
 #include "timer.h"
