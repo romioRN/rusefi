@@ -454,17 +454,7 @@ adc_channel_e hwChannel;
 end_struct
 
 
-struct tle7183f_config_s 
-    uint8_t highSide1Pin;High Side 1 Pin;"", 1, 0, 0, 255, 0
-    uint8_t highSide2Pin;High Side 2 Pin;"", 1, 0, 0, 255, 0
-    uint8_t highSide3Pin;High Side 3 Pin;"", 1, 0, 0, 255, 0
-    uint8_t lowSide1Pin;Low Side 1 Pin;"", 1, 0, 0, 255, 0
-    uint8_t lowSide2Pin;Low Side 2 Pin;"", 1, 0, 0, 255, 0
-    uint8_t lowSide3Pin;Low Side 3 Pin;"", 1, 0, 0, 255, 0
-    uint8_t enablePin1;Enable Pin 1;"", 1, 0, 0, 255, 0
-    uint8_t enablePin2;Enable Pin 2;"", 1, 0, 0, 255, 0
-    uint8_t inhibitPin;Inhibit Pin;"", 1, 0, 0, 255, 0
-end_struct
+
 
 struct bldc_servo_s 
     bit enabled;Enable BLDC Servo
@@ -488,6 +478,16 @@ struct bldc_servo_s
     uint8_t hallSensor2Pin;Hall Sensor 2 Pin;"", 1, 0, 0, 255, 0
     uint8_t hallSensor3Pin;Hall Sensor 3 Pin;"", 1, 0, 0, 255, 0
     uint8_t currentSensePin;Current Sense ADC Pin;"", 1, 0, 0, 20, 0
+
+	uint8_t highSide1Pin;High Side 1 Pin;"", 1, 0, 0, 255, 0
+    uint8_t highSide2Pin;High Side 2 Pin;"", 1, 0, 0, 255, 0
+    uint8_t highSide3Pin;High Side 3 Pin;"", 1, 0, 0, 255, 0
+    uint8_t lowSide1Pin;Low Side 1 Pin;"", 1, 0, 0, 255, 0
+    uint8_t lowSide2Pin;Low Side 2 Pin;"", 1, 0, 0, 255, 0
+    uint8_t lowSide3Pin;Low Side 3 Pin;"", 1, 0, 0, 255, 0
+    uint8_t enablePin1;Enable Pin 1;"", 1, 0, 0, 255, 0
+    uint8_t enablePin2;Enable Pin 2;"", 1, 0, 0, 255, 0
+    uint8_t inhibitPin;Inhibit Pin;"", 1, 0, 0, 255, 0
 end_struct
 
  bldc_servo_s bldcServo
