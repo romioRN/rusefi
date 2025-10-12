@@ -5,7 +5,6 @@
 #include "engine_configuration.h"
 #include "closed_loop_controller.h"
 //#include "timer.h"
-#include "global.h"
 #include "pid.h"
 #include "sensor.h"
 #include "electronic_throttle_impl.h"
