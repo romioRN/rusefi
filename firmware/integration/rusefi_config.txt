@@ -2735,6 +2735,12 @@ end_struct
 #define ts_show_ignitionPinMode true
 #define ts_show_vr_threshold_pins true
 
+! BLDC Servo Controller enumerations for TunerStudio
+#define bldc_state_e_enum "Disabled", "Initializing", "Homing", "Ready", "Running", "Fault"
+#define homing_state_e_enum "Idle", "Search Min", "Backup Min", "Search Max", "Backup Max", "Complete", "Failed"  
+#define bldc_fault_code_e_enum "None", "Overcurrent", "Hall Invalid", "Timeout", "Stall", "Homing Failed", "Sensor Error", "Driver Error"
+
+
 
 #define CAN_ECU_SERIAL_RX_ID 0x710
 #define CAN_ECU_SERIAL_TX_ID 0x720
