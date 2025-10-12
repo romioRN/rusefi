@@ -4,10 +4,11 @@
 #include "periodic_thread_controller.h"
 #include "engine_configuration.h"
 #include "closed_loop_controller.h"
-//#include "timer.h"
+#include "timer.h"  // Добавлен инклуд для Timer
 #include "pid.h"
 #include "sensor.h"
 #include "electronic_throttle_impl.h"
+#include "expected.h"  // Добавлен инклуд для expected
 
 #if EFI_BLDC_SERVO
 
@@ -36,7 +37,6 @@ enum class BldcFaultCode_e {
     SENSOR_FAULT,
     COMMUNICATION_ERROR
 };
-
 
 namespace BldcState {
     constexpr BldcState_e DISABLED = BldcState_e::DISABLED;
@@ -75,7 +75,7 @@ namespace HomingState {
  * - Engine protection functions
  * - Automatic failsafe to regular ETB on any fault
  */
-class BldcServoController : public PeriodicController<static_cast<int>(SLOW_CALLBACK_PERIOD_MS)> {
+class BldcServoController : public PeriodicController<256> {
 public:    
     // PeriodicController interface
     void onSlowCallback() override;
