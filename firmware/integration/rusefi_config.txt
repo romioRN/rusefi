@@ -486,7 +486,7 @@ struct bldc_servo_s
     uint16_t stallTimeMs;Stall Detection Time;"ms", 1, 0, 10, 2000, 0
     
     uint16_t etbTransitionRate;ETB Transition Rate;"%/s", 1, 0, 10, 200, 0
-    uint16_t etbDeadband;ETB Position Deadband;"%", 0.1, 0, 1, 50, 1
+    uint16_t autoscale etbDeadband;ETB Position Deadband;"%", 0.1, 0, 1, 50, 1
     
     pid_s positionPid;
     tle7183f_config_s hardware;
