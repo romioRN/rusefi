@@ -436,13 +436,6 @@ struct gppwm_channel
 end_struct
 
 
-
-
-
-! Add BLDC servo to engine configuration
-struct bldc_servo_s bldcServo;
-
-
 custom air_pressure_sensor_type_e 1 bits, U08, @OFFSET@, [0:4], "Custom", "DENSO183", "MPX4250", "HONDA3BAR", "NEON_2003", "22012AA090", "GM 3 Bar", "MPX4100", "Toyota 89420-02010", "MPX4250A", "Bosch 2.5", "Mazda1Bar", "GM 2 Bar", "GM 1 Bar", "MPXH6400", "MPXH6300"
 
 !
