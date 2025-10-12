@@ -472,7 +472,6 @@ struct bldc_servo_s
     uint16_t autoscale etbDeadband;ETB Position Deadband;"%", 0.1, 0, 1, 50, 1
     
     pid_s positionPid;
-    tle7183f_config_s hardware;
     
     uint8_t hallSensor1Pin;Hall Sensor 1 Pin;"", 1, 0, 0, 255, 0
     uint8_t hallSensor2Pin;Hall Sensor 2 Pin;"", 1, 0, 0, 255, 0
