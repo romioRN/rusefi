@@ -1,5 +1,9 @@
 #pragma once
 
+// Добавить дефайн, если не определён
+#ifndef EFI_BLDC_SERVO
+#define EFI_BLDC_SERVO 0
+#endif
 
 #if EFI_BLDC_SERVO
 
@@ -77,7 +81,10 @@ namespace HomingState {
  */
 class BldcServoController : public PeriodicController<256> {
 public:    
-    // ThreadController interface - правильный метод для переопределения
+    // ДОБАВИТЬ КОНСТРУКТОР для PeriodicController
+    BldcServoController() : PeriodicController("BldcServo") {}
+    
+    // PeriodicController interface - правильный метод для переопределения
     void PeriodicTask(efitick_t nowNt) override;
     
     // Собственные методы (БЕЗ override)
