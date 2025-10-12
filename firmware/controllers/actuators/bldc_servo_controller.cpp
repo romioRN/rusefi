@@ -5,7 +5,7 @@
  *      Author: Raman Ruzhkou
  */
 #include "pch.h"
-
+#include "util/math/interpolation.h"
 
 #if EFI_BLDC_SERVO
 
@@ -14,7 +14,7 @@
 #include "engine.h"
 #include "efi_gpio.h"
 #include "adc_inputs.h"
-#include "util/math/interpolation.h"
+
 #include "idle_thread.h"
 #include "electronic_throttle_impl.h"
 
