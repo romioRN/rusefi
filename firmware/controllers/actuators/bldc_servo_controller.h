@@ -11,6 +11,49 @@
 
 #if EFI_BLDC_SERVO
 
+enum class BldcState_e {
+    DISABLED = 0,
+    INITIALIZING,
+    IDLE,
+    HOMING,
+    POSITION_CONTROL,
+    ETB_MODE,
+    FAULT
+};
+
+enum class HomingState_e {
+    IDLE = 0,
+    STARTING,
+    SEARCHING,
+    COMPLETED,
+    FAILED
+};
+
+enum class BldcFaultCode_e {
+    NONE = 0,
+    OVERCURRENT,
+    POSITION_ERROR,
+    SENSOR_FAULT,
+    COMMUNICATION_ERROR
+};
+
+
+namespace BldcState {
+    constexpr BldcState_e DISABLED = BldcState_e::DISABLED;
+    constexpr BldcState_e IDLE = BldcState_e::IDLE;
+    constexpr BldcState_e HOMING = BldcState_e::HOMING;
+    constexpr BldcState_e POSITION_CONTROL = BldcState_e::POSITION_CONTROL;
+    constexpr BldcState_e ETB_MODE = BldcState_e::ETB_MODE;
+    constexpr BldcState_e FAULT = BldcState_e::FAULT;
+}
+
+namespace HomingState {
+    constexpr HomingState_e IDLE = HomingState_e::IDLE;
+    constexpr HomingState_e STARTING = HomingState_e::STARTING;
+    constexpr HomingState_e COMPLETED = HomingState_e::COMPLETED;
+    constexpr HomingState_e FAILED = HomingState_e::FAILED;
+}
+
 /**
  * @brief BLDC Servo Controller with Electronic Throttle Body functionality
  * 
@@ -32,7 +75,7 @@
  * - Engine protection functions
  * - Automatic failsafe to regular ETB on any fault
  */
-class BldcServoController : public PeriodicController<SLOW_CALLBACK_PERIOD_MS> {
+class BldcServoController : public PeriodicController<static_cast<int>(SLOW_CALLBACK_PERIOD_MS)> {
 public:    
     // PeriodicController interface
     void onSlowCallback() override;
