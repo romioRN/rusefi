@@ -2415,7 +2415,7 @@ split_lines@@BOARD_CONFIG_FROM_FILE@@
 
 end_struct
 
-struct bldc_servo_s bldcServo;
+struct bldc_servo_s bldcServo
 
 #define VE_BLEND1_TABLE_NAME "VE blend 1"
 #define HD_MENU_NAME "Harley"
