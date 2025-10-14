@@ -534,10 +534,9 @@ namespace BldcEtbIntegration {
     }
     
     void handleEtbFailsafe() {
-        getBldcServo
-
-Controller().handleEtbFailsafe();
+        getBldcServoController().handleEtbFailsafe();
     }
 }
 
 #endif // EFI_BLDC_SERVO
+
