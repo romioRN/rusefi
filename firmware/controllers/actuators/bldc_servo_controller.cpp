@@ -428,6 +428,63 @@ void BldcServoController::startHoming() {
     m_homingState = HomingState_e::STARTING;
 }
 
+// ============================================
+// НЕДОСТАЮЩИЕ МЕТОДЫ ДЛЯ TUNERSTUDIO.CPP
+// ============================================
+
+void BldcServoController::enableController(bool enable) {
+    if (enable) {
+        if (m_state == BldcState_e::DISABLED) {
+            m_state = BldcState_e::INITIALIZING;
+            initializePins();
+            enableDriver(true);
+            m_isEnabled = true;
+            
+            if (engineConfiguration->bldcServo.homingEnabled && !m_etbModeEnabled) {
+                startHoming();
+            } else {
+                m_state = BldcState_e::IDLE;
+            }
+        }
+    } else {
+        resetState();
+    }
+}
+
+bool BldcServoController::performHoming() {
+    if (m_state == BldcState_e::DISABLED || m_etbModeEnabled) {
+        return false;
+    }
+    
+    startHoming();
+    return true;
+}
+
+void BldcServoController::reverseDirection() {
+    // Переключение направления вращения
+    engineConfiguration->bldcServo.reverseDirection = !engineConfiguration->bldcServo.reverseDirection;
+    efiPrintf("BLDC: Direction reverse toggled to %s", 
+             engineConfiguration->bldcServo.reverseDirection ? "true" : "false");
+}
+
+bool BldcServoController::setTargetPosition(float positionPercent) {
+    if (m_state != BldcState_e::IDLE && m_state != BldcState_e::POSITION_CONTROL) {
+        return false;
+    }
+    
+    // Clamp to valid range
+    positionPercent = clampF(0.0f, positionPercent, 100.0f);
+    
+    m_targetPosition = positionPercent;
+    
+    // Switch to position control mode
+    if (m_state == BldcState_e::IDLE) {
+        m_state = BldcState_e::POSITION_CONTROL;
+    }
+    
+    return true;
+}
+
 // ETB Compatibility methods
 float BldcServoController::getThrottlePosition() const {
     return getCurrentPosition();
@@ -477,7 +534,9 @@ namespace BldcEtbIntegration {
     }
     
     void handleEtbFailsafe() {
-        getBldcServoController().handleEtbFailsafe();
+        getBldcServo
+
+Controller().handleEtbFailsafe();
     }
 }
 

@@ -1,9 +1,7 @@
 #pragma once
 
 // Добавить дефайн, если не определён
-#ifndef EFI_BLDC_SERVO
-#define EFI_BLDC_SERVO 0
-#endif
+
 
 #if EFI_BLDC_SERVO
 
@@ -81,7 +79,7 @@ namespace HomingState {
  */
 class BldcServoController : public PeriodicController<256> {
 public:    
-    // ДОБАВИТЬ КОНСТРУКТОР для PeriodicController
+    // Конструктор для PeriodicController
     BldcServoController() : PeriodicController("BldcServo") {}
     
     // PeriodicController interface - правильный метод для переопределения
@@ -96,14 +94,14 @@ public:
     expected<float> getSetpoint();
     void setOutput(float output);
     
-    // Basic servo control API
+    // Basic servo control API - ВСЕ НУЖНЫЕ МЕТОДЫ ДЛЯ TUNERSTUDIO.CPP
     void init();
     void resetState();
-    bool setTargetPosition(float positionPercent);
+    bool setTargetPosition(float positionPercent);  // ✓ Нужен для tunerstudio.cpp
     float getCurrentPosition() const { return m_currentPosition; }
-    bool performHoming();
-    void reverseDirection();
-    void enableController(bool enable);
+    bool performHoming();                           // ✓ Нужен для tunerstudio.cpp
+    void reverseDirection();                        // ✓ Нужен для tunerstudio.cpp
+    void enableController(bool enable);             // ✓ Нужен для tunerstudio.cpp
     
     // ETB Mode API
     bool setEtbMode(bool enable);
@@ -127,7 +125,7 @@ public:
     // Diagnostics and status
     bool hasFault() const { return m_faultFlags != 0; }
     BldcFaultCode_e getFaultCode() const;
-    void clearFaults() { m_faultFlags = 0; }
+    void clearFaults() { m_faultFlags = 0; }       // ✓ Используется в tunerstudio.cpp
     BldcState_e getState() const { return m_state; }
     float getCurrentMa() const { return m_currentMa; }
     uint8_t getHallState() const { return m_hallState; }
