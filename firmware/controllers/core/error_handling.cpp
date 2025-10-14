@@ -31,7 +31,7 @@ using namespace rusefi::stringutil;
 // this implementation helps avoiding following gcc error/warning:
 // error: 'strncpy' output may be truncated copying xxx bytes from a string of length xxx
 
-static char *efiStrlncpy(char *dest, const char *src, size_t size)
+static char *efiStringCopy(char *dest, const char *src, size_t size)
 {
   size_t i;
 
@@ -458,9 +458,9 @@ void chDbgPanic3(const char *msg, const char * file, int line) {
     auto bkpram = getBackupSram();
   auto err = &bkpram->err;
   if (err->Cookie == ErrorCookie::None) {
-    efiStrlncpy(err->file, file, efi::size(err->file));
+    efiStringCopy(err->file, file, efi::size(err->file));
     err->line = line;
-    efiStrlncpy(err->msg, msg, efi::size(err->msg));
+    efiStringCopy(err->msg, msg, efi::size(err->msg));
     err->Cookie = ErrorCookie::ChibiOsPanic;
     // copy stack last as it can be corrupted and cause another exeption
     uint32_t *sp = &tmp;
@@ -626,7 +626,7 @@ static void firmwareErrorV(ObdCode code, const char *fmt, va_list ap) {
      * in case of simple error message let's reduce stack usage
      * chvsnprintf could cause an overflow if we're already low
      */
-    efiStrlncpy((char*) criticalErrorMessageBuffer, fmt, sizeof(criticalErrorMessageBuffer));
+    efiStringCopy((char*) criticalErrorMessageBuffer, fmt, sizeof(criticalErrorMessageBuffer));
     criticalErrorMessageBuffer[sizeof(criticalErrorMessageBuffer) - 1] = 0; // just to be sure
   } else {
     chvsnprintf(criticalErrorMessageBuffer, sizeof(criticalErrorMessageBuffer), fmt, ap);
@@ -645,7 +645,7 @@ static void firmwareErrorV(ObdCode code, const char *fmt, va_list ap) {
   auto bkpram = getBackupSram();
   auto err = &bkpram->err;
   if (err->Cookie == ErrorCookie::None) {
-    efiStrlncpy(err->msg, criticalErrorMessageBuffer, sizeof(err->msg));
+    efiStringCopy(err->msg, criticalErrorMessageBuffer, sizeof(err->msg));
     err->Cookie = ErrorCookie::FirmwareError;
     // copy stack last as it can be corrupted and cause another exeption
     uint32_t *sp = &tmp;
