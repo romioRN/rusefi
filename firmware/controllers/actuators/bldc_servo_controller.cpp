@@ -16,7 +16,8 @@
 #include "idle_thread.h"
 #include "electronic_throttle_impl.h"
 
-EXTERN_ENGINE;
+// Убрать EXTERN_ENGINE - используем engineConfiguration напрямую
+// EXTERN_ENGINE;
 
 // Global instance
 static BldcServoController instance;
@@ -31,27 +32,24 @@ void BldcServoController::PeriodicTask(efitick_t nowNt) {
 }
 
 void BldcServoController::onSlowCallback() {
-    // Убрать ScopePerf - PE::BldcServoController не существует
-    // ScopePerf perf(PE::BldcServoController);
-    
     // Validate configuration
     if (!m_config || !validateConfiguration()) {
-        if (m_state != BldcState::DISABLED) {
+        if (m_state != BldcState_e::DISABLED) {
             resetState();
         }
         return;
     }
     
-    // Check enable state - использовать engineConfiguration напрямую
+    // Check enable state - используем engineConfiguration напрямую
     if (!engineConfiguration->bldcServo.enabled) {
-        if (m_state != BldcState::DISABLED) {
+        if (m_state != BldcState_e::DISABLED) {
             resetState();
         }
         return;
     }
     
     // Initialize if needed
-    if (m_state == BldcState::DISABLED && engineConfiguration->bldcServo.enabled) {
+    if (m_state == BldcState_e::DISABLED && engineConfiguration->bldcServo.enabled) {
         m_state = BldcState_e::INITIALIZING;
         initializePins();
         enableDriver(true);
@@ -104,9 +102,6 @@ void BldcServoController::onConfigurationChange() {
     
     // Reinitialize PID controller - убрать const cast
     m_positionPid.initPidClass(const_cast<pid_s*>(&m_config->positionPid));
-    
-    // Update current thresholds - использовать существующие поля
-    // m_stallCurrentThreshold = m_config->stallCurrentThreshold;
     
     // Update ETB mode if configuration changed
     if (engineConfiguration->bldcServo.etbModeEnabled != m_etbModeEnabled) {
