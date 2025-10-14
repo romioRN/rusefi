@@ -31,6 +31,7 @@ using namespace rusefi::stringutil;
 // this implementation helps avoiding following gcc error/warning:
 // error: 'strncpy' output may be truncated copying xxx bytes from a string of length xxx
 
+#if EFI_BACKUP_SRAM
 static char *efiStringCopy(char *dest, const char *src, size_t size)
 {
   size_t i;
@@ -42,6 +43,7 @@ static char *efiStringCopy(char *dest, const char *src, size_t size)
 
   return dest;
 }
+#endif
 
 static critical_msg_t warningBuffer;
 static critical_msg_t criticalErrorMessageBuffer;
@@ -610,6 +612,7 @@ const char* getConfigErrorMessage() {
 }
 
 static void firmwareErrorV(ObdCode code, const char *fmt, va_list ap) {
+  UNUSED(code); // Подавить warning об unused parameter
 #if EFI_PROD_CODE
 #if EFI_BACKUP_SRAM
   // following is allocated on stack
@@ -692,3 +695,4 @@ void criticalErrorC(const char *fmt, ...) {
   firmwareErrorV(ObdCode::OBD_PCM_Processor_Fault, fmt, ap);
   va_end(ap);
 }
+
