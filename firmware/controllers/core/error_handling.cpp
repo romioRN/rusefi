@@ -12,6 +12,7 @@
 #include "error_handling_led.h"
 #include "log_hard_fault.h"
 #include "rusefi/critical_error.h"
+#include "libfirmware/util/src/efistring.h"  // Содержит strlncpy
 
 #if EFI_USE_OPENBLT
 /* communication with OpenBLT that is plain C, not to modify external file */
