@@ -379,3 +379,80 @@ void setup_custom_board_overrides() {
 	custom_board_DefaultConfiguration = proteus_boardDefaultConfiguration;
 	custom_board_ConfigOverrides = proteus_boardConfigOverrides;
 }
+
+
+/**
+ * Preset: TFSI Stage 2+ Multi-Injection
+ * Optimized for 2.0 TFSI engines with upgraded turbo
+ */
+void setTFSIStage2MultiInjection() {
+	// Enable multi-injection
+	engineConfiguration->multiInjection.enableMultiInjection = true;
+	engineConfiguration->multiInjection.numberOfInjections = 2;
+	
+	// Split ratio: 60% first (intake), 40% second (compression)
+	engineConfiguration->multiInjection.splitRatio1 = 60;
+	engineConfiguration->multiInjection.splitRatio2 = 40;
+	engineConfiguration->multiInjection.splitRatio3 = 0;
+	engineConfiguration->multiInjection.splitRatio4 = 0;
+	engineConfiguration->multiInjection.splitRatio5 = 0;
+	
+	// Minimum dwell between injections
+	engineConfiguration->multiInjection.dwellAngleBetweenInjections = 20;
+	
+	// Injection timing
+	engineConfiguration->multiInjection.injection1AngleOffset = 300;  // Intake stroke
+	engineConfiguration->multiInjection.injection2AngleOffset = 130;  // Compression stroke
+	
+	// Enable dynamic adjustments
+	engineConfiguration->multiInjection.enableLoadBasedSplit = true;
+	engineConfiguration->multiInjection.enableRpmAngleCorrection = true;
+	engineConfiguration->multiInjection.enableMultiInjectionStaging = false;
+	
+	// Setup table axes
+	static const float rpmBins[MULTI_INJ_RPM_COUNT] = {
+		1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500,
+		5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500
+	};
+	
+	static const uint8_t loadBins[MULTI_INJ_LOAD_COUNT] = {
+		50, 70, 90, 110, 130, 150, 170, 190,
+		210, 230, 250, 270, 290, 310, 330, 350
+	};
+	
+	copyArray(engineConfiguration->multiInjectionRpmBins, rpmBins);
+	copyArray(engineConfiguration->multiInjectionLoadBins, loadBins);
+	
+	// Populate split ratio table
+	// Below 150% load: single injection (100%)
+	// Above 180% load: split injection (60/40)
+	for (int loadIdx = 0; loadIdx < MULTI_INJ_LOAD_COUNT; loadIdx++) {
+		float load = loadBins[loadIdx];
+		
+		for (int rpmIdx = 0; rpmIdx < MULTI_INJ_RPM_COUNT; rpmIdx++) {
+			// Interpolate split ratio based on load
+			float splitRatio = interpolateClamped(100, 150, 100, 60, load);
+			engineConfiguration->multiInjectionSplitRatioTable[rpmIdx][loadIdx] = (uint8_t)splitRatio;
+		}
+	}
+	
+	// Populate second injection angle table
+	// Lower RPM: later angle (130° BTDC)
+	// Higher RPM: earlier angle (165° BTDC) to avoid piston impact
+	for (int loadIdx = 0; loadIdx < MULTI_INJ_LOAD_COUNT; loadIdx++) {
+		for (int rpmIdx = 0; rpmIdx < MULTI_INJ_RPM_COUNT; rpmIdx++) {
+			float rpm = rpmBins[rpmIdx];
+			float angle = interpolateClamped(1000, 7000, 130, 165, rpm);
+			engineConfiguration->secondInjectionAngleTable[rpmIdx][loadIdx] = (int16_t)angle;
+		}
+	}
+	
+	// Populate minimum dwell table (constant for now)
+	for (int loadIdx = 0; loadIdx < MULTI_INJ_LOAD_COUNT; loadIdx++) {
+		for (int rpmIdx = 0; rpmIdx < MULTI_INJ_RPM_COUNT; rpmIdx++) {
+			engineConfiguration->minDwellAngleTable[rpmIdx][loadIdx] = 15;
+		}
+	}
+	
+	efiPrintf("TFSI Stage 2+ multi-injection preset loaded");
+}
