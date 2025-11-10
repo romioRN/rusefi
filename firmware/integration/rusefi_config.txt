@@ -307,21 +307,31 @@ struct_no_prefix engine_configuration_s
 #define CAN_WBO_COUNT 2
 
 struct multi_injection_s
-    bit enableMultiInjection;Enable multi-injection (split/double injection)
-    
-    uint8_t numberOfInjections;;"count", 1, 1, 1, 5, 0
-    uint8_t splitRatio1;Split ratio for injection #1;"%", 1, 0, 0, 100, 0
-    uint8_t splitRatio2;Split ratio for injection #2;"%", 1, 0, 0, 100, 0
-    uint8_t splitRatio3;Split ratio for injection #3;"%", 1, 0, 0, 100, 0
-    
-    uint8_t dwellAngleBetweenInjections;Minimum angle separation between injection pulses;"deg", 1, 0, 5, 50, 0
-    
-    int16_t injection1AngleOffset;Injection #1 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-    int16_t injection2AngleOffset;Injection #2 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-    int16_t injection3AngleOffset;Injection #3 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-    
-    bit enableLoadBasedSplit;Enable load-based split ratio adjustment
-    bit enableRpmAngleCorrection;Enable RPM-based angle adjustment
+	bit enableMultiInjection, "Disabled", "Enabled";Enable multi-injection (split/double injection)
+	
+	uint8_t numberOfInjections;Number of injection pulses per cycle;"count", 1, 1, 1, 5, 0
+	
+	! Split ratios must sum to 100%
+	uint8_t splitRatio1;Split ratio for injection pulse #1;"%", 1, 0, 0, 100, 0
+	uint8_t splitRatio2;Split ratio for injection pulse #2;"%", 1, 0, 0, 100, 0
+	uint8_t splitRatio3;Split ratio for injection pulse #3;"%", 1, 0, 0, 100, 0
+	uint8_t splitRatio4;Split ratio for injection pulse #4;"%", 1, 0, 0, 100, 0
+	uint8_t splitRatio5;Split ratio for injection pulse #5;"%", 1, 0, 0, 100, 0
+	
+	uint8_t dwellAngleBetweenInjections;Minimum angle separation between injection pulses;"deg", 1, 0, 5, 50, 0
+	
+	! Injection timing offsets (degrees BTDC)
+	int16_t injection1AngleOffset;Injection pulse #1 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+	int16_t injection2AngleOffset;Injection pulse #2 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+	int16_t injection3AngleOffset;Injection pulse #3 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+	int16_t injection4AngleOffset;Injection pulse #4 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+	int16_t injection5AngleOffset;Injection pulse #5 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+	
+	bit enableLoadBasedSplit, "Fixed", "Table-Based";Enable load-based split ratio adjustment from table
+	bit enableRpmAngleCorrection, "Fixed", "RPM-Based";Enable RPM-based angle correction from table
+	bit enableMultiInjectionStaging, "Primary", "Staging";Use staging injectors for secondary pulses
+	
+	uint8_t[16] alignmentFill;;"units", 1, 0, 0, 0, 0
 end_struct
 
 
