@@ -134,6 +134,11 @@
 #define bench_mode_e_LUA_COMMAND_4 36
 #define BENCH_STARTER_DURATION 4000
 #define BENCH_VVT_DURATION 300
+#define bldc_fault_code_e_enum "None", "Overcurrent", "Hall Invalid", "Timeout", "Stall", "Homing Failed", "Sensor Error", "Driver Error"
+#define BLDC_FAULT_COUNT 8
+#define BLDC_HALL_STATES 8
+#define bldc_servo_s_size 56
+#define bldc_state_e_enum "Disabled", "Initializing", "Homing", "Ready", "Running", "Fault"
 #define BLEND_FACTOR_SIZE 8
 #define BLEND_TABLE_COUNT 8
 #define blend_table_s_size 188
@@ -466,7 +471,7 @@
 #define ego_sensor_e_ES_PLX 4
 #define egoSettings_NAME "CAN O2 sensors"
 #define EGT_CHANNEL_COUNT 8
-#define engine_configuration_s_size 3968
+#define engine_configuration_s_size 4024
 #define engine_load_mode_e_auto_enum 0="LM_SPEED_DENSITY",2="LM_ALPHA_N",3="LM_LUA",1="LM_REAL_MAF",4="UNSUPPORTED_ENUM_VALUE"
 #define engine_load_mode_e_LM_ALPHA_N 2
 #define engine_load_mode_e_LM_LUA 3
@@ -1234,6 +1239,7 @@
 #define GPPWM_NOTE_SIZE 16
 #define GPPWM_RPM_COUNT 8
 #define HD_MENU_NAME "Harley"
+#define homing_state_e_enum "Idle", "Search Min", "Backup Min", "Search Max", "Backup Max", "Complete", "Failed"
 #define hpfp_cam_e_auto_enum 0="HPFP_CAM_NONE",2="HPFP_CAM_EX1",4="HPFP_CAM_EX2",1="HPFP_CAM_IN1",3="HPFP_CAM_IN2"
 #define hpfp_cam_e_enum "NONE", "Intake 1", "Exhaust 1", "Intake 2", "Exhaust 2"
 #define hpfp_cam_e_HPFP_CAM_EX1 2
@@ -1434,7 +1440,7 @@
 #define pedalSensor_NAME "Accelerator pedal"
 #define pedalToTpsTbl_NAME "ETB pedal target"
 #define PERCENT_TRIM_BYTE_PACKING_DIV 0.02
-#define persistent_config_s_size 22848
+#define persistent_config_s_size 22904
 #define pid_s_size 20
 #define pin_input_mode_e_auto_enum 0="PI_DEFAULT",4="PI_INVERTED_DEFAULT",6="PI_INVERTED_PULLDOWN",5="PI_INVERTED_PULLUP",2="PI_PULLDOWN",1="PI_PULLUP"
 #define pin_input_mode_e_PI_DEFAULT 0
@@ -1512,7 +1518,7 @@
 #define SentInput_NONE 0
 #define show_tcu_gauges false
 #define show_vvt_output_pin true
-#define SIGNATURE_HASH 2598645844
+#define SIGNATURE_HASH 2885566377
 #define SIMULATOR_TUNE_BIN_FILE_NAME "generated/simulator_tune_image.bin"
 #define SIMULATOR_TUNE_BIN_FILE_NAME_PREFIX "generated/simulator_tune_image"
 #define SIMULATOR_TUNE_BIN_FILE_NAME_SUFFIX ".bin"
@@ -1590,7 +1596,7 @@
 #define torqueReductionActivationMode_e_TORQUE_REDUCTION_BUTTON 0
 #define torqueReductionActivationMode_e_TORQUE_REDUCTION_CLUTCH_DOWN_SWITCH 2
 #define torqueReductionActivationMode_e_TORQUE_REDUCTION_CLUTCH_UP_SWITCH 3
-#define TOTAL_CONFIG_SIZE 22848
+#define TOTAL_CONFIG_SIZE 22904
 #define TPS_2_BYTE_PACKING_MULT 100
 #define TPS_PPS_TOO_HIGH_THRESHOLD 110
 #define TPS_PPS_TOO_LOW_THRESHOLD -10
@@ -2072,7 +2078,7 @@
 #define ts_show_wastegate_sensor true
 #define ts_show_wbo_canbus_index true
 #define ts_show_wbo_canbus_set_index true
-#define TS_SIGNATURE "rusEFI master.2025.09.16.f407-discovery.2598645844"
+#define TS_SIGNATURE "rusEFI Valftronic.2025.11.07.f407-discovery.2885566377"
 #define TS_SIMULATE_CAN '>'
 #define TS_SIMULATE_CAN_char >
 #define TS_TEST_COMMAND 't'

@@ -428,10 +428,6 @@ void BldcServoController::startHoming() {
     m_homingState = HomingState_e::STARTING;
 }
 
-// ============================================
-// НЕДОСТАЮЩИЕ МЕТОДЫ ДЛЯ TUNERSTUDIO.CPP
-// ============================================
-
 void BldcServoController::enableController(bool enable) {
     if (enable) {
         if (m_state == BldcState_e::DISABLED) {
