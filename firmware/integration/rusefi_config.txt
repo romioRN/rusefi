@@ -1929,14 +1929,13 @@ end_struct
 	
 	multi_injection_s multiInjection;
 	
-	! Multi-injection calibration tables
-	uint8_t[MULTI_INJ_RPM_COUNT x MULTI_INJ_LOAD_COUNT] multiInjectionSplitRatioTable;Split ratio table by RPM and Load;"%", 1, 0, 0, 100, 0
-	int16_t[MULTI_INJ_RPM_COUNT x MULTI_INJ_LOAD_COUNT] secondInjectionAngleTable;Second injection angle table by RPM and Load;"deg BTDC", 1, 0, 0, 720, 0
-	uint8_t[MULTI_INJ_RPM_COUNT x MULTI_INJ_LOAD_COUNT] minDwellAngleTable;Minimum dwell between injections table;"deg", 1, 0, 5, 50, 0
-	
-	! Multi-injection table axes
-	float[MULTI_INJ_RPM_COUNT] multiInjectionRpmBins;RPM bins for multi-injection tables;"RPM", 1, 0, 0, 18000, 0
-	uint8_t[MULTI_INJ_LOAD_COUNT] multiInjectionLoadBins;Load bins for multi-injection tables;"%", 1, 0, 0, 300, 0
+	uint8_t[16 x 16] multiInjectionSplitRatioTable;Split ratio table by RPM and Load;"%", 1, 0, 0, 100, 0
+    int16_t[16 x 16] secondInjectionAngleTable;Second injection angle table by RPM and Load;"deg BTDC", 1, 0, 0, 720, 0
+    uint8_t[16 x 16] minDwellAngleTable;Minimum dwell between injections table;"deg", 1, 0, 5, 50, 0
+
+    float[16] multiInjectionRpmBins;RPM bins for multi-injection tables;"RPM", 1, 0, 0, 18000, 0
+    uint8_t[16] multiInjectionLoadBins;Load bins for multi-injection tables;"%", 1, 0, 0, 300, 0
+
 
 ! historically 'unusedOftenChangesDuringFirmwareUpdate' was here - now that's just an anchor reminding where to insert new fields
 
