@@ -306,6 +306,39 @@ struct_no_prefix engine_configuration_s
 
 #define CAN_WBO_COUNT 2
 
+struct multi_injection_s
+    bit enableMultiInjection;Enable multi-injection (split/double injection)
+    
+    uint8_t numberOfInjections;;"count", 1, 1, 1, 5, 0
+    uint8_t splitRatio1;Split ratio for injection #1;"%", 1, 0, 0, 100, 0
+    uint8_t splitRatio2;Split ratio for injection #2;"%", 1, 0, 0, 100, 0
+    uint8_t splitRatio3;Split ratio for injection #3;"%", 1, 0, 0, 100, 0
+    
+    uint8_t dwellAngleBetweenInjections;Minimum angle separation between injection pulses;"deg", 1, 0, 5, 50, 0
+    
+    int16_t injection1AngleOffset;Injection #1 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+    int16_t injection2AngleOffset;Injection #2 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+    int16_t injection3AngleOffset;Injection #3 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
+    
+    bit enableLoadBasedSplit;Enable load-based split ratio adjustment
+    bit enableRpmAngleCorrection;Enable RPM-based angle adjustment
+end_struct
+
+struct engine_configuration_s
+    ! ... существующие поля ...
+    
+    multi_injection_s multiInjection;
+    
+    uint8_t[MULTI_INJ_RPM_COUNT x MULTI_INJ_LOAD_COUNT] multiInjectionSplitRatioTable;Split ratio table by RPM and Load;"%", 1, 0, 0, 100, 0
+    int16_t[MULTI_INJ_RPM_COUNT x MULTI_INJ_LOAD_COUNT] secondInjectionAngleTable;Second injection angle table by RPM and Load;"deg BTDC", 1, 0, 0, 360, 0
+    uint8_t[MULTI_INJ_RPM_COUNT x MULTI_INJ_LOAD_COUNT] minDwellAngleTable;Minimum dwell between injections table;"deg", 1, 0, 5, 50, 0
+    
+    float[MULTI_INJ_RPM_COUNT] multiInjectionRpmBins;;"RPM", 1, 0, 0, 18000, 0
+    uint8_t[MULTI_INJ_LOAD_COUNT] multiInjectionLoadBins;;"%", 1, 0, 0, 300, 0
+    
+end_struct
+
+
 struct stft_cell_cfg_s
 	uint8_t autoscale maxAdd;Maximum % that the short term fuel trim can add;"%", 0.1, 0, 0, 25, 1
 	uint8_t autoscale maxRemove;Maximum % that the short term fuel trim can remove;"%", 0.1, 0, 0, 25, 1

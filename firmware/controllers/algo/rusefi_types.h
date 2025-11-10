@@ -32,6 +32,18 @@
 #define CONST_PI 3.14159265358979323846
 
 /**
+ * Maximum number of injection pulses per cycle
+ */
+#define MAX_MULTI_INJECTIONS 5
+
+/**
+ * Multi-injection table dimensions
+ */
+#define MULTI_INJ_RPM_COUNT 16
+#define MULTI_INJ_LOAD_COUNT 16
+
+
+/**
  * integer time in milliseconds (1/1_000 of a second)
  * 32 bit 4B / 1000 = 4M seconds = 1111.11 hours = 23(or46?) days.
  * Please restart your ECU every 23(or46?) days? :) See issue https://github.com/rusefi/rusefi/issues/4554 tag#4554
