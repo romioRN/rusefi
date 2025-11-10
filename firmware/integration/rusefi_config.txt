@@ -1934,7 +1934,7 @@ end_struct
     uint8_t[16 x 16] minDwellAngleTable;Minimum dwell between injections table;"deg", 1, 0, 5, 50, 0
 
     float[16] multiInjectionRpmBins;RPM bins for multi-injection tables;"RPM", 1, 0, 0, 18000, 0
-    uint8_t[16] multiInjectionLoadBins;Load bins for multi-injection tables;"%", 1, 0, 0, 300, 0
+    uint16_t[16] multiInjectionLoadBins;Load bins for multi-injection tables;"%", 1, 0, 0, 300, 0
 
 
 ! historically 'unusedOftenChangesDuringFirmwareUpdate' was here - now that's just an anchor reminding where to insert new fields
