@@ -403,19 +403,22 @@ void setTFSIStage2MultiInjection() {
 	// Injection timing
 	engineConfiguration->multiInjection.injection1AngleOffset = 300;  // Intake stroke
 	engineConfiguration->multiInjection.injection2AngleOffset = 130;  // Compression stroke
+	engineConfiguration->multiInjection.injection3AngleOffset = 0;
+	engineConfiguration->multiInjection.injection4AngleOffset = 0;
+	engineConfiguration->multiInjection.injection5AngleOffset = 0;
 	
-	// Enable dynamic adjustments
-	engineConfiguration->multiInjection.enableLoadBasedSplit = true;
-	engineConfiguration->multiInjection.enableRpmAngleCorrection = true;
-	engineConfiguration->multiInjection.enableMultiInjectionStaging = false;
+	// Enable dynamic adjustments (если эти поля остались как uint8_t)
+	engineConfiguration->multiInjection.enableLoadBasedSplit = 1;
+	engineConfiguration->multiInjection.enableRpmAngleCorrection = 1;
+	engineConfiguration->multiInjection.enableMultiInjectionStaging = 0;
 	
-	// Setup table axes
-	static const float rpmBins[MULTI_INJ_RPM_COUNT] = {
+	// Setup table axes - ВАЖНО: используйте uint16_t для loadBins!
+	static const float rpmBins[16] = {
 		1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500,
 		5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500
 	};
 	
-	static const uint8_t loadBins[MULTI_INJ_LOAD_COUNT] = {
+	static const uint16_t loadBins[16] = {  // ✅ uint16_t вместо uint8_t
 		50, 70, 90, 110, 130, 150, 170, 190,
 		210, 230, 250, 270, 290, 310, 330, 350
 	};
@@ -424,32 +427,27 @@ void setTFSIStage2MultiInjection() {
 	copyArray(engineConfiguration->multiInjectionLoadBins, loadBins);
 	
 	// Populate split ratio table
-	// Below 150% load: single injection (100%)
-	// Above 180% load: split injection (60/40)
-	for (int loadIdx = 0; loadIdx < MULTI_INJ_LOAD_COUNT; loadIdx++) {
-		float load = loadBins[loadIdx];
+	for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+		uint16_t load = loadBins[loadIdx];  // ✅ uint16_t
 		
-		for (int rpmIdx = 0; rpmIdx < MULTI_INJ_RPM_COUNT; rpmIdx++) {
-			// Interpolate split ratio based on load
-			float splitRatio = interpolateClamped(100, 150, 100, 60, load);
+		for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
+			float splitRatio = interpolateClamped(100, 150, 100, 60, (float)load);
 			engineConfiguration->multiInjectionSplitRatioTable[rpmIdx][loadIdx] = (uint8_t)splitRatio;
 		}
 	}
 	
 	// Populate second injection angle table
-	// Lower RPM: later angle (130° BTDC)
-	// Higher RPM: earlier angle (165° BTDC) to avoid piston impact
-	for (int loadIdx = 0; loadIdx < MULTI_INJ_LOAD_COUNT; loadIdx++) {
-		for (int rpmIdx = 0; rpmIdx < MULTI_INJ_RPM_COUNT; rpmIdx++) {
+	for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+		for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
 			float rpm = rpmBins[rpmIdx];
 			float angle = interpolateClamped(1000, 7000, 130, 165, rpm);
 			engineConfiguration->secondInjectionAngleTable[rpmIdx][loadIdx] = (int16_t)angle;
 		}
 	}
 	
-	// Populate minimum dwell table (constant for now)
-	for (int loadIdx = 0; loadIdx < MULTI_INJ_LOAD_COUNT; loadIdx++) {
-		for (int rpmIdx = 0; rpmIdx < MULTI_INJ_RPM_COUNT; rpmIdx++) {
+	// Populate minimum dwell table
+	for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+		for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
 			engineConfiguration->minDwellAngleTable[rpmIdx][loadIdx] = 15;
 		}
 	}
