@@ -199,7 +199,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
 	}
 	
 	// Get total fuel duration from main calculation
-	floatms_t totalFuelMs = engine->injectionDuration;
+	floatms_t totalFuelMs = engine->engineState.injectionDuration;
 	
 	// Get current engine parameters
 	float rpm = Sensor::getOrZero(SensorType::Rpm);
