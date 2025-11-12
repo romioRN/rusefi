@@ -5,6 +5,7 @@
 #pragma once
 
 #include "efi_output.h"
+#include "ch.h"
 
 void startSimultaneousInjection();
 void endSimultaneousInjectionOnlyTogglePins();
