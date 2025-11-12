@@ -31,8 +31,7 @@
 #include "accelerometer.h"
 #endif // EFI_ONBOARD_MEMS
 
-#include "defaults.h"
-
+#include "defaults.h" 
 #include "custom_engine.h"
 
 #include "boost_control.h"
@@ -617,6 +616,8 @@ static void setDefaultEngineConfiguration() {
 	engineConfiguration->mapErrorDetectionTooHigh = 410;
 
 	setLinearCurve(config->throttleEstimateEffectiveAreaBins, 0, 100);
+  // Multi-injection defaults
+  setDefaultMultiInjectionConfiguration();
 #endif // EFI_ENGINE_CONTROL
 	// Allow custom default_script.lua to be provided by BOARDINC
 	// see https://gcc.gnu.org/onlinedocs/gcc-2.95.3/cpp_1.html#SEC6

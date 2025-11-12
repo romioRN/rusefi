@@ -16,6 +16,7 @@ void setInline4();
 void setDynoDefaults();
 void setupTLE9201(Gpio controlPin, Gpio direction, Gpio disable, int dcIndex = 0);
 void setupTLE9201IncludingStepper(Gpio controlPin, Gpio direction, Gpio disable, int dcIndex = 0);
+void setDefaultMultiInjectionConfiguration();
 
 #define DEFAULT_CRANKING_DWELL_MS 6
 #define DEFAULT_CRANKING_ANGLE 6
