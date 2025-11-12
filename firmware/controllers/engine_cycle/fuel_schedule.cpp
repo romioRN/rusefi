@@ -250,6 +250,8 @@ void FuelSchedule::configureMultiInjectionForAllCylinders() {
   }
   
   uint8_t numPulses = engineConfiguration->multiInjection.numberOfInjections;
+
+  efiPrintf("Configuring multi-injection: %d pulses", numPulses);
   
   // Clamp to valid range
   if (numPulses < 1) numPulses = 1;
