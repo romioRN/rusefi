@@ -62,19 +62,18 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
 
 #if FUEL_MATH_EXTREME_LOGGING
   if (printFuelDebug) {
-    printf("InjectorOutputPin::open (multi-inj) %s %d now=%0.1fms dur=%.2fms\r\n",
-           getName(), overlappingCounter, 
-           time2print(getTimeNowUs()) / 1000.0, durationUs / 1000.0);
+    printf("InjectorOutputPin::open (custom) %s %d dur=%.2fms\r\n",
+           getName(), overlappingCounter, durationUs / 1000.0);
   }
 #endif
 
   if (overlappingCounter > 1) {
 #if FUEL_MATH_EXTREME_LOGGING
     if (printFuelDebug) {
-      printf("overlapping, skipping pin\r\n");
+      printf("overlapping\r\n");
     }
 #endif
-    return; // Don't open if already open
+    return;
   }
 
 #if EFI_TOOTH_LOGGER
@@ -86,7 +85,8 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   // Schedule closing
   efitick_t closeTimeNt = nowNt + US2NT(durationUs);
   
-  engine->executor.scheduleByTimestampNt(
+  // CORRECTED: Use proper scheduling API
+  getExecutorInterface()->scheduleByTimestampNt(
     "inj_close",
     closeTimeNt,
     [this]() {
@@ -94,6 +94,7 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
     }
   );
 }
+
 
 
 void InjectorOutputPin::close(efitick_t nowNt) {
