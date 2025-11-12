@@ -3,7 +3,7 @@
  */
 
 #pragma once
-
+#include "hal.h"
 #include "efi_output.h"
 
 
