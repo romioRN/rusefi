@@ -63,13 +63,14 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
 		float rpm = Sensor::getOrZero(SensorType::Rpm);
 		float load = getFuelingLoad();
 		
-		// Find load index
+		// Find load index - convert float load to uint16_t for comparison
+		uint16_t loadValue = (uint16_t)load;
 		int loadIdx = findIndexMsg("load", 
 			engineConfiguration->multiInjectionLoadBins, 
 			16, 
-			load);
+			loadValue);
 		
-		// Interpolate along RPM axis (3 arguments only!)
+		// Interpolate along RPM axis
 		baseRatio = interpolate2d(
 			rpm,
 			engineConfiguration->multiInjectionRpmBins,
@@ -108,12 +109,14 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
 		float rpm = Sensor::getOrZero(SensorType::Rpm);
 		float load = getFuelingLoad();
 		
+		// Convert float load to uint16_t for index search
+		uint16_t loadValue = (uint16_t)load;
 		int loadIdx = findIndexMsg("load", 
 			engineConfiguration->multiInjectionLoadBins, 
 			16, 
-			load);
+			loadValue);
 		
-		// Interpolate along RPM axis (3 arguments!)
+		// Interpolate along RPM axis
 		float tableAngle = interpolate2d(
 			rpm,
 			engineConfiguration->multiInjectionRpmBins,
