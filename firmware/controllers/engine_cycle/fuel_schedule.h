@@ -57,7 +57,8 @@ public:
 
 	// Call this every decoded trigger tooth. It will schedule any relevant events for this injector.
 	void onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase);
-
+  void schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float currentPhase);
+  
 	WallFuel& getWallFuel();
 
 	void setIndex(uint8_t index) {

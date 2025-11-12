@@ -228,15 +228,45 @@ void FuelSchedule::addFuelEvents() {
 }
 
 void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase) {
-  // Wait for schedule to be built - this happens the first time we get RPM
   if (!isReady) {
     return;
   }
 
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
-    elements[i].onTriggerTooth(nowNt, currentPhase, nextPhase);
+    auto& event = elements[i];
+    
+    // ========== NEW: Multi-pulse scheduling ==========
+    if (engineConfiguration->multiInjection.enableMultiInjection && event.getNumberOfPulses() > 1) {
+      // Schedule all active pulses
+      for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
+        const auto& pulse = event.getPulse(pulseIdx);
+        
+        if (!pulse.isActive) continue;
+        
+        float pulseAngle = pulse.startAngle;
+        
+        // Check if pulse falls in current window
+        bool inWindow = false;
+        if (nextPhase > currentPhase) {
+          // Normal case
+          inWindow = (pulseAngle >= currentPhase && pulseAngle < nextPhase);
+        } else {
+          // Wrap around 720°
+          inWindow = (pulseAngle >= currentPhase || pulseAngle < nextPhase);
+        }
+        
+        if (inWindow) {
+          event.schedulePulse(pulseIdx, nowNt, currentPhase);
+        }
+      }
+    } else {
+      // ===================================================
+      // Standard single injection
+      event.onTriggerTooth(nowNt, currentPhase, nextPhase);
+    }
   }
 }
+
 
 // ========== NEW: Multi-injection implementation ==========
 
@@ -275,6 +305,44 @@ bool FuelSchedule::shouldUseMultiInjection() const {
   // Example: only use multi-injection above certain conditions
   // This can be made configurable via threshold parameters
   return (load > 100.0f && rpm > 1000.0f);
+}
+
+void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float currentPhase) {
+  if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) {
+    return;
+  }
+  
+  const auto& pulse = pulses[pulseIndex];
+  
+  // Calculate injection duration in microseconds
+  floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
+  if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
+    return;
+  }
+  
+  floatus_t injectionDurationUs = MS2US(pulse.fuelMs);
+  
+  // Calculate angle difference from current phase
+  float angleDelta = pulse.startAngle - currentPhase;
+  if (angleDelta < 0) {
+    angleDelta += 720; // Wrap around
+  }
+  
+  // Convert angle to time
+  efitick_t injectionStartNt = nowNt + US2NT(angleDelta * oneDegreeUs);
+  
+  // Schedule the pulse
+  for (auto* output : outputs) {
+    if (output && output->isInitialized()) {
+      output->open(injectionStartNt, injectionDurationUs);
+    }
+  }
+  
+  // Debug output
+  #if EFI_DETAILED_LOGGING
+  efiPrintf("Pulse %d scheduled: angle=%.1f°, fuel=%.2fms", 
+            pulseIndex, pulse.startAngle, pulse.fuelMs);
+  #endif
 }
 
 // ==========================================================
