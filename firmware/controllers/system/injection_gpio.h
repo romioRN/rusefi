@@ -15,6 +15,7 @@ public:
 	void reset();
 
 	void open(efitick_t nowNt);
+  void open(efitick_t nowNt, floatus_t durationUs);
 	void close(efitick_t nowNt);
 	void setHigh() override;
 	void setLow() override;

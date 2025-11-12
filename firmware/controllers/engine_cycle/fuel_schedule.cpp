@@ -314,36 +314,31 @@ void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float cu
   
   const auto& pulse = pulses[pulseIndex];
   
-  // Calculate injection duration in microseconds
   floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
   if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
     return;
   }
   
-  floatus_t injectionDurationUs = MS2US(pulse.fuelMs);
-  
-  // Calculate angle difference from current phase
   float angleDelta = pulse.startAngle - currentPhase;
-  if (angleDelta < 0) {
-    angleDelta += 720; // Wrap around
-  }
+  if (angleDelta < 0) angleDelta += 720;
   
-  // Convert angle to time
   efitick_t injectionStartNt = nowNt + US2NT(angleDelta * oneDegreeUs);
+  floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
   
-  // Schedule the pulse
+  // Schedule using NEW overloaded method
   for (auto* output : outputs) {
     if (output && output->isInitialized()) {
-      output->open(injectionStartNt, injectionDurationUs);
+      output->open(injectionStartNt, pulseDurationUs);
     }
   }
   
-  // Debug output
-  #if EFI_DETAILED_LOGGING
-  efiPrintf("Pulse %d scheduled: angle=%.1f°, fuel=%.2fms", 
-            pulseIndex, pulse.startAngle, pulse.fuelMs);
-  #endif
+  for (auto* output : outputsStage2) {
+    if (output && output->isInitialized()) {
+      output->open(injectionStartNt, pulseDurationUs);
+    }
+  }
 }
+
 
 // ==========================================================
 
