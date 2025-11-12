@@ -427,30 +427,28 @@ void setTFSIStage2MultiInjection() {
 	copyArray(engineConfiguration->multiInjectionLoadBins, loadBins);
 	
 	// Populate split ratio table
-	for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
-		uint16_t load = loadBins[loadIdx];  // ✅ uint16_t
-		
-		for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
-			float splitRatio = interpolateClamped(100, 150, 100, 60, (float)load);
-			engineConfiguration->multiInjectionSplitRatioTable[rpmIdx][loadIdx] = (uint8_t)splitRatio;
-		}
-	}
-	
-	// Populate second injection angle table
-	for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
-		for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
-			float rpm = rpmBins[rpmIdx];
-			float angle = interpolateClamped(1000, 7000, 130, 165, rpm);
-			engineConfiguration->secondInjectionAngleTable[rpmIdx][loadIdx] = (int16_t)angle;
-		}
-	}
-	
-	// Populate minimum dwell table
-	for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
-		for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
-			engineConfiguration->minDwellAngleTable[rpmIdx][loadIdx] = 15;
-		}
-	}
+for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+    uint16_t load = loadBins[loadIdx];
+    for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
+        float splitRatio = interpolateClamped(100, 150, 100, 60, (float)load);
+        // !!! Исправление индексации
+        engineConfiguration->multiInjectionSplitRatioTable[loadIdx][rpmIdx] = (uint8_t)splitRatio;
+    }
+}
+// Populate second injection angle table
+for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+    for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
+        float rpm = rpmBins[rpmIdx];
+        float angle = interpolateClamped(1000, 7000, 130, 165, rpm);
+        engineConfiguration->secondInjectionAngleTable[loadIdx][rpmIdx] = (int16_t)angle;
+    }
+}
+// Populate minimum dwell table
+for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+    for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
+        engineConfiguration->minDwellAngleTable[loadIdx][rpmIdx] = 15;
+    }
+}
 	
 	efiPrintf("TFSI Stage 2+ multi-injection preset loaded");
 }
