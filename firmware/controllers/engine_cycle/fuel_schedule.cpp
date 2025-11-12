@@ -227,7 +227,8 @@ void FuelSchedule::addFuelEvents() {
   isReady = true;
 }
 
-void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase) {
+vvoid FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase) {
+  // Wait for schedule to be built - this happens the first time we get RPM
   if (!isReady) {
     return;
   }
@@ -235,9 +236,9 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
     
-    // ========== NEW: Multi-pulse scheduling ==========
+    // ========== Multi-injection support ==========
     if (engineConfiguration->multiInjection.enableMultiInjection && event.getNumberOfPulses() > 1) {
-      // Schedule all active pulses
+      // Schedule all active pulses for multi-injection
       for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
         const auto& pulse = event.getPulse(pulseIdx);
         
@@ -245,7 +246,7 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
         
         float pulseAngle = pulse.startAngle;
         
-        // Check if pulse falls in current window
+        // Check if pulse falls within current trigger window
         bool inWindow = false;
         if (nextPhase > currentPhase) {
           // Normal case
@@ -260,7 +261,7 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
         }
       }
     } else {
-      // ===================================================
+      // ============================================
       // Standard single injection
       event.onTriggerTooth(nowNt, currentPhase, nextPhase);
     }
@@ -308,16 +309,11 @@ bool FuelSchedule::shouldUseMultiInjection() const {
 }
 
 void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float currentPhase) {
-  if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) {
-    return;
-  }
+  if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) return;
   
   const auto& pulse = pulses[pulseIndex];
-  
   floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
-  if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
-    return;
-  }
+  if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) return;
   
   float angleDelta = pulse.startAngle - currentPhase;
   if (angleDelta < 0) angleDelta += 720;
@@ -325,7 +321,6 @@ void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float cu
   efitick_t injectionStartNt = nowNt + US2NT(angleDelta * oneDegreeUs);
   floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
   
-  // Schedule using NEW overloaded method
   for (auto* output : outputs) {
     if (output && output->isInitialized()) {
       output->open(injectionStartNt, pulseDurationUs);

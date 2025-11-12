@@ -1,3 +1,4 @@
+on_gpio_complete.cpp
 /*
  * injection_gpio.cpp
  */
@@ -7,62 +8,73 @@
 extern bool printFuelDebug;
 
 void startSimultaneousInjection() {
-	efitick_t nowNt = getTimeNowNt();
-	for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
-		enginePins.injectors[i].open(nowNt);
-	}
+  efitick_t nowNt = getTimeNowNt();
+  for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
+    enginePins.injectors[i].open(nowNt);
+  }
 }
 
 void endSimultaneousInjectionOnlyTogglePins() {
-	efitick_t nowNt = getTimeNowNt();
-	for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
-		enginePins.injectors[i].close(nowNt);
-	}
+  efitick_t nowNt = getTimeNowNt();
+  for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
+    enginePins.injectors[i].close(nowNt);
+  }
 }
 
 InjectorOutputPin::InjectorOutputPin() : NamedOutputPin() {
-	overlappingCounter = 1; // Force update in reset
-	reset();
-	injectorIndex = -1;
+  overlappingCounter = 1; // Force update in reset
+  reset();
+  injectorIndex = -1;
+  chVTObjectInit(&m_multiInjectTimer);  // ← NEW: Initialize timer for multi-injection
 }
+
+// ========== NEW: Timer callback for multi-injection closing ==========
+void InjectorOutputPin::timerCallback(virtual_timer_t *vtp, void *arg) {
+  InjectorOutputPin* output = static_cast<InjectorOutputPin*>(arg);
+  if (output) {
+    output->close(getTimeNowNt());
+  }
+}
+// =======================================================================
 
 void InjectorOutputPin::open(efitick_t nowNt) {
-	// per-output counter for error detection
-	overlappingCounter++;
-	// global counter for logging
-	getEngineState()->fuelInjectionCounter++;
+  // per-output counter for error detection
+  overlappingCounter++;
+  // global counter for logging
+  getEngineState()->fuelInjectionCounter++;
 
 #if FUEL_MATH_EXTREME_LOGGING
-	if (printFuelDebug) {
-		printf("InjectorOutputPin::open %s %d now=%0.1fms\r\n", getName(), overlappingCounter, time2print(getTimeNowUs()) / 1000.0);
-	}
+  if (printFuelDebug) {
+    printf("InjectorOutputPin::open %s %d now=%0.1fms\r\n", getName(), overlappingCounter, time2print(getTimeNowUs()) / 1000.0);
+  }
 #endif /* FUEL_MATH_EXTREME_LOGGING */
 
-	if (overlappingCounter > 1) {
-//		/**
-//		 * #299
-//		 * this is another kind of overlap which happens in case of a small duty cycle after a large duty cycle
-//		 */
+  if (overlappingCounter > 1) {
+//    /**
+//     * #299
+//     * this is another kind of overlap which happens in case of a small duty cycle after a large duty cycle
+//     */
 #if FUEL_MATH_EXTREME_LOGGING
-		if (printFuelDebug) {
-			printf("overlapping, no need to touch pin %s %d\r\n", getName(), time2print(getTimeNowUs()));
-		}
+    if (printFuelDebug) {
+      printf("overlapping, no need to touch pin %s %d\r\n", getName(), time2print(getTimeNowUs()));
+    }
 #endif /* FUEL_MATH_EXTREME_LOGGING */
-	} else {
+  } else {
 #if EFI_TOOTH_LOGGER
-		LogTriggerInjectorState(nowNt, injectorIndex, true);
+    LogTriggerInjectorState(nowNt, injectorIndex, true);
 #endif // EFI_TOOTH_LOGGER
-		setHigh();
-	}
+    setHigh();
+  }
 }
 
+// ========== NEW: Overload for multi-injection with custom duration ==========
 void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   overlappingCounter++;
   getEngineState()->fuelInjectionCounter++;
 
 #if FUEL_MATH_EXTREME_LOGGING
   if (printFuelDebug) {
-    printf("InjectorOutputPin::open (custom) %s %d dur=%.2fms\r\n",
+    printf("InjectorOutputPin::open (multi-inj) %s %d dur=%.2fms\r\n",
            getName(), overlappingCounter, durationUs / 1000.0);
   }
 #endif
@@ -70,7 +82,7 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   if (overlappingCounter > 1) {
 #if FUEL_MATH_EXTREME_LOGGING
     if (printFuelDebug) {
-      printf("overlapping\r\n");
+      printf("overlapping (multi-inj)\r\n");
     }
 #endif
     return;
@@ -82,97 +94,93 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   
   setHigh();
   
-  // Schedule closing
-  efitick_t closeTimeNt = nowNt + US2NT(durationUs);
+  // Schedule closing after specified duration using ChibiOS virtual timer
+  efitick_t delayNt = US2NT(durationUs);
   
-  // CORRECTED: Use proper scheduling API
-  getExecutorInterface()->scheduleByTimestampNt(
-    "inj_close",
-    closeTimeNt,
-    [this]() {
-      this->close(getTimeNowNt());
-    }
-  );
+  // Cancel any pending timer first
+  chVTReset(&m_multiInjectTimer);
+  
+  // Set timer to fire after delay
+  chVTSet(&m_multiInjectTimer, ST2NT(delayNt), 
+    InjectorOutputPin::timerCallback, this);
 }
-
-
+// ===========================================================================
 
 void InjectorOutputPin::close(efitick_t nowNt) {
 #if FUEL_MATH_EXTREME_LOGGING
-	if (printFuelDebug) {
-		printf("InjectorOutputPin::close %s %d %d\r\n", getName(), overlappingCounter, time2print(getTimeNowUs()));
-	}
+  if (printFuelDebug) {
+    printf("InjectorOutputPin::close %s %d %d\r\n", getName(), overlappingCounter, time2print(getTimeNowUs()));
+  }
 #endif /* FUEL_MATH_EXTREME_LOGGING */
 
-	overlappingCounter--;
-	if (overlappingCounter > 0) {
+  overlappingCounter--;
+  if (overlappingCounter > 0) {
 #if FUEL_MATH_EXTREME_LOGGING
-		if (printFuelDebug) {
-			printf("was overlapping, no need to touch pin %s %d\r\n", getName(), time2print(getTimeNowUs()));
-		}
+    if (printFuelDebug) {
+      printf("was overlapping, no need to touch pin %s %d\r\n", getName(), time2print(getTimeNowUs()));
+    }
 #endif /* FUEL_MATH_EXTREME_LOGGING */
-	} else {
+  } else {
 #if EFI_TOOTH_LOGGER
-	LogTriggerInjectorState(nowNt, injectorIndex, false);
+  LogTriggerInjectorState(nowNt, injectorIndex, false);
 #endif // EFI_TOOTH_LOGGER
-		setLow();
-	}
+    setLow();
+  }
 
-	// Don't allow negative overlap count
-	if (overlappingCounter < 0) {
-		overlappingCounter = 0;
-	}
+  // Don't allow negative overlap count
+  if (overlappingCounter < 0) {
+    overlappingCounter = 0;
+  }
 }
 
 void InjectorOutputPin::setHigh() {
     NamedOutputPin::setHigh();
     TunerStudioOutputChannels *state = getTunerStudioOutputChannels();
-	// this is NASTY but what's the better option? bytes? At cost of 22 extra bytes in output status packet?
-	switch (injectorIndex) {
-	case 0:
-		state->injectorState1 = true;
-		break;
-	case 1:
-		state->injectorState2 = true;
-		break;
-	case 2:
-		state->injectorState3 = true;
-		break;
-	case 3:
-		state->injectorState4 = true;
-		break;
-	case 4:
-		state->injectorState5 = true;
-		break;
-	case 5:
-		state->injectorState6 = true;
-		break;
-	}
+  // this is NASTY but what's the better option? bytes? At cost of 22 extra bytes in output status packet?
+  switch (injectorIndex) {
+  case 0:
+    state->injectorState1 = true;
+    break;
+  case 1:
+    state->injectorState2 = true;
+    break;
+  case 2:
+    state->injectorState3 = true;
+    break;
+  case 3:
+    state->injectorState4 = true;
+    break;
+  case 4:
+    state->injectorState5 = true;
+    break;
+  case 5:
+    state->injectorState6 = true;
+    break;
+  }
 }
 
 void InjectorOutputPin::setLow() {
     NamedOutputPin::setLow();
     TunerStudioOutputChannels *state = getTunerStudioOutputChannels();
-	// this is NASTY but what's the better option? bytes? At cost of 22 extra bytes in output status packet?
-	switch (injectorIndex) {
-	case 0:
-		state->injectorState1 = false;
-		break;
-	case 1:
-		state->injectorState2 = false;
-		break;
-	case 2:
-		state->injectorState3 = false;
-		break;
-	case 3:
-		state->injectorState4 = false;
-		break;
-	case 4:
-		state->injectorState5 = false;
-		break;
-	case 5:
-		state->injectorState6 = false;
-		break;
-	}
+  // this is NASTY but what's the better option? bytes? At cost of 22 extra bytes in output status packet?
+  switch (injectorIndex) {
+  case 0:
+    state->injectorState1 = false;
+    break;
+  case 1:
+    state->injectorState2 = false;
+    break;
+  case 2:
+    state->injectorState3 = false;
+    break;
+  case 3:
+    state->injectorState4 = false;
+    break;
+  case 4:
+    state->injectorState5 = false;
+    break;
+  case 5:
+    state->injectorState6 = false;
+    break;
+  }
 }
-
