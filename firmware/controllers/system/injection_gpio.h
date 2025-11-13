@@ -29,6 +29,6 @@ public:
 private:
 	int8_t overlappingCounter;
 
-  void* m_multiInjectTimer;  // ← Измените на void*
-  static void timerCallback(void *vtp, void *arg);  // ← Измените на void*
+  void* m_multiInjectTimer;  
+  static void timerCallback(void *vtp, void *arg);  
 };
