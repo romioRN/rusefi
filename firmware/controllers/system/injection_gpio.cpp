@@ -7,6 +7,10 @@
 
 extern bool printFuelDebug;
 
+// Debug counters for diagnostics
+static uint32_t g_multiInjectionCount = 0;
+static uint32_t g_singleInjectionCount = 0;
+
 void startSimultaneousInjection() {
   efitick_t nowNt = getTimeNowNt();
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
@@ -22,70 +26,65 @@ void endSimultaneousInjectionOnlyTogglePins() {
 }
 
 InjectorOutputPin::InjectorOutputPin() : NamedOutputPin() {
-  overlappingCounter = 1; // Force update in reset
+  overlappingCounter = 1;
   reset();
   injectorIndex = -1;
-  chVTObjectInit(&m_multiInjectTimer);  // ← NEW: Initialize timer for multi-injection
+  chVTObjectInit(&m_multiInjectTimer);
 }
 
-// ========== NEW: Timer callback for multi-injection closing ==========
+// Timer callback for multi-injection
 void InjectorOutputPin::timerCallback(virtual_timer_t *vtp, void *arg) {
+  (void)vtp; // Unused
   InjectorOutputPin* output = static_cast<InjectorOutputPin*>(arg);
   if (output) {
     output->close(getTimeNowNt());
   }
 }
 
-// =======================================================================
-
+// Standard single injection
 void InjectorOutputPin::open(efitick_t nowNt) {
-  //printf("DEBUG: single-open %s at %u us\n", getName(), (unsigned)nowNt);
-  // per-output counter for error detection
   overlappingCounter++;
-  // global counter for logging
   getEngineState()->fuelInjectionCounter++;
+  g_singleInjectionCount++;
 
 #if FUEL_MATH_EXTREME_LOGGING
   if (printFuelDebug) {
-    printf("InjectorOutputPin::open %s %d now=%0.1fms\r\n", getName(), overlappingCounter, time2print(getTimeNowUs()) / 1000.0);
-  }
-#endif /* FUEL_MATH_EXTREME_LOGGING */
-
-  if (overlappingCounter > 1) {
-//    /**
-//     * #299
-//     * this is another kind of overlap which happens in case of a small duty cycle after a large duty cycle
-//     */
-#if FUEL_MATH_EXTREME_LOGGING
-    if (printFuelDebug) {
-      printf("overlapping, no need to touch pin %s %d\r\n", getName(), time2print(getTimeNowUs()));
-    }
-#endif /* FUEL_MATH_EXTREME_LOGGING */
-  } else {
-#if EFI_TOOTH_LOGGER
-    LogTriggerInjectorState(nowNt, injectorIndex, true);
-#endif // EFI_TOOTH_LOGGER
-    setHigh();
-  }
-}
-
-// ========== NEW: Overload for multi-injection with custom duration ==========
-void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
- // printf("DEBUG: multi-open %s at %u us for %.2f ms\n", getName(), (unsigned)nowNt, durationUs/1000.0);
-  overlappingCounter++;
-  getEngineState()->fuelInjectionCounter++;
-
-#if FUEL_MATH_EXTREME_LOGGING
-  if (printFuelDebug) {
-    printf("InjectorOutputPin::open (multi-inj) %s %d dur=%.2fms\r\n",
-           getName(), overlappingCounter, durationUs / 1000.0);
+    printf("InjectorOutputPin::open %s %d now=%0.1fms\r\n", 
+           getName(), overlappingCounter, time2print(getTimeNowUs()) / 1000.0);
   }
 #endif
 
   if (overlappingCounter > 1) {
 #if FUEL_MATH_EXTREME_LOGGING
     if (printFuelDebug) {
-      printf("overlapping (multi-inj)\r\n");
+      printf("overlapping, no need to touch pin %s\r\n", getName());
+    }
+#endif
+  } else {
+#if EFI_TOOTH_LOGGER
+    LogTriggerInjectorState(nowNt, injectorIndex, true);
+#endif
+    setHigh();
+  }
+}
+
+// Multi-injection with custom duration
+void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
+  overlappingCounter++;
+  getEngineState()->fuelInjectionCounter++;
+  g_multiInjectionCount++;
+
+#if FUEL_MATH_EXTREME_LOGGING
+  if (printFuelDebug) {
+    printf("InjectorOutputPin::open (multi) %s dur=%.2fms\r\n",
+           getName(), durationUs / 1000.0);
+  }
+#endif
+
+  if (overlappingCounter > 1) {
+#if FUEL_MATH_EXTREME_LOGGING
+    if (printFuelDebug) {
+      printf("overlapping (multi)\r\n");
     }
 #endif
     return;
@@ -97,6 +96,13 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   
   setHigh();
   
+  // Validate duration
+  if (durationUs < 0.1f || durationUs > 100000.0f) {
+    // Invalid duration, close immediately
+    close(nowNt);
+    return;
+  }
+  
   // Schedule closing using ChibiOS virtual timer
   sysinterval_t delayTicks = TIME_US2I(durationUs);
   
@@ -107,83 +113,64 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   chVTSet(&m_multiInjectTimer, delayTicks, 
     InjectorOutputPin::timerCallback, this);
 }
-// ===========================================================================
 
 void InjectorOutputPin::close(efitick_t nowNt) {
 #if FUEL_MATH_EXTREME_LOGGING
   if (printFuelDebug) {
-    printf("InjectorOutputPin::close %s %d %d\r\n", getName(), overlappingCounter, time2print(getTimeNowUs()));
+    printf("InjectorOutputPin::close %s %d\r\n", 
+           getName(), overlappingCounter);
   }
-#endif /* FUEL_MATH_EXTREME_LOGGING */
+#endif
 
   overlappingCounter--;
   if (overlappingCounter > 0) {
 #if FUEL_MATH_EXTREME_LOGGING
     if (printFuelDebug) {
-      printf("was overlapping, no need to touch pin %s %d\r\n", getName(), time2print(getTimeNowUs()));
+      printf("was overlapping, no need to touch pin %s\r\n", getName());
     }
-#endif /* FUEL_MATH_EXTREME_LOGGING */
+#endif
   } else {
 #if EFI_TOOTH_LOGGER
-  LogTriggerInjectorState(nowNt, injectorIndex, false);
-#endif // EFI_TOOTH_LOGGER
+    LogTriggerInjectorState(nowNt, injectorIndex, false);
+#endif
     setLow();
   }
 
-  // Don't allow negative overlap count
   if (overlappingCounter < 0) {
     overlappingCounter = 0;
   }
 }
 
 void InjectorOutputPin::setHigh() {
-    NamedOutputPin::setHigh();
-    TunerStudioOutputChannels *state = getTunerStudioOutputChannels();
-  // this is NASTY but what's the better option? bytes? At cost of 22 extra bytes in output status packet?
+  NamedOutputPin::setHigh();
+  TunerStudioOutputChannels *state = getTunerStudioOutputChannels();
   switch (injectorIndex) {
-  case 0:
-    state->injectorState1 = true;
-    break;
-  case 1:
-    state->injectorState2 = true;
-    break;
-  case 2:
-    state->injectorState3 = true;
-    break;
-  case 3:
-    state->injectorState4 = true;
-    break;
-  case 4:
-    state->injectorState5 = true;
-    break;
-  case 5:
-    state->injectorState6 = true;
-    break;
+  case 0: state->injectorState1 = true; break;
+  case 1: state->injectorState2 = true; break;
+  case 2: state->injectorState3 = true; break;
+  case 3: state->injectorState4 = true; break;
+  case 4: state->injectorState5 = true; break;
+  case 5: state->injectorState6 = true; break;
   }
 }
 
 void InjectorOutputPin::setLow() {
-    NamedOutputPin::setLow();
-    TunerStudioOutputChannels *state = getTunerStudioOutputChannels();
-  // this is NASTY but what's the better option? bytes? At cost of 22 extra bytes in output status packet?
+  NamedOutputPin::setLow();
+  TunerStudioOutputChannels *state = getTunerStudioOutputChannels();
   switch (injectorIndex) {
-  case 0:
-    state->injectorState1 = false;
-    break;
-  case 1:
-    state->injectorState2 = false;
-    break;
-  case 2:
-    state->injectorState3 = false;
-    break;
-  case 3:
-    state->injectorState4 = false;
-    break;
-  case 4:
-    state->injectorState5 = false;
-    break;
-  case 5:
-    state->injectorState6 = false;
-    break;
+  case 0: state->injectorState1 = false; break;
+  case 1: state->injectorState2 = false; break;
+  case 2: state->injectorState3 = false; break;
+  case 3: state->injectorState4 = false; break;
+  case 4: state->injectorState5 = false; break;
+  case 5: state->injectorState6 = false; break;
   }
+}
+
+// Console command for diagnostics
+void printMultiInjectionStats() {
+  printf("=== MULTI-INJECTION STATS ===\n");
+  printf("Multi-injection calls: %u\n", g_multiInjectionCount);
+  printf("Single-injection calls: %u\n", g_singleInjectionCount);
+  printf("============================\n");
 }

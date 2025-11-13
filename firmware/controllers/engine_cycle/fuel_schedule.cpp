@@ -308,33 +308,53 @@ bool FuelSchedule::shouldUseMultiInjection() const {
   return (load > 100.0f && rpm > 1000.0f);
 }
 
+// Multi-injection: Schedule individual pulse
 void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float currentPhase) {
-  if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) return;
-  
-  const auto& pulse = pulses[pulseIndex];
-  floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
-  if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) return;
-  
-  float angleDelta = pulse.startAngle - currentPhase;
-  if (angleDelta < 0) angleDelta += 720;
-  
-  efitick_t injectionStartNt = nowNt + US2NT(angleDelta * oneDegreeUs);
-  floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
-  
-  for (auto* output : outputs) {
-    if (output && output->isInitialized()) {
-      output->open(injectionStartNt, pulseDurationUs);
-    }
-  }
-  
-  for (auto* output : outputsStage2) {
-    if (output && output->isInitialized()) {
-      output->open(injectionStartNt, pulseDurationUs);
-    }
-  }
-  printf("DEBUG: SCH pulse#%d at %u time: %.2fms\n", pulseIndex, (unsigned)nowNt, pulse.fuelMs);
+// Validate pulse index
+if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) {
+return;
 }
 
+const auto& pulse = pulses[pulseIndex];
+
+// Validate pulse data
+if (pulse.fuelMs < 0.001f || pulse.fuelMs > 100.0f) {
+return; // Invalid fuel amount
+}
+
+// Get engine rotation timing
+floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
+if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
+return;
+}
+
+// Calculate angle difference from current phase
+float angleDelta = pulse.startAngle - currentPhase;
+if (angleDelta < 0) {
+angleDelta += 720.0f;
+}
+
+// Convert angle to time delay
+efitick_t delayNt = US2NT(angleDelta * oneDegreeUs);
+efitick_t injectionStartNt = nowNt + delayNt;
+
+// Calculate pulse duration in microseconds
+floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
+
+// Schedule primary outputs
+for (auto* output : outputs) {
+if (output && output->isInitialized()) {
+output->open(injectionStartNt, pulseDurationUs);
+}
+}
+
+// Schedule stage2 outputs (if configured)
+for (auto* output : outputsStage2) {
+if (output && output->isInitialized()) {
+output->open(injectionStartNt, pulseDurationUs);
+}
+}
+}
 
 // ==========================================================
 

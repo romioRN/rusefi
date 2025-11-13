@@ -41,6 +41,8 @@ extern int waveChartUsedSize;
 extern WaveChart waveChart;
 #endif // EFI_ENGINE_SNIFFER
 
+extern void printMultiInjectionStats();
+
 using namespace rusefi::stringutil;
 
 void printSpiState() {
@@ -690,6 +692,7 @@ void initSettings() {
 #endif // HAL_USE_ADC
 	addConsoleActionSS(CMD_LOGIC_PIN, setLogicInputPin);
 #endif // EFI_PROD_CODE
+addConsoleAction("multi_stats", printMultiInjectionStats);
 }
 
 void printDateTime() {
