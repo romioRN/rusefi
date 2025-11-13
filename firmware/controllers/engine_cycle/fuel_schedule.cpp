@@ -332,6 +332,7 @@ void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float cu
       output->open(injectionStartNt, pulseDurationUs);
     }
   }
+  printf("DEBUG: SCH pulse#%d at %u time: %.2fms\n", pulseIndex, (unsigned)nowNt, pulse.fuelMs);
 }
 
 
