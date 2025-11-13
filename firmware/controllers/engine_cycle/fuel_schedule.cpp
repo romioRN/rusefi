@@ -233,6 +233,16 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
     return;
   }
 
+   static bool debugPrinted = false;
+   if (!debugPrinted) {
+    efiPrintf("=== MULTI-INJ CONFIG CHECK ===");
+    efiPrintf("Enable: %d", engineConfiguration->multiInjection.enableMultiInjection);
+    efiPrintf("Num Inj: %d", engineConfiguration->multiInjection.numberOfInjections);
+    efiPrintf("Cyl#0 pulses: %d", elements[0].getNumberOfPulses());
+    debugPrinted = true;
+    efiPrintf("==============================");
+    }
+
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
     
