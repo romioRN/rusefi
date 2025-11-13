@@ -6,6 +6,9 @@
 
 #include "efi_output.h"
 
+#ifdef UNIT_TEST
+typedef void* virtual_timer_t;
+#endif
 
 void startSimultaneousInjection();
 void endSimultaneousInjectionOnlyTogglePins();
