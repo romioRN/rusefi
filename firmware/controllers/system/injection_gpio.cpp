@@ -39,7 +39,7 @@ void InjectorOutputPin::timerCallback(virtual_timer_t *vtp, void *arg) {
 // =======================================================================
 
 void InjectorOutputPin::open(efitick_t nowNt) {
-  printf("DEBUG: single-open %s at %u us\n", getName(), (unsigned)nowNt);
+  //printf("DEBUG: single-open %s at %u us\n", getName(), (unsigned)nowNt);
   // per-output counter for error detection
   overlappingCounter++;
   // global counter for logging
@@ -71,7 +71,7 @@ void InjectorOutputPin::open(efitick_t nowNt) {
 
 // ========== NEW: Overload for multi-injection with custom duration ==========
 void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
-  printf("DEBUG: multi-open %s at %u us for %.2f ms\n", getName(), (unsigned)nowNt, durationUs/1000.0);
+ // printf("DEBUG: multi-open %s at %u us for %.2f ms\n", getName(), (unsigned)nowNt, durationUs/1000.0);
   overlappingCounter++;
   getEngineState()->fuelInjectionCounter++;
 
