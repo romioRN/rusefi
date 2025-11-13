@@ -6,4 +6,4 @@ Do not use VAL_ tag
 
 Please report any discrepancies between protocol description and following C++ implementation
 
-setShortValueMsb is Most Significant Byte first
+setShortValueMsb is Most Significant Byte first hs
