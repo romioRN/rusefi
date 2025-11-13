@@ -94,14 +94,14 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   
   setHigh();
   
-  // Schedule closing after specified duration using ChibiOS virtual timer
-  efitick_t delayNt = US2NT(durationUs);
+  // Schedule closing using ChibiOS virtual timer
+  sysinterval_t delayTicks = TIME_US2I(durationUs);
   
-  // Cancel any pending timer first
+  // Cancel any pending timer
   chVTReset(&m_multiInjectTimer);
   
-  // Set timer to fire after delay
-  chVTSet(&m_multiInjectTimer, ST2NT(delayNt), 
+  // Set timer to fire callback after delay
+  chVTSet(&m_multiInjectTimer, delayTicks, 
     InjectorOutputPin::timerCallback, this);
 }
 // ===========================================================================
