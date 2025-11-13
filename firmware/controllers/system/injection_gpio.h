@@ -31,4 +31,4 @@ private:
 
   virtual_timer_t m_multiInjectTimer; // Timer for custom duration
   static void timerCallback(virtual_timer_t *vtp, void *arg); // Timer callback
-}
+};
