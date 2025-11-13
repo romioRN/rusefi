@@ -169,8 +169,8 @@ void InjectorOutputPin::setLow() {
 
 // Console command for diagnostics
 void printMultiInjectionStats() {
-printf("=== MULTI-INJECTION STATS ===\n");
-printf("Multi-injection calls: %lu\n", (unsigned long)g_multiInjectionCount);
-printf("Single-injection calls: %lu\n", (unsigned long)g_singleInjectionCount);
-printf("============================\n");
+efiPrintf("=== MULTI-INJECTION STATS ===");
+efiPrintf("Multi-injection calls: %lu", (unsigned long)g_multiInjectionCount);
+efiPrintf("Single-injection calls: %lu", (unsigned long)g_singleInjectionCount);
+efiPrintf("============================");
 }
