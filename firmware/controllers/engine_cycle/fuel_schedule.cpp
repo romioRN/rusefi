@@ -227,7 +227,7 @@ void FuelSchedule::addFuelEvents() {
   isReady = true;
 }
 
-vvoid FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase) {
+void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase) {
   // Wait for schedule to be built - this happens the first time we get RPM
   if (!isReady) {
     return;
