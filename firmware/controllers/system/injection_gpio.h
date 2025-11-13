@@ -30,5 +30,5 @@ private:
 	int8_t overlappingCounter;
 
   virtual_timer_t m_multiInjectTimer;  
-  static void timerCallback(void *vtp, void *arg);  
+  static void timerCallback(virtual_timer_t *vtp, void *arg);  
 };

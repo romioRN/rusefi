@@ -29,12 +29,13 @@ InjectorOutputPin::InjectorOutputPin() : NamedOutputPin() {
 }
 
 // ========== NEW: Timer callback for multi-injection closing ==========
-void InjectorOutputPin::timerCallback(void *vtp, void *arg) {
+void InjectorOutputPin::timerCallback(virtual_timer_t *vtp, void *arg) {
   InjectorOutputPin* output = static_cast<InjectorOutputPin*>(arg);
   if (output) {
     output->close(getTimeNowNt());
   }
 }
+
 // =======================================================================
 
 void InjectorOutputPin::open(efitick_t nowNt) {
