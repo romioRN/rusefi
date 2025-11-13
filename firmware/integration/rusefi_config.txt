@@ -307,7 +307,7 @@ struct_no_prefix engine_configuration_s
 #define CAN_WBO_COUNT 2
 
 struct multi_injection_s
-	bit enableMultiInjection, "Disabled", "Enabled";Enable multi-injection (split/double injection)
+	bit enableMultiInjection, "Enabled", "Disabled";Enable multi-injection (split/double injection)
 	
 	uint8_t numberOfInjections;Number of injection pulses per cycle;"count", 1, 1, 1, 5, 0
 	
