@@ -7,10 +7,7 @@
 
 #include "efi_output.h"
 
-// Forward declaration для unit tests
-#if defined(UNIT_TEST) || defined(EFI_UNIT_TEST)
-typedef void* virtual_timer_t;
-#endif
+
 
 void startSimultaneousInjection();
 void endSimultaneousInjectionOnlyTogglePins();
