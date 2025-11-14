@@ -148,24 +148,33 @@ float InjectionEvent::calculateDwellTime(uint8_t pulseIndex) const {
 }
 
 bool InjectionEvent::validateInjectionWindows() const {
+  efiPrintf("=== VALIDATE INJECTION WINDOWS ===");
+  efiPrintf("numberOfPulses: %d", numberOfPulses);
+  
+  for (uint8_t i = 0; i < numberOfPulses; i++) {
+    efiPrintf("Pulse %d: startAngle=%.1f°, durationAngle=%.1f°, fuelMs=%.2f",
+              i, pulses[i].startAngle, pulses[i].durationAngle, pulses[i].fuelMs);
+  }
+  
   float minDwell = engineConfiguration->multiInjection.dwellAngleBetweenInjections;
   if (minDwell < MIN_DWELL_ANGLE) {
     minDwell = MIN_DWELL_ANGLE;
   }
+  efiPrintf("Required minDwell: %.1f°", minDwell);
   
   for (uint8_t i = 0; i < numberOfPulses - 1; i++) {
-    if (!pulses[i].isActive || !pulses[i + 1].isActive) {
-      continue;
-    }
-    
     float dwell = calculateDwellTime(i);
+    efiPrintf("Dwell %d->%d: %.1f°", i, i+1, dwell);
     
     if (dwell < minDwell) {
-      warning(ObdCode::CUSTOM_MULTI_INJECTION_OVERLAP,
-          "Multi-injection overlap: pulse %d->%d", i, i + 1);
+      efiPrintf("ERROR: Dwell too small!");
       return false;
     }
   }
+  efiPrintf("=== VALIDATION OK ===");
+  return true;
+}
+
   
   uint8_t lastPulseIdx = numberOfPulses - 1;
   if (pulses[lastPulseIdx].isActive) {
