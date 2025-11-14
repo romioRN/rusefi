@@ -17,8 +17,6 @@ static constexpr float ABORT_ANGLE_SAFETY = 30.0f;
 static constexpr float MAX_INJECTION_DURATION = 180.0f;
 
 void InjectionEvent::configureMultiInjection(uint8_t numPulses) {
-  // ✅ ИСПРАВЛЕНО: numPulses уже передаётся как РЕАЛЬНОЕ количество (не 0-based)
-  // Поэтому здесь просто ограничиваем диапазон
   numberOfPulses = minI(maxI(numPulses, 1), MAX_INJECTION_PULSES);
   
   if (!engineConfiguration->multiInjection.enableMultiInjection) {
@@ -26,47 +24,57 @@ void InjectionEvent::configureMultiInjection(uint8_t numPulses) {
     return;
   }
   
-  // Загружаем split ratios из конфигурации
+  efiPrintf("configureMultiInjection: numPulses=%d", numPulses);
+  
   pulses[0].splitRatio = engineConfiguration->multiInjection.splitRatio1;
   pulses[1].splitRatio = engineConfiguration->multiInjection.splitRatio2;
   pulses[2].splitRatio = engineConfiguration->multiInjection.splitRatio3;
   pulses[3].splitRatio = engineConfiguration->multiInjection.splitRatio4;
   pulses[4].splitRatio = engineConfiguration->multiInjection.splitRatio5;
   
-  // Нормализация split ratios
+  efiPrintf("Raw ratios: %.1f, %.1f, %.1f, %.1f, %.1f",
+            pulses[0].splitRatio, pulses[1].splitRatio, pulses[2].splitRatio,
+            pulses[3].splitRatio, pulses[4].splitRatio);
+  
   float totalRatio = 0;
   for (uint8_t i = 0; i < numberOfPulses; i++) {
     totalRatio += pulses[i].splitRatio;
   }
   
+  efiPrintf("totalRatio=%.1f", totalRatio);
+  
   if (totalRatio > 0.1f) {
-    // Нормализуем так, чтобы сумма была 100%
     for (uint8_t i = 0; i < numberOfPulses; i++) {
       pulses[i].splitRatio = (pulses[i].splitRatio / totalRatio) * 100.0f;
+      efiPrintf("Normalized pulses[%d].splitRatio=%.1f%%", i, pulses[i].splitRatio);
     }
   } else {
-    // Если все нули — делим поровну
     float equalRatio = 100.0f / numberOfPulses;
+    efiPrintf("ERROR: totalRatio=0! Using equal split: %.1f%% per pulse", equalRatio);
     for (uint8_t i = 0; i < numberOfPulses; i++) {
       pulses[i].splitRatio = equalRatio;
     }
   }
   
-  // Деактивируем неиспользуемые импульсы
   for (uint8_t i = numberOfPulses; i < MAX_INJECTION_PULSES; i++) {
     pulses[i].isActive = false;
     pulses[i].splitRatio = 0;
   }
 }
 
+
 float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
   if (pulseIndex >= numberOfPulses) {
+    efiPrintf("ERROR: computeSplitRatio: pulseIndex %d >= numberOfPulses %d", 
+              pulseIndex, numberOfPulses);
     return 0.0f;
   }
   
   float baseRatio = pulses[pulseIndex].splitRatio;
+  efiPrintf("computeSplitRatio(%d): baseRatio=%.1f", pulseIndex, baseRatio);
   
   if (engineConfiguration->multiInjection.enableLoadBasedSplit && pulseIndex == 0) {
+    efiPrintf("WARNING: Using table-based split (not recommended for testing)");
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     float load = getFuelingLoad();
     
@@ -84,7 +92,7 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
       engineConfiguration->multiInjectionSplitRatioTable[loadIdx]
     );
   }
-  
+  efiPrintf("computeSplitRatio(%d) returns: %.1f", pulseIndex, baseRatio);
   return baseRatio;
 }
 
@@ -97,6 +105,7 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   switch (pulseIndex) {
     case 1:
       baseAngle = engineConfiguration->multiInjection.injection2AngleOffset;
+      efiPrintf("computeSecondaryInjectionAngle(1): injection2AngleOffset=%.1f", baseAngle);
       break;
     case 2:
       baseAngle = engineConfiguration->multiInjection.injection3AngleOffset;
@@ -113,6 +122,7 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   }
   
   if (pulseIndex == 1 && engineConfiguration->multiInjection.enableRpmAngleCorrection) {
+    efiPrintf("WARNING: Using RPM-based angle correction (not recommended for testing)");
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     float load = getFuelingLoad();
     
@@ -132,7 +142,7 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     
     baseAngle = tableAngle;
   }
-  
+  efiPrintf("computeSecondaryInjectionAngle(%d) returns: %.1f", pulseIndex, baseAngle);
   return baseAngle;
 }
 
