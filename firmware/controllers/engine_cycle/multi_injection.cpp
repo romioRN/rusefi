@@ -152,7 +152,7 @@ bool InjectionEvent::validateInjectionWindows() const {
   efiPrintf("numberOfPulses: %d", numberOfPulses);
   
   for (uint8_t i = 0; i < numberOfPulses; i++) {
-    efiPrintf("Pulse %d: startAngle=%.1f°, durationAngle=%.1f°, fuelMs=%.2f",
+    efiPrintf("Pulse %d: startAngle=%.1f, durationAngle=%.1f, fuelMs=%.2f",
               i, pulses[i].startAngle, pulses[i].durationAngle, pulses[i].fuelMs);
   }
   
@@ -160,42 +160,45 @@ bool InjectionEvent::validateInjectionWindows() const {
   if (minDwell < MIN_DWELL_ANGLE) {
     minDwell = MIN_DWELL_ANGLE;
   }
-  efiPrintf("Required minDwell: %.1f°", minDwell);
+  efiPrintf("Required minDwell: %.1f", minDwell);
   
   for (uint8_t i = 0; i < numberOfPulses - 1; i++) {
+    if (!pulses[i].isActive || !pulses[i + 1].isActive) {
+      continue;
+    }
+    
     float dwell = calculateDwellTime(i);
-    efiPrintf("Dwell %d->%d: %.1f°", i, i+1, dwell);
+    efiPrintf("Dwell %d->%d: %.1f", i, i+1, dwell);
     
     if (dwell < minDwell) {
       efiPrintf("ERROR: Dwell too small!");
+      warning(ObdCode::CUSTOM_MULTI_INJECTION_OVERLAP,
+          "Multi-injection overlap: pulse %d->%d", i, i + 1);
       return false;
     }
   }
-  efiPrintf("=== VALIDATION OK ===");
-  return true;
-}
-
   
   uint8_t lastPulseIdx = numberOfPulses - 1;
   if (pulses[lastPulseIdx].isActive) {
     float lastEnd = pulses[lastPulseIdx].startAngle - pulses[lastPulseIdx].durationAngle;
     
-    // Get ignition advance angle for this cylinder
-    float ignitionAngle = 15.0f;  // Safe default
+    float ignitionAngle = 15.0f;
     if (cylinderNumber < MAX_CYLINDER_COUNT) {
       ignitionAngle = getEngineState()->timingAdvance[cylinderNumber];
     }
     
     if (lastEnd < (ignitionAngle + ABORT_ANGLE_SAFETY)) {
       warning(ObdCode::CUSTOM_MULTI_INJECTION_TOO_LATE,
-          "Multi-injection too late: pulse %d ends at %.1f°",
+          "Multi-injection too late: pulse %d ends at %.1f",
           lastPulseIdx, lastEnd);
       return false;
     }
   }
   
+  efiPrintf("=== VALIDATION OK ===");
   return true;
 }
+
 
 bool InjectionEvent::updateMultiInjectionAngles() {
   if (!engineConfiguration->multiInjection.enableMultiInjection || numberOfPulses == 1) {
