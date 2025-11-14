@@ -233,15 +233,19 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
     return;
   }
 
-   static bool debugPrinted = false;
-   if (!debugPrinted) {
+  static bool debugPrinted = false;
+  if (!debugPrinted) {
+    // ✅ ИСПРАВЛЕНО: показываем и raw, и actual значение
+    uint8_t rawValue = engineConfiguration->multiInjection.numberOfInjections;
+    uint8_t actualValue = rawValue + 1;
+    
     efiPrintf("=== MULTI-INJ CONFIG CHECK ===");
     efiPrintf("Enable: %d", engineConfiguration->multiInjection.enableMultiInjection);
-    efiPrintf("Num Inj: %d", engineConfiguration->multiInjection.numberOfInjections);
+    efiPrintf("Num Inj (raw): %d, actual: %d", rawValue, actualValue);
     efiPrintf("Cyl#0 pulses: %d", elements[0].getNumberOfPulses());
-    debugPrinted = true;
     efiPrintf("==============================");
-    }
+    debugPrinted = true;
+  }
 
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
@@ -278,12 +282,17 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
   }
 }
 
-
 // ========== NEW: Multi-injection implementation ==========
 
 void FuelSchedule::configureMultiInjectionForAllCylinders() {
-  efiPrintf("DEBUG: enableMultiInjection=%d numberOfInjections=%d",  (int)engineConfiguration->multiInjection.numberOfInjections,
-            (int)engineConfiguration->multiInjection.enableMultiInjection);
+  // ✅ ИСПРАВЛЕНО: читаем raw значение и конвертируем в actual
+  uint8_t rawNumInjections = engineConfiguration->multiInjection.numberOfInjections;
+  uint8_t actualNumPulses = rawNumInjections + 1;  // 0-based -> 1-based
+  
+  efiPrintf("DEBUG: enableMultiInjection=%d numberOfInjections(raw)=%d actual=%d",  
+            (int)engineConfiguration->multiInjection.enableMultiInjection,
+            (int)rawNumInjections,
+            (int)actualNumPulses);
 
   if (!engineConfiguration->multiInjection.enableMultiInjection) {
     // Disabled, ensure single injection for all cylinders
@@ -293,17 +302,16 @@ void FuelSchedule::configureMultiInjectionForAllCylinders() {
     return;
   }
   
-  uint8_t numPulses = engineConfiguration->multiInjection.numberOfInjections;
-
-  efiPrintf("Configuring multi-injection: %d pulses", numPulses);
+  // ✅ ИСПРАВЛЕНО: используем actualNumPulses вместо raw значения
+  efiPrintf("Configuring multi-injection: %d pulses", actualNumPulses);
   
-  // Clamp to valid range
-  if (numPulses < 1) numPulses = 1;
-  if (numPulses > MAX_INJECTION_PULSES) numPulses = MAX_INJECTION_PULSES;
+  // Clamp to valid range (уже с учётом +1)
+  if (actualNumPulses < 1) actualNumPulses = 1;
+  if (actualNumPulses > MAX_INJECTION_PULSES) actualNumPulses = MAX_INJECTION_PULSES;
   
   // Configure all cylinder injection events
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
-    elements[i].configureMultiInjection(numPulses);
+    elements[i].configureMultiInjection(actualNumPulses);
   }
 }
 
@@ -312,61 +320,64 @@ bool FuelSchedule::shouldUseMultiInjection() const {
     return false;
   }
   
+  // ✅ ИСПРАВЛЕНО: используем actual значение для проверки
+  uint8_t actualPulses = engineConfiguration->multiInjection.numberOfInjections + 1;
+  
   // Check engine conditions (optional - can add more logic here)
   float rpm = Sensor::getOrZero(SensorType::Rpm);
   float load = getFuelingLoad();
   
   // Example: only use multi-injection above certain conditions
   // This can be made configurable via threshold parameters
-  return (load > 100.0f && rpm > 1000.0f);
+  return (actualPulses > 1 && load > 100.0f && rpm > 1000.0f);
 }
 
 // Multi-injection: Schedule individual pulse
 void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float currentPhase) {
-// Validate pulse index
-if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) {
-return;
-}
+  // Validate pulse index
+  if (pulseIndex >= numberOfPulses || !pulses[pulseIndex].isActive) {
+    return;
+  }
 
-const auto& pulse = pulses[pulseIndex];
+  const auto& pulse = pulses[pulseIndex];
 
-// Validate pulse data
-if (pulse.fuelMs < 0.001f || pulse.fuelMs > 100.0f) {
-return; // Invalid fuel amount
-}
+  // Validate pulse data
+  if (pulse.fuelMs < 0.001f || pulse.fuelMs > 100.0f) {
+    return; // Invalid fuel amount
+  }
 
-// Get engine rotation timing
-floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
-if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
-return;
-}
+  // Get engine rotation timing
+  floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
+  if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
+    return;
+  }
 
-// Calculate angle difference from current phase
-float angleDelta = pulse.startAngle - currentPhase;
-if (angleDelta < 0) {
-angleDelta += 720.0f;
-}
+  // Calculate angle difference from current phase
+  float angleDelta = pulse.startAngle - currentPhase;
+  if (angleDelta < 0) {
+    angleDelta += 720.0f;
+  }
 
-// Convert angle to time delay
-efitick_t delayNt = US2NT(angleDelta * oneDegreeUs);
-efitick_t injectionStartNt = nowNt + delayNt;
+  // Convert angle to time delay
+  efitick_t delayNt = US2NT(angleDelta * oneDegreeUs);
+  efitick_t injectionStartNt = nowNt + delayNt;
 
-// Calculate pulse duration in microseconds
-floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
+  // Calculate pulse duration in microseconds
+  floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
 
-// Schedule primary outputs
-for (auto* output : outputs) {
-if (output && output->isInitialized()) {
-output->open(injectionStartNt, pulseDurationUs);
-}
-}
+  // Schedule primary outputs
+  for (auto* output : outputs) {
+    if (output && output->isInitialized()) {
+      output->open(injectionStartNt, pulseDurationUs);
+    }
+  }
 
-// Schedule stage2 outputs (if configured)
-for (auto* output : outputsStage2) {
-if (output && output->isInitialized()) {
-output->open(injectionStartNt, pulseDurationUs);
-}
-}
+  // Schedule stage2 outputs (if configured)
+  for (auto* output : outputsStage2) {
+    if (output && output->isInitialized()) {
+      output->open(injectionStartNt, pulseDurationUs);
+    }
+  }
 }
 
 // ==========================================================
