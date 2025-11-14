@@ -309,7 +309,7 @@ struct_no_prefix engine_configuration_s
 struct multi_injection_s
 	bit enableMultiInjection, "Enabled", "Disabled";Enable multi-injection (split/double injection)
 	
-	uint8_t numberOfInjections;Number of injection pulses per cycle;"count", 1, 2, 1, 5, 0
+	uint8_t numberOfInjections;Number of injection pulses per cycle;"count", 1, 1, 1, 5, 0
 	
 	! Split ratios must sum to 100%
 	uint8_t splitRatio1;Split ratio for injection pulse #1;"%", 1, 0, 0, 100, 0

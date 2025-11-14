@@ -209,19 +209,7 @@ bool InjectionEvent::update() {
   return true;
 }
 
-void FuelSchedule::addFuelEvents() {
-  // ========== NEW: Configure multi-injection ==========
-  configureMultiInjectionForAllCylinders();
-  // ====================================================
   
-  for (size_t cylinderIndex = 0; cylinderIndex < engineConfiguration->cylindersCount; cylinderIndex++) {
-    bool result = elements[cylinderIndex].update();
-
-    if (!result) {
-      invalidate();
-      return;
-    }
-  }
 
   // We made it through all cylinders, mark the schedule as ready so it can be used
   isReady = true;
@@ -282,6 +270,8 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
 // ========== NEW: Multi-injection implementation ==========
 
 void FuelSchedule::configureMultiInjectionForAllCylinders() {
+  efiPrintf("DEBUG: enableMultiInjection=%d numberOfInjections=%d",  (int)engineConfiguration->multiInjection.numberOfInjections);
+
   if (!engineConfiguration->multiInjection.enableMultiInjection) {
     // Disabled, ensure single injection for all cylinders
     for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
