@@ -24,33 +24,23 @@ void InjectionEvent::configureMultiInjection(uint8_t numPulses) {
     return;
   }
   
-  efiPrintf("configureMultiInjection: numPulses=%d", numPulses);
-  
   pulses[0].splitRatio = engineConfiguration->multiInjection.splitRatio1;
   pulses[1].splitRatio = engineConfiguration->multiInjection.splitRatio2;
   pulses[2].splitRatio = engineConfiguration->multiInjection.splitRatio3;
   pulses[3].splitRatio = engineConfiguration->multiInjection.splitRatio4;
   pulses[4].splitRatio = engineConfiguration->multiInjection.splitRatio5;
   
-  efiPrintf("Raw ratios: %.1f, %.1f, %.1f, %.1f, %.1f",
-            pulses[0].splitRatio, pulses[1].splitRatio, pulses[2].splitRatio,
-            pulses[3].splitRatio, pulses[4].splitRatio);
-  
   float totalRatio = 0;
   for (uint8_t i = 0; i < numberOfPulses; i++) {
     totalRatio += pulses[i].splitRatio;
   }
   
-  efiPrintf("totalRatio=%.1f", totalRatio);
-  
   if (totalRatio > 0.1f) {
     for (uint8_t i = 0; i < numberOfPulses; i++) {
       pulses[i].splitRatio = (pulses[i].splitRatio / totalRatio) * 100.0f;
-      efiPrintf("Normalized pulses[%d].splitRatio=%.1f%%", i, pulses[i].splitRatio);
     }
   } else {
     float equalRatio = 100.0f / numberOfPulses;
-    efiPrintf("ERROR: totalRatio=0! Using equal split: %.1f%% per pulse", equalRatio);
     for (uint8_t i = 0; i < numberOfPulses; i++) {
       pulses[i].splitRatio = equalRatio;
     }
@@ -61,6 +51,7 @@ void InjectionEvent::configureMultiInjection(uint8_t numPulses) {
     pulses[i].splitRatio = 0;
   }
 }
+
 
 
 float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
@@ -158,19 +149,10 @@ float InjectionEvent::calculateDwellTime(uint8_t pulseIndex) const {
 }
 
 bool InjectionEvent::validateInjectionWindows() const {
-  efiPrintf("=== VALIDATE INJECTION WINDOWS ===");
-  efiPrintf("numberOfPulses: %d", numberOfPulses);
-  
-  for (uint8_t i = 0; i < numberOfPulses; i++) {
-    efiPrintf("Pulse %d: startAngle=%.1f, durationAngle=%.1f, fuelMs=%.2f",
-              i, pulses[i].startAngle, pulses[i].durationAngle, pulses[i].fuelMs);
-  }
-  
   float minDwell = engineConfiguration->multiInjection.dwellAngleBetweenInjections;
   if (minDwell < MIN_DWELL_ANGLE) {
     minDwell = MIN_DWELL_ANGLE;
   }
-  efiPrintf("Required minDwell: %.1f", minDwell);
   
   for (uint8_t i = 0; i < numberOfPulses - 1; i++) {
     if (!pulses[i].isActive || !pulses[i + 1].isActive) {
@@ -178,12 +160,11 @@ bool InjectionEvent::validateInjectionWindows() const {
     }
     
     float dwell = calculateDwellTime(i);
-    efiPrintf("Dwell %d->%d: %.1f", i, i+1, dwell);
     
     if (dwell < minDwell) {
-      efiPrintf("ERROR: Dwell too small!");
       warning(ObdCode::CUSTOM_MULTI_INJECTION_OVERLAP,
-          "Multi-injection overlap: pulse %d->%d", i, i + 1);
+          "Multi-injection overlap: pulse %d->%d (dwell %.1f < %.1f)", 
+          i, i + 1, dwell, minDwell);
       return false;
     }
   }
@@ -199,15 +180,15 @@ bool InjectionEvent::validateInjectionWindows() const {
     
     if (lastEnd < (ignitionAngle + ABORT_ANGLE_SAFETY)) {
       warning(ObdCode::CUSTOM_MULTI_INJECTION_TOO_LATE,
-          "Multi-injection too late: pulse %d ends at %.1f",
+          "Multi-injection too late: pulse %d ends at %.1f°",
           lastPulseIdx, lastEnd);
       return false;
     }
   }
   
-  efiPrintf("=== VALIDATION OK ===");
   return true;
 }
+
 
 
 bool InjectionEvent::updateMultiInjectionAngles() {
