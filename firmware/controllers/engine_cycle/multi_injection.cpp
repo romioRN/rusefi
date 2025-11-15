@@ -10,7 +10,15 @@
 #include "fuel_schedule.h"
 
 #if EFI_ENGINE_CONTROL
-
+static float normalizeAngle(float angle) {
+  while (angle < 0) {
+    angle += 720.0f;
+  }
+  while (angle >= 720.0f) {
+    angle -= 720.0f;
+  }
+  return angle;
+}
 // Multi-injection constants
 static constexpr float MIN_DWELL_ANGLE = 10.0f;
 static constexpr float ABORT_ANGLE_SAFETY = 30.0f;
