@@ -263,3 +263,5 @@ bool InjectionEvent::updateMultiInjectionAngles() {
   
   return true;
 }
+
+#endif // EFI_ENGINE_CONTROL
