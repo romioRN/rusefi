@@ -84,29 +84,15 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
 
 float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   if (pulseIndex == 0) {
-    return injectionStartAngle;
+    // Pulse 0 ВСЕГДА из Main Injection Timing
+    return computeInjectionAngle().Value;
   }
   
-  float baseAngle = 0;
-  switch (pulseIndex) {
-    case 1:
-      baseAngle = engineConfiguration->multiInjection.injection2AngleOffset;
-      break;
-    case 2:
-      baseAngle = engineConfiguration->multiInjection.injection3AngleOffset;
-      break;
-    case 3:
-      baseAngle = engineConfiguration->multiInjection.injection4AngleOffset;
-      break;
-    case 4:
-      baseAngle = engineConfiguration->multiInjection.injection5AngleOffset;
-      break;
-    default:
-      baseAngle = 100.0f;
-      break;
-  }
+  float angle = 0;
   
-  if (pulseIndex == 1 && engineConfiguration->multiInjection.enableRpmAngleCorrection) {
+  // ← ПРОВЕРЯЕМ: используются ли таблицы или fixed?
+  if (engineConfiguration->multiInjection.enableRpmAngleCorrection) {
+    // ТАБЛИЦА-BASED режим: читаем из таблиц
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     float load = getFuelingLoad();
     
@@ -116,17 +102,54 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
       16, 
       loadValue);
     
-    float tableAngle = interpolate2d(
-      rpm,
-      engineConfiguration->multiInjectionRpmBins,
-      engineConfiguration->secondInjectionAngleTable[loadIdx]
-    );
-    
-    baseAngle = tableAngle;
+    switch (pulseIndex) {
+      case 1:
+        angle = interpolate2d(rpm,
+                             engineConfiguration->multiInjectionRpmBins,
+                             engineConfiguration->secondInjectionAngleTable[loadIdx]);
+        break;
+      case 2:
+        // Если таблицы для Pulse 2 не существует - используем fixed
+        angle = engineConfiguration->multiInjection.injection3AngleOffset;
+        break;
+      case 3:
+        angle = engineConfiguration->multiInjection.injection4AngleOffset;
+        break;
+      case 4:
+        angle = engineConfiguration->multiInjection.injection5AngleOffset;
+        break;
+      default:
+        angle = 100.0f;
+        break;
+    }
+  } else {
+    // FIXED режим: читаем из конфига multi-injection
+    switch (pulseIndex) {
+      case 1:
+        angle = engineConfiguration->multiInjection.injection2AngleOffset;
+        break;
+      case 2:
+        angle = engineConfiguration->multiInjection.injection3AngleOffset;
+        break;
+      case 3:
+        angle = engineConfiguration->multiInjection.injection4AngleOffset;
+        break;
+      case 4:
+        angle = engineConfiguration->multiInjection.injection5AngleOffset;
+        break;
+      default:
+        angle = 100.0f;
+        break;
+    }
   }
   
-  return baseAngle;
+  // Нормализуй угол
+  angle = normalizeAngle(angle);
+  
+  return angle;
 }
+
+
 
 
 float InjectionEvent::calculateDwellTime(uint8_t pulseIndex) const {

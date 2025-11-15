@@ -299,7 +299,7 @@ bool FuelSchedule::shouldUseMultiInjection() const {
     return false;
   }
   
-  // ✅ ИСПРАВЛЕНО: используем actual значение для проверки
+  
   uint8_t actualPulses = engineConfiguration->multiInjection.numberOfInjections + 1;
   
   // Check engine conditions (optional - can add more logic here)
