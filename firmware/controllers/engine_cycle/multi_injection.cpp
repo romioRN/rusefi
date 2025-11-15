@@ -56,36 +56,31 @@ void InjectionEvent::configureMultiInjection(uint8_t numPulses) {
 
 float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
   if (pulseIndex >= numberOfPulses) {
-    efiPrintf("ERROR: computeSplitRatio: pulseIndex %d >= numberOfPulses %d", 
-              pulseIndex, numberOfPulses);
     return 0.0f;
   }
   
   float baseRatio = pulses[pulseIndex].splitRatio;
-  efiPrintf("computeSplitRatio(%d): baseRatio=%.1f", pulseIndex, baseRatio);
   
   if (engineConfiguration->multiInjection.enableLoadBasedSplit && pulseIndex == 0) {
-    efiPrintf("WARNING: Using table-based split (not recommended for testing)");
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     float load = getFuelingLoad();
     
-    // Find load index - convert float load to uint16_t for comparison
     uint16_t loadValue = (uint16_t)load;
     int loadIdx = findIndexMsg("load", 
       engineConfiguration->multiInjectionLoadBins, 
       16, 
       loadValue);
     
-    // Interpolate along RPM axis
     baseRatio = interpolate2d(
       rpm,
       engineConfiguration->multiInjectionRpmBins,
       engineConfiguration->multiInjectionSplitRatioTable[loadIdx]
     );
   }
-  efiPrintf("computeSplitRatio(%d) returns: %.1f", pulseIndex, baseRatio);
+  
   return baseRatio;
 }
+
 
 float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   if (pulseIndex == 0) {
@@ -96,7 +91,6 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   switch (pulseIndex) {
     case 1:
       baseAngle = engineConfiguration->multiInjection.injection2AngleOffset;
-      efiPrintf("computeSecondaryInjectionAngle(1): injection2AngleOffset=%.1f", baseAngle);
       break;
     case 2:
       baseAngle = engineConfiguration->multiInjection.injection3AngleOffset;
@@ -113,18 +107,15 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   }
   
   if (pulseIndex == 1 && engineConfiguration->multiInjection.enableRpmAngleCorrection) {
-    efiPrintf("WARNING: Using RPM-based angle correction (not recommended for testing)");
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     float load = getFuelingLoad();
     
-    // Convert float load to uint16_t for index search
     uint16_t loadValue = (uint16_t)load;
     int loadIdx = findIndexMsg("load", 
       engineConfiguration->multiInjectionLoadBins, 
       16, 
       loadValue);
     
-    // Interpolate along RPM axis
     float tableAngle = interpolate2d(
       rpm,
       engineConfiguration->multiInjectionRpmBins,
@@ -133,9 +124,10 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     
     baseAngle = tableAngle;
   }
-  efiPrintf("computeSecondaryInjectionAngle(%d) returns: %.1f", pulseIndex, baseAngle);
+  
   return baseAngle;
 }
+
 
 float InjectionEvent::calculateDwellTime(uint8_t pulseIndex) const {
   if (pulseIndex >= numberOfPulses - 1) {

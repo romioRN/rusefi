@@ -327,9 +327,9 @@ struct multi_injection_s
 	int16_t injection4AngleOffset;Injection pulse #4 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
 	int16_t injection5AngleOffset;Injection pulse #5 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
 	
-	bit enableLoadBasedSplit, "Fixed", "Table-Based";Enable load-based split ratio adjustment from table
-	bit enableRpmAngleCorrection, "Fixed", "RPM-Based";Enable RPM-based angle correction from table
-	bit enableMultiInjectionStaging, "Primary", "Staging";Use staging injectors for secondary pulses
+	bit enableLoadBasedSplit, "Table-Based", "Fixed";Enable load-based split ratio adjustment from table
+	bit enableRpmAngleCorrection, "RPM-Based", "Fixed";Enable RPM-based angle correction from table
+	bit enableMultiInjectionStaging, "Staging", "Primary";Use staging injectors for secondary pulses
 	
 	uint8_t[16] alignmentFill;;"units", 1, 0, 0, 0, 0
 end_struct
