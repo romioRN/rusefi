@@ -241,6 +241,9 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
     efiPrintf("=============================");
   }
 
+  static int multiCallCount = 0;
+  static int singleCallCount = 0;
+
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
     
@@ -248,7 +251,7 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
                        event.getNumberOfPulses() > 1;
     
     if (useMultiInj) {
-      efiPrintf("Multi-injection for cyl %d", i);
+      efiPrintf("Multi-injection for cyl %d (call #%d)", i, ++multiCallCount);
       
       for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
         const auto& pulse = event.getPulse(pulseIdx);
@@ -267,17 +270,15 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
         if (inWindow) {
           efiPrintf("Scheduling pulse %d at angle %.1f", pulseIdx, pulseAngle);
           event.schedulePulse(pulseIdx, nowNt, currentPhase);
-          // СЧЁТЧИК
-          multiInjectionCallsCounter++;
         }
       }
     } else {
-      // Одиночная инъекция
       event.onTriggerTooth(nowNt, currentPhase, nextPhase);
-      singleInjectionCallsCounter++;
+      singleCallCount++;
     }
   }
 }
+
 
 
 // ========== NEW: Multi-injection implementation ==========
