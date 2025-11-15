@@ -270,15 +270,11 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
 // ========== NEW: Multi-injection implementation ==========
 
 void FuelSchedule::configureMultiInjectionForAllCylinders() {
-  // ✅ ИСПРАВЛЕНО: читаем raw значение и конвертируем в actual
+  
   uint8_t rawNumInjections = engineConfiguration->multiInjection.numberOfInjections;
   uint8_t actualNumPulses = rawNumInjections + 1;  // 0-based -> 1-based
   
-  efiPrintf("DEBUG: enableMultiInjection=%d numberOfInjections(raw)=%d actual=%d",  
-            (int)engineConfiguration->multiInjection.enableMultiInjection,
-            (int)rawNumInjections,
-            (int)actualNumPulses);
-
+ 
   if (!engineConfiguration->multiInjection.enableMultiInjection) {
     // Disabled, ensure single injection for all cylinders
     for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {

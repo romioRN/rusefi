@@ -32,7 +32,7 @@ InjectorOutputPin::InjectorOutputPin() : NamedOutputPin() {
   chVTObjectInit(&m_multiInjectTimer);
 }
 
-// ✅ УДАЛЕНО: reset() уже в efi_gpio.cpp
+
 
 // Timer callback for multi-injection
 void InjectorOutputPin::timerCallback(virtual_timer_t *vtp, void *arg) {

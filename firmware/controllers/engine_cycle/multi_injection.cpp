@@ -188,9 +188,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     return updateInjectionAngle();
   }
   
-  // ✅ ИСПРАВЛЕНО: выводим реальное количество импульсов (numberOfPulses уже корректное)
-  efiPrintf("Multi-injection active: %d pulses", numberOfPulses);
-
+  
   floatms_t baseFuelMs = getEngineState()->injectionDuration;
   if (std::isnan(baseFuelMs) || baseFuelMs <= 0) {
     return false;
