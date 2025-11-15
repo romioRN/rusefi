@@ -232,27 +232,13 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
     return;
   }
 
-  static bool debugPrintedOnce = false;
-  if (!debugPrintedOnce) {
-    efiPrintf("=== onTriggerTooth DEBUG ===");
-    efiPrintf("enableMultiInjection: %d", engineConfiguration->multiInjection.enableMultiInjection);
-    efiPrintf("Cylinder 0 numberOfPulses: %d", elements[0].getNumberOfPulses());
-    debugPrintedOnce = true;
-    efiPrintf("=============================");
-  }
-
-  static int multiCallCount = 0;
-  static int singleCallCount = 0;
-
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
     
-    bool useMultiInj = engineConfiguration->multiInjection.enableMultiInjection && 
-                       event.getNumberOfPulses() > 1;
-    
-    if (useMultiInj) {
-      efiPrintf("Multi-injection for cyl %d (call #%d)", i, ++multiCallCount);
+    if (engineConfiguration->multiInjection.enableMultiInjection && 
+        event.getNumberOfPulses() > 1) {
       
+      // Multi-injection mode
       for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
         const auto& pulse = event.getPulse(pulseIdx);
         
@@ -268,16 +254,16 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
         }
         
         if (inWindow) {
-          efiPrintf("Scheduling pulse %d at angle %.1f", pulseIdx, pulseAngle);
           event.schedulePulse(pulseIdx, nowNt, currentPhase);
         }
       }
     } else {
+      // Single injection mode
       event.onTriggerTooth(nowNt, currentPhase, nextPhase);
-      singleCallCount++;
     }
   }
 }
+
 
 
 
@@ -301,8 +287,6 @@ void FuelSchedule::configureMultiInjectionForAllCylinders() {
     return;
   }
   
-  // ✅ ИСПРАВЛЕНО: используем actualNumPulses вместо raw значения
-  efiPrintf("Configuring multi-injection: %d pulses", actualNumPulses);
   
   // Clamp to valid range (уже с учётом +1)
   if (actualNumPulses < 1) actualNumPulses = 1;
