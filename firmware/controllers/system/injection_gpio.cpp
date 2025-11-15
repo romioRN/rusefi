@@ -4,6 +4,8 @@
  */
 
 #include "pch.h"
+#include "multi_injection.h" 
+#include "injection_gpio.h"
 
 extern bool printFuelDebug;
 

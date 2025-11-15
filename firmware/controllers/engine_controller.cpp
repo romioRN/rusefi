@@ -404,7 +404,6 @@ void commonInitEngineController() {
 	 */
 	prepareOutputSignals();
 
-	engine->injectionEvents.addFuelEvents();
 #endif // EFI_ENGINE_CONTROL
 
 

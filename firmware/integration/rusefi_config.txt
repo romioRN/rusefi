@@ -311,24 +311,11 @@ struct multi_injection_s
 	
 	uint8_t numberOfInjections;Number of injection pulses per cycle;"count", 1, 1, 1, 5, 0
 	
-	! Split ratios must sum to 100%
-	uint8_t splitRatio1;Split ratio for injection pulse #1;"%", 1, 0, 0, 100, 0
-	uint8_t splitRatio2;Split ratio for injection pulse #2;"%", 1, 0, 0, 100, 0
-	uint8_t splitRatio3;Split ratio for injection pulse #3;"%", 1, 0, 0, 100, 0
-	uint8_t splitRatio4;Split ratio for injection pulse #4;"%", 1, 0, 0, 100, 0
-	uint8_t splitRatio5;Split ratio for injection pulse #5;"%", 1, 0, 0, 100, 0
-	
+		
 	uint8_t dwellAngleBetweenInjections;Minimum angle separation between injection pulses;"deg", 1, 0, 5, 50, 0
 	
-	! Injection timing offsets (degrees BTDC)
-	int16_t injection1AngleOffset;Injection pulse #1 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-	int16_t injection2AngleOffset;Injection pulse #2 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-	int16_t injection3AngleOffset;Injection pulse #3 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-	int16_t injection4AngleOffset;Injection pulse #4 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
-	int16_t injection5AngleOffset;Injection pulse #5 start angle offset (BTDC);"deg", 1, 0, 0, 720, 0
 	
-	bit enableLoadBasedSplit, "Table-Based", "Fixed";Enable load-based split ratio adjustment from table
-	bit enableRpmAngleCorrection, "RPM-Based", "Fixed";Enable RPM-based angle correction from table
+	
 	bit enableMultiInjectionStaging, "Staging", "Primary";Use staging injectors for secondary pulses
 	
 	uint8_t[16] alignmentFill;;"units", 1, 0, 0, 0, 0
