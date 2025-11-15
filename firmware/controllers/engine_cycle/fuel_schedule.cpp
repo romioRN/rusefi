@@ -228,31 +228,28 @@ void FuelSchedule::addFuelEvents() {
 }
 
 void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nextPhase) {
-  // Wait for schedule to be built - this happens the first time we get RPM
   if (!isReady) {
     return;
   }
 
-  static bool debugPrinted = false;
-  if (!debugPrinted) {
-    // ✅ ИСПРАВЛЕНО: показываем и raw, и actual значение
-    uint8_t rawValue = engineConfiguration->multiInjection.numberOfInjections;
-    uint8_t actualValue = rawValue + 1;
-    
-    efiPrintf("=== MULTI-INJ CONFIG CHECK ===");
-    efiPrintf("Enable: %d", engineConfiguration->multiInjection.enableMultiInjection);
-    efiPrintf("Num Inj (raw): %d, actual: %d", rawValue, actualValue);
-    efiPrintf("Cyl#0 pulses: %d", elements[0].getNumberOfPulses());
-    efiPrintf("==============================");
-    debugPrinted = true;
+  static bool debugPrintedOnce = false;
+  if (!debugPrintedOnce) {
+    efiPrintf("=== onTriggerTooth DEBUG ===");
+    efiPrintf("enableMultiInjection: %d", engineConfiguration->multiInjection.enableMultiInjection);
+    efiPrintf("Cylinder 0 numberOfPulses: %d", elements[0].getNumberOfPulses());
+    debugPrintedOnce = true;
+    efiPrintf("=============================");
   }
 
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
     
-    // ========== Multi-injection support ==========
-    if (engineConfiguration->multiInjection.enableMultiInjection && event.getNumberOfPulses() > 1) {
-      // Schedule all active pulses for multi-injection
+    bool useMultiInj = engineConfiguration->multiInjection.enableMultiInjection && 
+                       event.getNumberOfPulses() > 1;
+    
+    if (useMultiInj) {
+      efiPrintf("Multi-injection for cyl %d", i);
+      
       for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
         const auto& pulse = event.getPulse(pulseIdx);
         
@@ -260,27 +257,28 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
         
         float pulseAngle = pulse.startAngle;
         
-        // Check if pulse falls within current trigger window
         bool inWindow = false;
         if (nextPhase > currentPhase) {
-          // Normal case
           inWindow = (pulseAngle >= currentPhase && pulseAngle < nextPhase);
         } else {
-          // Wrap around 720°
           inWindow = (pulseAngle >= currentPhase || pulseAngle < nextPhase);
         }
         
         if (inWindow) {
+          efiPrintf("Scheduling pulse %d at angle %.1f", pulseIdx, pulseAngle);
           event.schedulePulse(pulseIdx, nowNt, currentPhase);
+          // СЧЁТЧИК
+          multiInjectionCallsCounter++;
         }
       }
     } else {
-      // ============================================
-      // Standard single injection
+      // Одиночная инъекция
       event.onTriggerTooth(nowNt, currentPhase, nextPhase);
+      singleInjectionCallsCounter++;
     }
   }
 }
+
 
 // ========== NEW: Multi-injection implementation ==========
 
