@@ -187,8 +187,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
   if (!engineConfiguration->multiInjection.enableMultiInjection || numberOfPulses == 1) {
     return updateInjectionAngle();
   }
-  
-  
+
   floatms_t baseFuelMs = getEngineState()->injectionDuration;
   if (std::isnan(baseFuelMs) || baseFuelMs <= 0) {
     return false;
@@ -204,22 +203,24 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     return false;
   }
   
+  // ← ДИАГНОСТИКА (один раз)
+  static bool diagPrinted = false;
+  if (!diagPrinted && numberOfPulses > 1) {
+    diagPrinted = true;
+    efiPrintf("=== MULTI-INJ DIAGNOSIS ===");
+    efiPrintf("Pulses: %d, baseFuelMs: %.2f", numberOfPulses, baseFuelMs);
+  }
+  
   for (uint8_t i = 0; i < numberOfPulses; i++) {
     float ratio = computeSplitRatio(i);
-    
     floatms_t pulseFuelMs = baseFuelMs * (ratio / 100.0f);
     pulses[i].fuelMs = pulseFuelMs;
     pulses[i].splitRatio = ratio;
     
     float pulseDurationAngle = MS2US(pulseFuelMs) / oneDegreeUs;
-    
     if (pulseDurationAngle > MAX_INJECTION_DURATION) {
-      warning(ObdCode::CUSTOM_MULTI_INJECTION_PULSE_TOO_LONG,
-          "Multi-injection pulse %d too long: %.1f° > max %.1f°",
-          i, pulseDurationAngle, MAX_INJECTION_DURATION);
       pulseDurationAngle = MAX_INJECTION_DURATION;
     }
-    
     pulses[i].durationAngle = pulseDurationAngle;
     
     if (i == 0) {
@@ -229,23 +230,36 @@ bool InjectionEvent::updateMultiInjectionAngles() {
       }
       pulses[0].startAngle = result.Value;
       injectionStartAngle = result.Value;
+      
+      if (diagPrinted) {
+        efiPrintf("Pulse 0: angle=%.1f, fuel=%.2f, dur=%.2f", 
+                  pulses[0].startAngle, pulseFuelMs, pulseDurationAngle);
+      }
     } else {
       pulses[i].startAngle = computeSecondaryInjectionAngle(i);
+      
+      if (diagPrinted) {
+        efiPrintf("Pulse %d: angle=%.1f, fuel=%.2f, dur=%.2f, ratio=%.1f%%", 
+                  i, pulses[i].startAngle, pulseFuelMs, pulseDurationAngle, ratio);
+      }
     }
     
     pulses[i].isActive = true;
   }
   
   if (!validateInjectionWindows()) {
-    warning(ObdCode::CUSTOM_MULTI_INJECTION_INVALID_CONFIG,
-        "Multi-injection validation failed, falling back to single injection");
+    if (diagPrinted) {
+      efiPrintf("VALIDATION FAILED - falling back to single");
+    }
     numberOfPulses = 1;
     pulses[0].splitRatio = 100.0f;
     pulses[0].fuelMs = baseFuelMs;
     return updateInjectionAngle();
   }
   
+  if (diagPrinted) {
+    efiPrintf("=== VALIDATION OK ===");
+  }
+  
   return true;
 }
-
-#endif // EFI_ENGINE_CONTROL
