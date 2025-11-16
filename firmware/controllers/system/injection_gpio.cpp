@@ -9,8 +9,8 @@
 extern bool printFuelDebug;
 
 // Debug counters for diagnostics
-static uint32_t g_multiInjectionCount = 0;
-static uint32_t g_singleInjectionCount = 0;
+static uint32_t g_multiInjectionCount __attribute__((used)) = 0;
+static uint32_t g_singleInjectionCount __attribute__((used)) = 0;
 
 void startSimultaneousInjection() {
   efitick_t nowNt = getTimeNowNt();
@@ -55,7 +55,6 @@ void InjectorOutputPin::open(efitick_t nowNt) {
   g_singleInjectionCount++;
 
   if (newCount > 1) {
-#if FUEL_MATH_EXTREME_LOGGING
 #if FUEL_MATH_EXTREME_LOGGING
     if (printFuelDebug) {
       int16_t cur = __atomic_load_n(&overlappingCounter, __ATOMIC_SEQ_CST);
