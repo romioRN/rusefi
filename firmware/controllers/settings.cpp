@@ -62,11 +62,14 @@ static void printMultiInjectionAngles() {
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = engine->injectionEvents.elements[i];
     
-    if (event.numberOfPulses > 1) {
+    // ← ИСПОЛЬЗУЙ GETTER!
+    if (event.getNumberOfPulses() > 1) {
       efiPrintf("Cylinder %d:", i);
       
-      for (uint8_t pulseIdx = 0; pulseIdx < event.numberOfPulses; pulseIdx++) {
-        const auto& pulse = event.pulses[pulseIdx];
+      // ← ИСПОЛЬЗУЙ GETTER!
+      for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
+        // ← ИСПОЛЬЗУЙ GETTER!
+        const auto& pulse = event.getPulse(pulseIdx);
         
         if (pulse.isActive) {
           efiPrintf("  Pulse %d: angle=%.1f°, fuel=%.2f ms, ratio=%.1f%%",
@@ -83,6 +86,7 @@ static void printMultiInjectionAngles() {
   
   efiPrintf("==============================");
 }
+
 
 // Печатает таблицы мультиинъекции
 static void printMultiInjectionTables() {
