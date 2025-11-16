@@ -312,8 +312,5 @@ bool InjectionEvent::validateInjectionWindows() {
     return true;
   }
 }
-  
-  return true;  // All windows valid
-}
 
 #endif // EFI_ENGINE_CONTROL
