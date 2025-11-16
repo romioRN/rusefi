@@ -114,6 +114,13 @@ public:
 		return numberOfPulses;
 	}
 	
+
+  void setNumberOfPulses(uint8_t count) {
+    if (count > 0 && count <= 2) {  // Макс 2 импульса
+      numberOfPulses = count;
+    }
+  }
+
 	/**
 	 * Get injection pulse data for a specific pulse
 	 * @param pulseIndex Index of the pulse (0-4)
