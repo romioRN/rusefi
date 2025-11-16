@@ -285,6 +285,9 @@ void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float cu
 
   const auto& pulse = getPulse(pulseIndex);
 
+  efiPrintf("schedulePulse: cylinder=%d pulse=%d isActive=%d fuelMs=%.3f startAngle=%.2f duration=%.2f",
+  ownIndex, pulseIndex, pulse.isActive, pulse.fuelMs, pulse.startAngle, pulse.durationAngle);
+
   // Validate fuel amount
   if (pulse.fuelMs < 0.001f || pulse.fuelMs > 100.0f) {
     return;

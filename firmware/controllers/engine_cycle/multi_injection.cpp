@@ -137,33 +137,74 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
  * 
  * @returns true if calculation successful, false if engine state invalid
  */
+/**
+ * @brief Вычисляет параметры мультиинъекции для двух импульсов (split ratio, fuelMs, угол, isActive)
+ * Заполняет pulses[] для каждого пульса. Если условия не соблюдаются — делает возврат к одиночному впрыску
+ * @return true, если расчёт успешен; false если ошибка (некорректный fuel, RPM, перекрытие)
+ */
 bool InjectionEvent::updateMultiInjectionAngles() {
-  // Fallback to single injection if multi-injection disabled or only 1 pulse configured
-  if (!engineConfiguration->multiInjection.enableMultiInjection || getNumberOfPulses() == 1) {
-    return updateInjectionAngle();
-  }
-  
-  // Validate injection duration
-  floatms_t baseFuelMs = getEngineState()->injectionDuration;
-  if (std::isnan(baseFuelMs) || baseFuelMs <= 0) {
-    return false;
-  }
-  
-  // Validate engine RPM
-  float rpm = Sensor::getOrZero(SensorType::Rpm);
-  if (rpm < 1) {
-    return false;
-  }
-  
-  // Validate engine rotation state
-  floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
-  if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
-    return false;
-  }
-  
-  // Validate injection windows (dwell check) and fallback if invalid
-  return validateInjectionWindows() ? true : updateInjectionAngle();
+    // 1. Защита: если мультиинъекция не включена или только один пульс — fallback к single injection
+    if (!engineConfiguration->multiInjection.enableMultiInjection || getNumberOfPulses() == 1) {
+        numberOfPulses = 1;
+        pulses[0].splitRatio = 100.0f;
+        pulses[0].fuelMs = getEngineState()->injectionDuration;
+        pulses[0].isActive = true;
+        return updateInjectionAngle();
+    }
+
+    // 2. Получить базовую длительность одного полного впрыска
+    floatms_t baseFuelMs = getEngineState()->injectionDuration;
+    if (std::isnan(baseFuelMs) || baseFuelMs <= 0) {
+        return false;
+    }
+
+    // 3. Проверить вращение двигателя
+    float rpm = Sensor::getOrZero(SensorType::Rpm);
+    if (rpm < 1) {
+        return false;
+    }
+
+    // 4. Проверить, есть ли данные по таймингу
+    floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
+    if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
+        return false;
+    }
+
+    // 5. Вычислить параметры для каждого пульса
+    for (uint8_t i = 0; i < numberOfPulses; i++) {
+        float ratio = computeSplitRatio(i);                               // Процент топливного объёма этого пульса
+        floatms_t pulseFuelMs = baseFuelMs * (ratio / 100.0f);            // Длительность
+        pulses[i].fuelMs = pulseFuelMs;
+        pulses[i].splitRatio = ratio;
+
+        // Расчёт длительности в градусах КВ
+        float pulseDurationAngle = MS2US(pulseFuelMs) / oneDegreeUs;
+        if (pulseDurationAngle > MAX_INJECTION_DURATION) {
+            pulseDurationAngle = MAX_INJECTION_DURATION;
+        }
+        pulses[i].durationAngle = pulseDurationAngle;
+
+        // Угол впрыска для каждого пульса по 3D-таблице
+        pulses[i].startAngle = computeSecondaryInjectionAngle(i);
+
+        // Отметить пульс как активный только если есть топливо и валидный угол
+        pulses[i].isActive = (pulseFuelMs > 0.05f && !std::isnan(pulses[i].startAngle));
+    }
+
+    // 6. Проверить перекрытие окон (минимальный dwell)
+    if (!validateInjectionWindows()) {
+        // Fallback: если ошибка перекрытия, разрешаем только 1 пульс — single injection
+        numberOfPulses = 1;
+        pulses[0].splitRatio = 100.0f;
+        pulses[0].fuelMs = baseFuelMs;
+        pulses[0].isActive = true;
+        return updateInjectionAngle();
+    }
+
+    // Всё ок!
+    return true;
 }
+
 
 /**
  * Validates multi-injection windows to ensure minimum dwell between pulses
