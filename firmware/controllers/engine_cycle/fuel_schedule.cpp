@@ -205,6 +205,14 @@ bool InjectionEvent::update() {
  * Validates configuration and marks schedule as ready
  */
 void FuelSchedule::addFuelEvents() {
+
+ if (engineConfiguration->multiInjection.enableMultiInjection) {
+    for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
+      elements[i].setNumberOfPulses(2);  
+    }
+  }
+
+
   for (size_t cylinderIndex = 0; cylinderIndex < engineConfiguration->cylindersCount; cylinderIndex++) {
     bool result = elements[cylinderIndex].update();
 
