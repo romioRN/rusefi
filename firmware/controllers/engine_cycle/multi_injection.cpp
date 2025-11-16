@@ -120,6 +120,10 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     }
     // START mode: no correction (pulse starts at table angle)
     
+    // Convert table angle (engine-reference) to per-cylinder angle by adding
+    // firing-order offset so each cylinder gets its own start angle
+    correctedAngle += getPerCylinderFiringOrderOffset(ownIndex, cylinderNumber);
+
     return normalizeAngle(correctedAngle);
   }
   
