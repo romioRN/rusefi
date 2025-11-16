@@ -178,9 +178,4 @@ void printMultiInjectionStats() {
   efiPrintf("============================");
 }
 
- void cmdMultiInjDebug() {
-  efiPrintf("=== MULTI-INJECTION DEBUG ===");
-  efiPrintf("Enabled: %d", engineConfiguration->multiInjection.enableMultiInjection);
-  efiPrintf("Dwell angle: %d°", engineConfiguration->multiInjection.dwellAngleBetweenInjections);
-  efiPrintf("===========================");
-}
+ 
