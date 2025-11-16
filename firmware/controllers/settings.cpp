@@ -42,7 +42,7 @@ extern WaveChart waveChart;
 #endif // EFI_ENGINE_SNIFFER
 
 extern void printMultiInjectionStats();
-
+extern void cmdMultiInjDebug()
 using namespace rusefi::stringutil;
 
 void printSpiState() {
@@ -693,31 +693,9 @@ void initSettings() {
 	addConsoleActionSS(CMD_LOGIC_PIN, setLogicInputPin);
 #endif // EFI_PROD_CODE
 addConsoleAction("multi_stats", printMultiInjectionStats);
+addConsoleAction("mi_debug", cmdMultiInjDebug);
 }
-// ========== NEW: Multi-injection debug command ==========
-  addConsoleAction("mi_debug", []() {
-  efiPrintf("=== MULTI-INJECTION DEBUG ===");
-  efiPrintf("Enabled: %d", engineConfiguration->multiInjection.enableMultiInjection);
-  efiPrintf("Dwell angle: %d°", engineConfiguration->multiInjection.dwellAngleBetweenInjections);
-  efiPrintf("");
-  efiPrintf("Split Ratio Table (первые 4 строки, первые 8 колонок):");
-  for (int i = 0; i < 4; i++) {
-    efiPrintf("  Load[%d]=%.0f%%:", i, (float)engineConfiguration->multiInjectionLoadBins[i]);
-    for (int j = 0; j < 8; j++) {
-      efiPrintf("    RPM[%d]: ratio=%d%%", j, engineConfiguration->multiInjectionSplitRatioTable[i][j]);
-    }
-  }
-  efiPrintf("");
-  efiPrintf("Second Angle Table (первые 4 строки, первые 8 колонок):");
-  for (int i = 0; i < 4; i++) {
-    efiPrintf("  Load[%d]=%.0f%%:", i, (float)engineConfiguration->multiInjectionLoadBins[i]);
-    for (int j = 0; j < 8; j++) {
-      efiPrintf("    RPM[%d]: angle=%d°", j, engineConfiguration->secondInjectionAngleTable[i][j]);
-    }
-  }
-  efiPrintf("===========================");
-});
-  // =========
+
 void printDateTime() {
 #if EFI_RTC
 	printRtcDateTime();

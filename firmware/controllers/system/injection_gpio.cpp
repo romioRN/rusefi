@@ -177,3 +177,10 @@ void printMultiInjectionStats() {
   efiPrintf("Single-injection calls: %lu", (unsigned long)g_singleInjectionCount);
   efiPrintf("============================");
 }
+
+ void cmdMultiInjDebug() {
+  efiPrintf("=== MULTI-INJECTION DEBUG ===");
+  efiPrintf("Enabled: %d", engineConfiguration->multiInjection.enableMultiInjection);
+  efiPrintf("Dwell angle: %d°", engineConfiguration->multiInjection.dwellAngleBetweenInjections);
+  efiPrintf("===========================");
+}
