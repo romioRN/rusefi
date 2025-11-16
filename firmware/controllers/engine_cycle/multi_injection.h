@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "engine_configuration_types.h"
+#include "pch.h"
 
 /**
  * @file multi_injection.h
