@@ -3,8 +3,7 @@
  * injection_gpio.cpp
  */
 
-#include "pch.h"
-#include "multi_injection.h" 
+#include "pch.h" 
 #include "injection_gpio.h"
 
 extern bool printFuelDebug;
