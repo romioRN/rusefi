@@ -307,17 +307,9 @@ struct_no_prefix engine_configuration_s
 #define CAN_WBO_COUNT 2
 
 struct multi_injection_s
-	bit enableMultiInjection, "Enabled", "Disabled";Enable multi-injection (split/double injection)
-	
-	uint8_t numberOfInjections;Number of injection pulses per cycle;"count", 1, 1, 1, 5, 0
-	
-		
+	bit enableMultiInjection, "Enabled", "Disabled";Enable multi-injection (split/double injection)	
 	uint8_t dwellAngleBetweenInjections;Minimum angle separation between injection pulses;"deg", 1, 0, 5, 50, 0
-	
-	
-	
 	bit enableMultiInjectionStaging, "Staging", "Primary";Use staging injectors for secondary pulses
-	
 	uint8_t[16] alignmentFill;;"units", 1, 0, 0, 0, 0
 end_struct
 
