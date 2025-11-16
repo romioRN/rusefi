@@ -27,15 +27,20 @@ void close(efitick_t nowNt);
 void setHigh() override;
 void setLow() override;
 
-int8_t getOverlappingCounter() const { return overlappingCounter; }
+int16_t getOverlappingCounter() const { return overlappingCounter; }
 
 int8_t injectorIndex;
 
 private:
-int8_t overlappingCounter;
+// Use a wider integer for atomic operations to avoid ABI/atomic-size issues
+int16_t overlappingCounter;
 
 // Timer for multi-injection custom duration
 virtual_timer_t m_multiInjectTimer;
+
+// Scheduled end time for the multi-injection (in microseconds since epoch returned by getTimeNowUs())
+// Scheduled end time for the multi-injection (in microseconds since epoch returned by getTimeNowUs())
+efitimeus_t m_multiInjectEndUs;
 
 // Timer callback
 static void timerCallback(virtual_timer_t *vtp, void *arg);

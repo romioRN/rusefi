@@ -272,7 +272,13 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
 
 /**
  * Schedules a single multi-injection pulse
- * Calculates precise timing and calls output->open() with duration
+ * Calculates precise timing and schedules a close event
+ * 
+ * For each pulse:
+ * 1. Calculate when injection should start (in crankshaft angle)
+ * 2. Calculate duration for this specific pulse
+ * 3. Schedule open event on all configured injectors
+ * 4. Schedule close event after calculated duration
  * 
  * @param pulseIndex Index of pulse (0 = Pulse 0, 1 = Pulse 1)
  * @param nowNt Current engine time in nanoseconds
@@ -299,17 +305,21 @@ void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float cu
   float angleDelta = pulse.startAngle - currentPhase;
   if (angleDelta < 0) angleDelta += 720.0f;
 
-  // Convert angle delta to nanoseconds
+  // Convert angle delta to nanoseconds (absolute time when injection should start)
   efitick_t injectionStartNt = nowNt + US2NT(angleDelta * oneDegreeUs);
   floatus_t pulseDurationUs = MS2US(pulse.fuelMs);
 
-  // Schedule pulse on all configured injectors (primary and stage2)
+  // Schedule opening of all configured injectors
+  // Use standard open() without duration - will rely on timer for closing
   for (auto* output : outputs) {
     if (output && output->isInitialized()) {
+      // Schedule open event: open the injector at calculated time
+      // close() will be called by timer callback after duration
       output->open(injectionStartNt, pulseDurationUs);
     }
   }
 
+  // Schedule opening for stage2 injectors (if configured)
   for (auto* output : outputsStage2) {
     if (output && output->isInitialized()) {
       output->open(injectionStartNt, pulseDurationUs);

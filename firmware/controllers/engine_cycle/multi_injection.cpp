@@ -112,11 +112,11 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     float correctedAngle = baseAngle;
     
     if (mode == InjectionTimingMode::Center) {
-      // Pulse 1 centered at table angle
-      correctedAngle += durationAngle * 0.5f;
+      // Pulse 1 centered at table angle: shift BACK by half duration
+      correctedAngle -= durationAngle * 0.5f;
     } else if (mode == InjectionTimingMode::End) {
-      // Pulse 1 ends at table angle
-      correctedAngle += durationAngle;
+      // Pulse 1 ends at table angle: shift BACK by full duration
+      correctedAngle -= durationAngle;
     }
     // START mode: no correction (pulse starts at table angle)
     
@@ -223,15 +223,15 @@ bool InjectionEvent::validateInjectionWindows() const {
   
   // Check dwell between consecutive pulses
   for (uint8_t i = 0; i < getNumberOfPulses() - 1; i++) {
-    // Calculate end angle of current pulse
-    float endAngle = getPulse(i).startAngle - getPulse(i).durationAngle;
-    if (endAngle < 0) endAngle += 720.0f;
+    // Calculate end angle of current pulse (start + duration)
+    float currentPulseEnd = getPulse(i).startAngle + getPulse(i).durationAngle;
+    currentPulseEnd = normalizeAngle(currentPulseEnd);
     
     // Calculate start angle of next pulse
-    float startAngle = getPulse(i + 1).startAngle;
+    float nextPulseStart = getPulse(i + 1).startAngle;
     
     // Calculate dwell (angle between end of current pulse and start of next)
-    float dwell = startAngle - endAngle;
+    float dwell = nextPulseStart - currentPulseEnd;
     if (dwell < 0) dwell += 720.0f;
     
     // Validate minimum dwell
