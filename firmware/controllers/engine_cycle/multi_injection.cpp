@@ -40,12 +40,11 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
   float rpm = Sensor::getOrZero(SensorType::Rpm);
   float load = getFuelingLoad();
   
-  // ← ОБРАЩЕНИЕ К ТАБЛИЦЕ СНАРУЖИ СТРУКТУРЫ!
   float ratio = interpolate3d(
-    engineConfiguration->multiInjectionSplitRatioTable,  // ← ПРЯМОЙ ДОСТУП!
-    engineConfiguration->multiInjectionLoadBins,         // ← ПРЯМОЙ ДОСТУП!
+    engineConfiguration->multiInjectionSplitRatioTable,
+    engineConfiguration->multiInjectionLoadBins,
     load,
-    engineConfiguration->multiInjectionRpmBins,          // ← ПРЯМОЙ ДОСТУП!
+    engineConfiguration->multiInjectionRpmBins,
     rpm
   );
   
@@ -53,11 +52,11 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
     return ratio;
   }
   
-  // Дефолт: 60% / 40%
   return (pulseIndex == 0) ? 60.0f : 40.0f;
 }
 
-// Вычисляет угол второго импульса из таблицы
+// Вычисляет угол второго импульса используя 3D интерполяцию
+// С учётом режима впрыска (START/CENTER/END)
 float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   if (pulseIndex == 0) {
     return computeInjectionAngle().Value;
@@ -67,20 +66,62 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     float load = getFuelingLoad();
     
-    // ← ОБРАЩЕНИЕ К ТАБЛИЦЕ СНАРУЖИ СТРУКТУРЫ!
-    float angle = interpolate3d(
-      engineConfiguration->secondInjectionAngleTable,    // ← ПРЯМОЙ ДОСТУП!
-      engineConfiguration->multiInjectionLoadBins,       // ← ПРЯМОЙ ДОСТУП!
+    // Получи базовый угол из таблицы
+    float baseAngle = interpolate3d(
+      engineConfiguration->secondInjectionAngleTable,
+      engineConfiguration->multiInjectionLoadBins,
       load,
-      engineConfiguration->multiInjectionRpmBins,        // ← ПРЯМОЙ ДОСТУП!
+      engineConfiguration->multiInjectionRpmBins,
       rpm
     );
     
-    if (angle < 5.0f || angle > 720.0f) {
-      angle = 100.0f;
+    // Валидация базового угла
+    if (baseAngle < 5.0f || baseAngle > 720.0f) {
+      baseAngle = 100.0f;
     }
     
-    return normalizeAngle(angle);
+    // ═══════════════════════════════════════════════════════
+    // ПРИМЕНИ ТОТ ЖЕ РЕЖИМ КАК PULSE 0
+    // ═══════════════════════════════════════════════════════
+    
+    auto mode = engineConfiguration->injectionTimingMode;
+    
+    // Вычисли длительность Pulse 1 в градусах
+    floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
+    if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
+      return normalizeAngle(baseAngle);
+    }
+    
+    float fuelMs = pulses[1].fuelMs;
+    float durationAngle = MS2US(fuelMs) / oneDegreeUs;
+    
+    if (durationAngle > MAX_INJECTION_DURATION) {
+      durationAngle = MAX_INJECTION_DURATION;
+    }
+    
+    // Примени режим впрыска
+    float correctedAngle = baseAngle;
+    
+    if (mode == InjectionTimingMode::Start) {
+      correctedAngle = baseAngle;
+      
+    } else if (mode == InjectionTimingMode::Center) {
+      correctedAngle = baseAngle + (durationAngle * 0.5f);
+      
+    } else if (mode == InjectionTimingMode::End) {
+      correctedAngle = baseAngle + durationAngle;
+    }
+    
+#if FUEL_MATH_EXTREME_LOGGING
+    static uint32_t diagCounter = 0;
+    if ((diagCounter % 100) == 0) {
+      efiPrintf("Pulse 1: base=%.1f°, dur=%.1f°, mode=%d, final=%.1f°",
+                baseAngle, durationAngle, (int)mode, correctedAngle);
+    }
+    diagCounter++;
+#endif
+    
+    return normalizeAngle(correctedAngle);
   }
   
   return 0.0f;
@@ -107,19 +148,6 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     return false;
   }
   
-  // ========== ОТЛАДКА ==========
-  static bool diagPrinted = false;
-  static uint32_t diagCounter = 0;
-  
-  if (!diagPrinted || (diagCounter % 100 == 0)) {  // Каждые 100 циклов
-    diagPrinted = true;
-    diagCounter++;
-    
-    efiPrintf("=== MULTI-INJ DEBUG [cyl %d] ===", ownIndex);
-    efiPrintf("RPM: %.0f, baseFuel: %.2f ms", rpm, baseFuelMs);
-  }
-  // ===============================
-  
   for (uint8_t i = 0; i < numberOfPulses; i++) {
     float ratio = computeSplitRatio(i);
     floatms_t pulseFuelMs = baseFuelMs * (ratio / 100.0f);
@@ -134,30 +162,17 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     
     pulses[i].startAngle = computeSecondaryInjectionAngle(i);
     pulses[i].isActive = true;
-    
-    // ========== ОТЛАДКА ==========
-    if (diagCounter % 100 == 0) {
-      efiPrintf("Pulse %d: angle=%.1f°, fuel=%.2f ms, ratio=%.1f%%, dur=%.2f°",
-                i, pulses[i].startAngle, pulseFuelMs, ratio, pulseDurationAngle);
-    }
-    // ===============================
   }
   
   if (!validateInjectionWindows()) {
-    efiPrintf("VALIDATION FAILED - falling back to single");
     numberOfPulses = 1;
     pulses[0].splitRatio = 100.0f;
     pulses[0].fuelMs = baseFuelMs;
     return updateInjectionAngle();
   }
   
-  if (diagCounter % 100 == 0) {
-    efiPrintf("=== VALIDATION OK ===");
-  }
-  
   return true;
 }
-
 
 // Валидация окон впрыска
 bool InjectionEvent::validateInjectionWindows() const {
