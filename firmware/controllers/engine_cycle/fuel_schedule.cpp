@@ -235,14 +235,16 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = elements[i];
     
+    
     if (engineConfiguration->multiInjection.enableMultiInjection && 
-        event.numberOfPulses > 1) {
+        event.getNumberOfPulses() > 1) {
       
-      // Multi-injection mode: план оба импульса
-      for (uint8_t pulseIdx = 0; pulseIdx < 2; pulseIdx++) {
-        if (!event.pulses[pulseIdx].isActive) continue;
+      for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
+        const auto& pulse = event.getPulse(pulseIdx);
         
-        float pulseAngle = event.pulses[pulseIdx].startAngle;
+        if (!pulse.isActive) continue;
+        
+        float pulseAngle = pulse.startAngle;
         
         bool inWindow = false;
         if (nextPhase > currentPhase) {
@@ -261,6 +263,7 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
     }
   }
 }
+
 
 
 
