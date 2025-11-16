@@ -193,7 +193,7 @@ bool InjectionEvent::validateInjectionWindows() const {
     if (dwell < 0) dwell += 720.0f;
     
     if (dwell < engineConfiguration->multiInjection.dwellAngleBetweenInjections) {
-      warning(ObdCode::CUSTOM_OBD_INJECTION, "Multi-injection overlap");
+      warning(ObdCode::CUSTOM_MULTI_INJECTION_OVERLAP, "Multi-injection overlap");
       return false;
     }
   }
