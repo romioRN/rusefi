@@ -6,6 +6,7 @@
 #pragma once
 
 #include "efi_output.h"
+#include "scheduler.h"
 
 
 
@@ -20,7 +21,7 @@ void reset();
 // Standard single injection
 void open(efitick_t nowNt);
 
-// Multi-injection with custom duration
+// Multi-injection with custom duration (uses high-precision scheduler)
 void open(efitick_t nowNt, floatus_t durationUs);
 
 void close(efitick_t nowNt);
@@ -35,13 +36,12 @@ private:
 // Use a wider integer for atomic operations to avoid ABI/atomic-size issues
 int16_t overlappingCounter;
 
-// Timer for multi-injection custom duration
-virtual_timer_t m_multiInjectTimer;
+// Storage for scheduled close event (nanosecond precision via scheduler)
+scheduling_s m_multiInjectCloseScheduling;
 
-// Scheduled end time for the multi-injection (in microseconds since epoch returned by getTimeNowUs())
-// Scheduled end time for the multi-injection (in microseconds since epoch returned by getTimeNowUs())
-efitimeus_t m_multiInjectEndUs;
+// Scheduled end time for the multi-injection (in nanoseconds for scheduler precision)
+efitick_t m_multiInjectEndNt;
 
-// Timer callback
-static void timerCallback(virtual_timer_t *vtp, void *arg);
+// Close callback for scheduled close event
+static void multiInjectCloseCallback(InjectorOutputPin* pin);
 };

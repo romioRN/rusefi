@@ -31,18 +31,13 @@ InjectorOutputPin::InjectorOutputPin() : NamedOutputPin() {
   overlappingCounter = 0;
   reset();
   injectorIndex = -1;
-  m_multiInjectEndUs = 0;
-  chVTObjectInit(&m_multiInjectTimer);
+  m_multiInjectEndNt = 0;
 }
 
-
-
-// Timer callback for multi-injection
-void InjectorOutputPin::timerCallback(virtual_timer_t *vtp, void *arg) {
-  (void)vtp; // Unused
-  InjectorOutputPin* output = static_cast<InjectorOutputPin*>(arg);
-  if (output) {
-    output->close(getTimeNowNt());
+// Static callback wrapper for scheduled close event
+void InjectorOutputPin::multiInjectCloseCallback(InjectorOutputPin* pin) {
+  if (pin) {
+    pin->close(getTimeNowNt());
   }
 }
 
@@ -75,7 +70,7 @@ void InjectorOutputPin::open(efitick_t nowNt) {
   }
 }
 
-// Multi-injection with custom duration
+// Multi-injection with custom duration (uses high-precision nanosecond scheduler)
 void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   // Atomically increment the overlapping counter so this is safe from ISR or thread
   int16_t newCount = (int16_t)__atomic_add_fetch(&overlappingCounter, 1, __ATOMIC_SEQ_CST);
@@ -96,9 +91,9 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
     return;
   }
 
-  // Convert nanoseconds to microseconds for current time comparison
-  efitimeus_t nowUs = NT2US(nowNt);
-  efitimeus_t desiredEndUs = nowUs + (efitimeus_t)durationUs;
+  // Calculate scheduled close time in nanoseconds (nanosecond precision)
+  efitick_t durationNt = US2NT((int32_t)durationUs);
+  efitick_t desiredCloseNt = nowNt + durationNt;
 
   if (newCount > 1) {
 #if FUEL_MATH_EXTREME_LOGGING
@@ -107,12 +102,15 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
     }
 #endif
     // Already high — extend scheduled end if this request lasts longer
-    efitimeus_t prevEndUs = __atomic_load_n(&m_multiInjectEndUs, __ATOMIC_SEQ_CST);
-    if (desiredEndUs > prevEndUs) {
-      __atomic_store_n(&m_multiInjectEndUs, desiredEndUs, __ATOMIC_SEQ_CST);
-      sysinterval_t delayTicks = TIME_US2I((floatus_t)(desiredEndUs - nowUs));
-      chVTResetI(&m_multiInjectTimer);
-      chVTSetI(&m_multiInjectTimer, delayTicks, InjectorOutputPin::timerCallback, this);
+    efitick_t prevEndNt = __atomic_load_n(&m_multiInjectEndNt, __ATOMIC_SEQ_CST);
+    if (desiredCloseNt > prevEndNt) {
+      // Cancel previous scheduled close and reschedule with new time
+      __atomic_store_n(&m_multiInjectEndNt, desiredCloseNt, __ATOMIC_SEQ_CST);
+      getScheduler()->cancel(&m_multiInjectCloseScheduling);
+      
+      // Schedule new close event with extended duration
+      action_s closeAction = action_s::make<multiInjectCloseCallback>(this);
+      getScheduler()->schedule("multi_inj_close_extend", &m_multiInjectCloseScheduling, desiredCloseNt, closeAction);
     }
     return;
   }
@@ -121,12 +119,13 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
   LogTriggerInjectorState(nowNt, injectorIndex, true);
 #endif
 
-  // First opener: raise pin and schedule close
+  // First opener: raise pin and schedule close via high-precision scheduler
   setHigh();
-  __atomic_store_n(&m_multiInjectEndUs, desiredEndUs, __ATOMIC_SEQ_CST);
-  sysinterval_t delayTicks = TIME_US2I(durationUs);
-  chVTResetI(&m_multiInjectTimer);
-  chVTSetI(&m_multiInjectTimer, delayTicks, InjectorOutputPin::timerCallback, this);
+  __atomic_store_n(&m_multiInjectEndNt, desiredCloseNt, __ATOMIC_SEQ_CST);
+  
+  // Schedule close event with nanosecond precision
+  action_s closeAction = action_s::make<multiInjectCloseCallback>(this);
+  getScheduler()->schedule("multi_inj_close", &m_multiInjectCloseScheduling, desiredCloseNt, closeAction);
 }
 
 void InjectorOutputPin::close(efitick_t nowNt) {
@@ -150,9 +149,9 @@ void InjectorOutputPin::close(efitick_t nowNt) {
     LogTriggerInjectorState(nowNt, injectorIndex, false);
 #endif
     setLow();
-    // No more opens: cancel any pending timer and reset end marker
-    chVTResetI(&m_multiInjectTimer);
-    __atomic_store_n(&m_multiInjectEndUs, (efitimeus_t)0, __ATOMIC_SEQ_CST);
+    // No more opens: cancel any pending scheduler close event and reset end marker
+    getScheduler()->cancel(&m_multiInjectCloseScheduling);
+    __atomic_store_n(&m_multiInjectEndNt, (efitick_t)0, __ATOMIC_SEQ_CST);
   }
 
   if (newCount < 0) {
