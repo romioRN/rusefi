@@ -210,9 +210,6 @@ bool InjectionEvent::update() {
 }
 
 void FuelSchedule::addFuelEvents() {
-  // ========== NEW: Configure multi-injection ==========
-  configureMultiInjectionForAllCylinders();
-  // ====================================================
   
   for (size_t cylinderIndex = 0; cylinderIndex < engineConfiguration->cylindersCount; cylinderIndex++) {
     bool result = elements[cylinderIndex].update();
@@ -270,21 +267,7 @@ void FuelSchedule::onTriggerTooth(efitick_t nowNt, float currentPhase, float nex
 
 // ========== Multi-injection implementation ==========
 
-void FuelSchedule::configureMultiInjectionForAllCylinders() {
-  if (!engineConfiguration->multiInjection.enableMultiInjection) {
-    for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
-      elements[i].configureMultiInjection(1);
-    }
-    return;
-  }
-  
-  // Всегда 2 импульса
-  uint8_t numberOfPulses = 2;
-  
-  for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
-    elements[i].configureMultiInjection(numberOfPulses);
-  }
-}
+
 
 // Multi-injection: Schedule individual pulse
 void InjectionEvent::schedulePulse(uint8_t pulseIndex, efitick_t nowNt, float currentPhase) {

@@ -189,10 +189,7 @@ public:
 	
 	// ========== NEW: Multi-injection support ==========
 	
-	/**
-	 * Configure multi-injection for all cylinders based on current engine configuration
-	 */
-	void configureMultiInjectionForAllCylinders();
+	
 	
 	/**
 	 * Check if multi-injection is enabled and conditions are met
