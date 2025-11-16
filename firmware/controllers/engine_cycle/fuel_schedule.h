@@ -17,7 +17,7 @@
  * Maximum number of injection pulses per engine cycle
  * Supports split/multiple injection strategies (e.g., pilot + main + post)
  */
-#define MAX_INJECTION_PULSES 5
+#define MAX_INJECTION_PULSES 2
 
 /**
  * Represents a single injection pulse within a multi-pulse injection event

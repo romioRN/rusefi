@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "multi_injection.h"
+#include "fuel_schedule.h"
 #include "interpolation.h"
 
 #if EFI_ENGINE_CONTROL
