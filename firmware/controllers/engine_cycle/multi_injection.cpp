@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "fuel_schedule.h"
 
+// Multi-injection configuration
+#define MAX_INJECTION_DURATION 120.0f  // Maximum injection duration in degrees
+#define MIN_INJECTION_DWELL 15.0f      // Minimum dwell between pulses in degrees
+
 #if EFI_ENGINE_CONTROL
 
 // Нормализует угол в диапазон 0-720°
@@ -189,7 +193,7 @@ bool InjectionEvent::validateInjectionWindows() const {
     if (dwell < 0) dwell += 720.0f;
     
     if (dwell < engineConfiguration->multiInjection.dwellAngleBetweenInjections) {
-      warning(ObdCode::OBD_Injection, "Multi-injection overlap");
+      warning(ObdCode::CUSTOM_OBD_INJECTION, "Multi-injection overlap");
       return false;
     }
   }

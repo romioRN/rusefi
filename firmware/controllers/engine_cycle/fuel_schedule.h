@@ -19,6 +19,7 @@
  */
 #define MAX_INJECTION_PULSES 2
 
+
 /**
  * Represents a single injection pulse within a multi-pulse injection event
  */
