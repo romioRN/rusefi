@@ -308,7 +308,7 @@ struct_no_prefix engine_configuration_s
 
 struct multi_injection_s
 	bit enableMultiInjection, "Enabled", "Disabled";Enable multi-injection (split/double injection)	
-	uint8_t dwellAngleBetweenInjections;Minimum angle separation between injection pulses;"deg", 1, 0, 5, 50, 0
+	uint8_t dwellAngleBetweenInjections;Deprecated: use minDwellAngleTable instead;"deg", 1, 0, 5, 50, 0
 	bit enableMultiInjectionStaging, "Staging", "Primary";Use staging injectors for secondary pulses
 	uint8_t[16] alignmentFill;;"units", 1, 0, 0, 0, 0
 end_struct
@@ -1919,7 +1919,7 @@ end_struct
 	multi_injection_s multiInjection;
 	
 	uint8_t[16 x 16] multiInjectionSplitRatioTable;Split ratio table by RPM and Load;"%", 1, 0, 0, 100, 0
-    int16_t[16 x 16] secondInjectionAngleTable;Second injection angle table by RPM and Load;"deg BTDC", 1, 0, 0, 720, 0
+    int16_t[16 x 16] secondInjectionAngleTable;Second injection angle table by RPM and Load (negative BTDC);"deg", 1, 0, -200, -5, 0
     uint8_t[16 x 16] minDwellAngleTable;Minimum dwell between injections table;"deg", 1, 0, 5, 50, 0
 
     float[16] multiInjectionRpmBins;RPM bins for multi-injection tables;"RPM", 1, 0, 0, 18000, 0

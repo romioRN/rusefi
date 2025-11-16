@@ -96,9 +96,10 @@ public:
 	
 	/**
 	 * Validate that injection windows don't overlap and meet timing constraints
-	 * @return true if all windows are valid
+	 * May adjust pulse timing if necessary to satisfy dwell requirements
+	 * @return true if all windows are valid (after adjustment if needed)
 	 */
-	bool validateInjectionWindows() const;
+	bool validateInjectionWindows();
 	
 	/**
 	 * Calculate dwell time (gap) between consecutive injection pulses

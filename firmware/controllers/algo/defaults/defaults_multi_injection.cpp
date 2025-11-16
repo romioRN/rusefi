@@ -36,10 +36,19 @@ void setDefaultMultiInjectionConfiguration() {
     }
   }
   
-  // Fill Second Injection Angle Table with defaults (100° BTDC)
+  // Fill Second Injection Angle Table with defaults (-100° BTDC, i.e., 100° before TDC)
+  // Negative values represent angle before TDC (like injectionOffset)
   for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
     for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
-      engineConfiguration->secondInjectionAngleTable[loadIdx][rpmIdx] = 100;
+      engineConfiguration->secondInjectionAngleTable[loadIdx][rpmIdx] = -100;
+    }
+  }
+
+  // Fill Minimum Dwell Angle Table with defaults (20° between pulses)
+  // This table controls the minimum angle that must separate Pulse 0 end and Pulse 1 start
+  for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
+    for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
+      engineConfiguration->minDwellAngleTable[loadIdx][rpmIdx] = 20;
     }
   }
 }
