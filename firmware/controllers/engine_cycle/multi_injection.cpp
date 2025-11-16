@@ -55,8 +55,19 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
     Sensor::getOrZero(SensorType::Rpm)                     // Current RPM
   );
   
-  // Return table value if valid, otherwise use default 60/40 split
-  return (ratio > 0.1f && ratio < 100.0f) ? ratio : (pulseIndex == 0 ? 60.0f : 40.0f);
+  // If table value is valid, interpret it as the percentage for the FIRST pulse
+  // (pulseIndex == 0). The second pulse should receive the complement so that
+  // both pulses sum to 100% (unless the table contains invalid data).
+  if (ratio > 0.1f && ratio < 100.0f) {
+    if (pulseIndex == 0) {
+      return std::clamp(ratio, 0.0f, 100.0f);
+    } else {
+      return std::clamp(100.0f - ratio, 0.0f, 100.0f);
+    }
+  }
+
+  // Fallback: if table invalid, use hardcoded defaults (60/40)
+  return (pulseIndex == 0 ? 60.0f : 40.0f);
 }
 
 /**
