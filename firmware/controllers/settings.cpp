@@ -92,7 +92,16 @@ static void printMultiInjectionAngles() {
 static void printMultiInjectionTables() {
   efiPrintf("=== MULTI-INJECTION TABLES ===");
   efiPrintf("Enabled: %d", engineConfiguration->multiInjection.enableMultiInjection);
-  efiPrintf("Dwell angle: %d°", engineConfiguration->multiInjection.dwellAngleBetweenInjections);
+	// Show interpolated minimum dwell from the table for current RPM/load
+	float dwellVal = interpolate3d(
+		engineConfiguration->minDwellAngleTable,
+		engineConfiguration->multiInjectionLoadBins,
+		getFuelingLoad(),
+		engineConfiguration->multiInjectionRpmBins,
+		Sensor::getOrZero(SensorType::Rpm)
+	);
+	dwellVal = std::clamp(dwellVal, 5.0f, 50.0f);
+	efiPrintf("Dwell angle: %d°", static_cast<int>(dwellVal));
   efiPrintf("");
   
   efiPrintf("RPM bins (first 8):");

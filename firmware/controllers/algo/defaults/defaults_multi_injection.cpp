@@ -16,8 +16,8 @@ void setDefaultMultiInjectionConfiguration() {
   // Disabled by default
   engineConfiguration->multiInjection.enableMultiInjection = false;
   
-  // Default dwell angle between pulses
-  engineConfiguration->multiInjection.dwellAngleBetweenInjections = 20;
+  // Deprecated: single dwell value removed in favor of per-bin table
+  // (minDwellAngleTable is initialized below)
   
   // Initialize RPM bins: 1000, 1500, 2000... 8500
   for (int i = 0; i < 16; i++) {
