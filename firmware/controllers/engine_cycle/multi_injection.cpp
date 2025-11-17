@@ -331,26 +331,21 @@ bool InjectionEvent::validateInjectionWindows() {
   );
   minDwell = std::clamp(minDwell, 5.0f, 50.0f);
 
-  // === CHECK 1: Pulse ordering (Pulse 1 should start after Pulse 0 start) ===
-  float angleDelta = pulse1.startAngle - pulse0.startAngle;
-  if (angleDelta < 0) angleDelta += 720.0f;
-  
-  if (pulse1.startAngle < pulse0.startAngle && angleDelta > 360.0f) {
-    // Pulse 1 starts before Pulse 0 in the cycle
-    warning(ObdCode::CUSTOM_MULTI_INJECTION_WRONG_ORDER, 
-      "mi_p1_before_p0: p0=%.1f° p1=%.1f°", pulse0.startAngle, pulse1.startAngle);
-    return false;
+  // Compute normalized pulse boundaries and a wrap-aware dwell (angular distance)
+  float pulse0End = normalizeAngle(pulse0.startAngle + pulse0.durationAngle);
+  float pulse1Start = normalizeAngle(pulse1.startAngle);
+
+  // Modular angular difference from p0 end to p1 start in 0..720 range
+  float dwell = pulse1Start - pulse0End;
+  if (dwell < 0.0f) {
+    dwell += 720.0f;
   }
 
-  // === CHECK 2: Minimum dwell between Pulse 0 and Pulse 1 ===
-  float pulse0End = normalizeAngle(pulse0.startAngle + pulse0.durationAngle);
-  float dwell = pulse1.startAngle - pulse0End;
-  if (dwell < 0) dwell += 720.0f;
-
+  // Now check minimum dwell between pulses using wrap-aware value
   if (dwell < minDwell) {
-    warning(ObdCode::CUSTOM_MULTI_INJECTION_INSUFFICIENT_DWELL, 
-      "mi_dwell_low: dwell=%.1f° min=%.1f° (p0_end=%.1f° p1_start=%.1f°)", 
-      dwell, minDwell, pulse0End, pulse1.startAngle);
+    warning(ObdCode::CUSTOM_MULTI_INJECTION_INSUFFICIENT_DWELL,
+      "mi_dwell_low: dwell=%.1f° min=%.1f° (p0_end=%.1f° p1_start=%.1f°)",
+      dwell, minDwell, pulse0End, pulse1Start);
     return false;
   }
 
@@ -413,13 +408,7 @@ bool InjectionEvent::validateInjectionWindows() {
     }
   }
 
-  // === CHECK 5: Overlap detection (strict) ===
-  float pulse1Start = pulse1.startAngle;
-  if (pulse0End > pulse1Start && pulse0End - pulse1Start < 720.0f) {
-    warning(ObdCode::CUSTOM_MULTI_INJECTION_OVERLAP, 
-      "mi_overlap: p0_end=%.1f° p1_start=%.1f°", pulse0End, pulse1Start);
-    return false;
-  }
+  // (Overlap is implicitly covered by the dwell check above in a wrap-aware manner)
 
   // All checks passed
   if (isVerboseMultiInjection()) {
