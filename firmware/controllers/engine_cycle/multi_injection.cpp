@@ -15,6 +15,7 @@
 
 #include "pch.h"
 #include "fuel_schedule.h"
+#include "injector_model.h"
 
 #define MAX_INJECTION_DURATION 120.0f  // Maximum pulse duration in crankshaft degrees
 
@@ -167,9 +168,9 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         return updateInjectionAngle();
     }
 
-    // 2. Получить базовую длительность одного полного впрыска
-    floatms_t baseFuelMs = getEngineState()->injectionDuration;
-    if (std::isnan(baseFuelMs) || baseFuelMs <= 0) {
+    // 2. Получить базовую МАССУ топлива для этого цилиндра (не длительность!)
+    float baseFuelMass = getEngineState()->injectionMass[cylinderNumber];
+    if (std::isnan(baseFuelMass) || baseFuelMass <= 0) {
         return false;
     }
 
@@ -187,8 +188,12 @@ bool InjectionEvent::updateMultiInjectionAngles() {
 
     // 5. Вычислить параметры для каждого пульса
     for (uint8_t i = 0; i < numberOfPulses; i++) {
-        float ratio = computeSplitRatio(i);                               // Процент топливного объёма этого пульса
-        floatms_t pulseFuelMs = baseFuelMs * (ratio / 100.0f);            // Длительность
+        float ratio = computeSplitRatio(i);                           // Процент топливного объёма этого пульса
+        float pulseMass = baseFuelMass * (ratio / 100.0f);            // Масса для этого пульса
+        
+        // Рассчитать длительность этого пульса через injectorModel
+        floatms_t pulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(pulseMass);
+        
         pulses[i].fuelMs = pulseFuelMs;
         pulses[i].splitRatio = ratio;
 
@@ -211,7 +216,8 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         // Fallback: если ошибка перекрытия, разрешаем только 1 пульс — single injection
         numberOfPulses = 1;
         pulses[0].splitRatio = 100.0f;
-        pulses[0].fuelMs = baseFuelMs;
+        // Используем базовую длительность как сумму двух пульсов
+        pulses[0].fuelMs = getEngineState()->injectionDuration;
         pulses[0].isActive = true;
         return updateInjectionAngle();
     }
