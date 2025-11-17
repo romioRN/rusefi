@@ -36,11 +36,10 @@ void setDefaultMultiInjectionConfiguration() {
     }
   }
   
-  // Fill Second Injection Angle Table with defaults (-100° BTDC, i.e., 100° before TDC)
-  // Negative values represent angle before TDC (like injectionOffset)
+  // Fill Second Injection Angle Table with defaults (100° BTDC)
   for (int loadIdx = 0; loadIdx < 16; loadIdx++) {
     for (int rpmIdx = 0; rpmIdx < 16; rpmIdx++) {
-      engineConfiguration->secondInjectionAngleTable[loadIdx][rpmIdx] = -100;
+      engineConfiguration->secondInjectionAngleTable[loadIdx][rpmIdx] = 100;
     }
   }
 

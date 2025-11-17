@@ -93,18 +93,17 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   
   if (pulseIndex == 1) {
     // Pulse 1: Use secondary injection angle table
-    // Table stores negative values (degrees before TDC), like injectionOffset
     float baseAngle = interpolate3d(
-      engineConfiguration->secondInjectionAngleTable,      // 16×16 table (negative BTDC values)
+      engineConfiguration->secondInjectionAngleTable,      // 16×16 table
       engineConfiguration->multiInjectionLoadBins,         // Load axis
       getFuelingLoad(),                                    // Current load
       engineConfiguration->multiInjectionRpmBins,          // RPM axis
       Sensor::getOrZero(SensorType::Rpm)                   // Current RPM
     );
     
-    // Validate base angle: must be in range [-50°, -5°] BTDC
-    if (baseAngle > -5.0f || baseAngle < -50.0f) {
-      baseAngle = -100.0f;  // Fallback to safe default (-100° BTDC)
+    // Validate base angle from table
+    if (baseAngle < 5.0f || baseAngle > 720.0f) {
+      baseAngle = 100.0f;  // Fallback to safe default (100° BTDC)
     }
     
     // Get engine rotation data for angle calculations
@@ -120,22 +119,17 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     }
     
     // Apply injection timing mode correction
-    // baseAngle is negative (e.g., -60 means 60° BTDC)
-    // For mode corrections, work with the absolute magnitude first
     auto mode = engineConfiguration->injectionTimingMode;
-    float correctedAngle = baseAngle;  // Start with negative value
+    float correctedAngle = baseAngle;
     
     if (mode == InjectionTimingMode::Center) {
-      // Pulse 1 centered at table angle: move earlier (more negative) by half duration
+      // Pulse 1 centered at table angle: shift BACK by half duration
       correctedAngle -= durationAngle * 0.5f;
     } else if (mode == InjectionTimingMode::End) {
-      // Pulse 1 ends at table angle: move earlier (more negative) by full duration
+      // Pulse 1 ends at table angle: shift BACK by full duration
       correctedAngle -= durationAngle;
     }
     // START mode: no correction (pulse starts at table angle)
-    
-    // Clamp to [-50°, -5°] range to ensure reasonable timing
-    correctedAngle = std::clamp(correctedAngle, -50.0f, -5.0f);
     
     // Convert table angle (engine-reference) to per-cylinder angle by adding
     // firing-order offset so each cylinder gets its own start angle
@@ -228,23 +222,17 @@ bool InjectionEvent::updateMultiInjectionAngles() {
 
 
 /**
- * Validates and adjusts multi-injection windows to ensure minimum dwell between pulses
- * If dwell requirement is not met, adjusts pulse timing based on injection timing mode
- * 
+ * Validates multi-injection windows to ensure minimum dwell between pulses
  * Dwell = angle between end of Pulse 0 and start of Pulse 1
  * 
- * Adjustment strategies:
- * - END/CENTER mode: shift both pulses earlier (more negative) to maintain timing reference
- * - START mode: shift Pulse 1 later (toward TDC) to increase dwell, respecting 15° TDC limit
- * 
- * @returns true if windows valid after adjustment, false if cannot be fixed
+ * @returns true if dwell requirement met, false if overlap detected
  */
 bool InjectionEvent::validateInjectionWindows() {
   if (getNumberOfPulses() < 2) {
     return true;
   }
   
-  // Get minimum dwell angle from table for this cylinder
+  // Get minimum dwell angle from table
   float minDwell = interpolate3d(
     engineConfiguration->minDwellAngleTable,
     engineConfiguration->multiInjectionLoadBins,
@@ -266,51 +254,8 @@ bool InjectionEvent::validateInjectionWindows() {
   float dwell = pulse1Start - pulse0End;
   if (dwell < 0) dwell += 720.0f;
   
-  // Check if dwell is sufficient
-  if (dwell >= minDwell) {
-    return true;  // All windows valid
-  }
-  
-  // Dwell is insufficient — need to adjust pulse timing
-  auto mode = engineConfiguration->injectionTimingMode;
-  
-  if (mode == InjectionTimingMode::Center || mode == InjectionTimingMode::End) {
-    // For CENTER/END modes: shift both pulses earlier to maintain timing reference
-    // and increase dwell. Pulse 0 cannot be shifted back more than 360°.
-    float dwellShortfall = minDwell - dwell;
-    
-    // Attempt to move Pulse 0 earlier (more negative angle)
-    pulses[0].startAngle -= dwellShortfall;
-    
-    // Ensure Pulse 0 doesn't get shifted back more than 360°
-    float shift = fabs(dwellShortfall);
-    if (shift > 360.0f) {
-      return false;  // Cannot accommodate dwell requirement
-    }
-    
-    // Pulse 1 stays at its calculated angle (dwell will now be satisfied)
-    return true;
-  } else {
-    // START mode: shift Pulse 1 later (toward TDC, more positive) to increase dwell
-    // but don't go closer than 15° to TDC (angle 360° or -720° + 15° = -705° normalized to ~15°)
-    float dwellShortfall = minDwell - dwell;
-    
-    // Calculate new Pulse 1 start angle (shift toward TDC)
-    float newPulse1Start = pulse1Start + dwellShortfall;
-    newPulse1Start = normalizeAngle(newPulse1Start);
-    
-    // Check if new angle is within 15° of TDC
-    // In normalized coords (0-720°), TDC is at 0° or 720°. 
-    // Within 15° of TDC means angle is in [0°, 15°] or [705°, 720°]
-    if ((newPulse1Start > 0 && newPulse1Start < 15.0f) || 
-        (newPulse1Start > 705.0f && newPulse1Start < 720.0f)) {
-      return false;  // Cannot move Pulse 1 that close to TDC
-    }
-    
-    // Apply the shift
-    pulses[1].startAngle = newPulse1Start;
-    return true;
-  }
+  // Validate minimum dwell
+  return (dwell >= minDwell);
 }
 
 #endif // EFI_ENGINE_CONTROL
