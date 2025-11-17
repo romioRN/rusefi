@@ -44,47 +44,99 @@ extern WaveChart waveChart;
 extern void printMultiInjectionStats();
 // Печатает текущие углы впрыска для всех цилиндров
 static void printMultiInjectionAngles() {
-  efiPrintf("=== MULTI-INJECTION ANGLES ===");
+  efiPrintf("=== MULTI-INJECTION DIAGNOSTICS ===");
   
   if (!engineConfiguration->multiInjection.enableMultiInjection) {
     efiPrintf("Multi-injection DISABLED");
-    efiPrintf("==============================");
+    efiPrintf("====================================");
     return;
   }
   
   float rpm = Sensor::getOrZero(SensorType::Rpm);
   float load = getFuelingLoad();
+  float deadtime = engine->module<InjectorModelPrimary>()->getDeadtime();
+  float ignAdvance = getEngineState()->timingAdvance[0];
   
-  efiPrintf("Current RPM: %.0f, Load: %.1f%%", rpm, load);
+  efiPrintf("RPM: %.0f, Load: %.1f%%, Deadtime: %.2f ms, Ignition: %.1f°", 
+    rpm, load, deadtime, ignAdvance);
+  
+  // Get minimum dwell from table
+  float minDwell = interpolate3d(
+    engineConfiguration->minDwellAngleTable,
+    engineConfiguration->multiInjectionLoadBins,
+    load,
+    engineConfiguration->multiInjectionRpmBins,
+    rpm
+  );
+  minDwell = std::clamp(minDwell, 5.0f, 50.0f);
+  
+  efiPrintf("Min Dwell: %.1f°, Safety margin before ignition: 15.0°", minDwell);
   efiPrintf("");
   
 #if EFI_ENGINE_CONTROL
   for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
     auto& event = engine->injectionEvents.elements[i];
     
-    if (event.getNumberOfPulses() > 1) {
-      float fuelMass = getEngineState()->injectionMass[i];
-      efiPrintf("Cylinder %d: (fuel mass: %.3f g)", i, fuelMass);
-      
+    float fuelMass = getEngineState()->injectionMass[i];
+    efiPrintf("--- Cylinder %d (mass: %.3f g) ---", i, fuelMass);
+    
+    if (event.getNumberOfPulses() < 2) {
+      efiPrintf("  Single injection mode (fallback or configuration)");
+      if (event.getNumberOfPulses() >= 1) {
+        const auto& pulse = event.getPulse(0);
+        efiPrintf("  Pulse 0: start=%.1f° dur=%.2f ms (%.1f°) ratio=%.1f%%", 
+          pulse.startAngle, pulse.fuelMs, pulse.durationAngle, pulse.splitRatio);
+      }
+    } else {
+      // Multi-injection mode
       for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
         const auto& pulse = event.getPulse(pulseIdx);
+        float pulseMass = fuelMass * (pulse.splitRatio / 100.0f);
         
-        if (pulse.isActive) {
-          float pulseMass = fuelMass * (pulse.splitRatio / 100.0f);
-          efiPrintf("  Pulse %d: angle=%.1f°, fuel=%.2f ms, ratio=%.1f%%, mass=%.3f g",
-                    pulseIdx,
-                    pulse.startAngle,
-                    pulse.fuelMs,
-                    pulse.splitRatio,
-                    pulseMass);
+        efiPrintf("  Pulse %d: start=%.1f° dur=%.2f ms (%.1f°) ratio=%.1f%% mass=%.3f g %s",
+          pulseIdx,
+          pulse.startAngle, 
+          pulse.fuelMs,
+          pulse.durationAngle,
+          pulse.splitRatio,
+          pulseMass,
+          pulse.isActive ? "[ACTIVE]" : "[INACTIVE]");
+        
+        // Diagnostic checks
+        if (pulse.fuelMs > 0.001f && pulse.fuelMs < deadtime) {
+          efiPrintf("    ⚠ WARNING: Duration (%.2f ms) < deadtime (%.2f ms)", pulse.fuelMs, deadtime);
+        }
+        
+        if (pulse.durationAngle > 120.0f) {
+          efiPrintf("    ⚠ WARNING: Duration angle (%.1f°) > max limit (120°)", pulse.durationAngle);
         }
       }
-      efiPrintf("");
+      
+      // Dwell calculation
+      if (event.getNumberOfPulses() >= 2) {
+        float pulse0End = fmod(event.getPulse(0).startAngle + event.getPulse(0).durationAngle, 720.0f);
+        float pulse1Start = event.getPulse(1).startAngle;
+        float dwell = pulse1Start - pulse0End;
+        if (dwell < 0) dwell += 720.0f;
+        
+        efiPrintf("  Dwell: %.1f° (min required: %.1f°) %s",
+          dwell, minDwell, dwell >= minDwell ? "[OK]" : "[ERROR]");
+        
+        // Pulse ordering check
+        float p1_delta = pulse1Start - event.getPulse(0).startAngle;
+        if (p1_delta < 0) p1_delta += 720.0f;
+        
+        if (p1_delta > 360.0f) {
+          efiPrintf("  ⚠ WARNING: Pulse 1 before Pulse 0 in cycle!");
+        }
+      }
     }
+    
+    efiPrintf("");
   }
 #endif
   
-  efiPrintf("==============================");
+  efiPrintf("====================================");
 }
 
 

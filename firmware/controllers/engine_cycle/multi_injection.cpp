@@ -18,6 +18,8 @@
 #include "injector_model.h"
 
 #define MAX_INJECTION_DURATION 120.0f  // Maximum pulse duration in crankshaft degrees
+// Multiplier used to require pulse duration to exceed dead time by this factor
+constexpr float DEADTIME_MULTIPLIER = 2.5f;
 
 #if EFI_ENGINE_CONTROL
 
@@ -56,10 +58,9 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
     Sensor::getOrZero(SensorType::Rpm)                     // Current RPM
   );
   
-  // If table value is valid, interpret it as the percentage for the FIRST pulse
-  // (pulseIndex == 0). The second pulse should receive the complement so that
-  // both pulses sum to 100% (unless the table contains invalid data).
-  if (ratio > 0.1f && ratio < 100.0f) {
+  // Interpret table value as percentage for the FIRST pulse (pulseIndex==0).
+  // If table specifies 100 => all fuel to Pulse 0; 0 => all fuel to Pulse 1.
+  if (!std::isnan(ratio) && ratio >= 0.0f && ratio <= 100.0f) {
     if (pulseIndex == 0) {
       return std::clamp(ratio, 0.0f, 100.0f);
     } else {
@@ -67,7 +68,7 @@ float InjectionEvent::computeSplitRatio(uint8_t pulseIndex) const {
     }
   }
 
-  // Fallback: if table invalid, use hardcoded defaults (60/40)
+  // Fallback: if table invalid (NaN or out of bounds), use hardcoded defaults (60/40)
   return (pulseIndex == 0 ? 60.0f : 40.0f);
 }
 
@@ -172,6 +173,14 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
 /**
  * @brief Вычисляет параметры мультиинъекции для двух импульсов (split ratio, fuelMs, угол, isActive)
  * Заполняет pulses[] для каждого пульса. Если условия не соблюдаются — делает возврат к одиночному впрыску
+ * 
+ * Diagnostic checks:
+ * - Validates injection mass availability
+ * - Checks engine rotation state
+ * - Validates pulse durations against injector model dead time
+ * - Validates injection windows (overlap, dwell, ordering)
+ * - Ensures timing safety margins
+ * 
  * @return true, если расчёт успешен; false если ошибка (некорректный fuel, RPM, перекрытие)
  */
 bool InjectionEvent::updateMultiInjectionAngles() {
@@ -187,20 +196,29 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     // 2. Получить базовую МАССУ топлива для этого цилиндра (не длительность!)
     float baseFuelMass = getEngineState()->injectionMass[cylinderNumber];
     if (std::isnan(baseFuelMass) || baseFuelMass <= 0) {
+        warning(ObdCode::CUSTOM_MULTI_INJECTION_INVALID_CONFIG, "mi_invalid_mass: baseMass=%.3f g", baseFuelMass);
+        numberOfPulses = 1;
         return false;
     }
 
     // 3. Проверить вращение двигателя
     float rpm = Sensor::getOrZero(SensorType::Rpm);
     if (rpm < 1) {
+        warning(ObdCode::CUSTOM_MULTI_INJECTION_INVALID_CONFIG, "mi_rpm_invalid: rpm=%.0f", rpm);
+        numberOfPulses = 1;
         return false;
     }
 
     // 4. Проверить, есть ли данные по таймингу
     floatus_t oneDegreeUs = getEngineRotationState()->getOneDegreeUs();
     if (std::isnan(oneDegreeUs) || oneDegreeUs < 0.1f) {
+        warning(ObdCode::CUSTOM_MULTI_INJECTION_INVALID_CONFIG, "mi_timing_invalid: oneDegreeUs=%.3f", oneDegreeUs);
+        numberOfPulses = 1;
         return false;
     }
+
+    // Get deadtime for validation
+    float deadtime = engine->module<InjectorModelPrimary>()->getDeadtime();
 
     // 5. Вычислить параметры для каждого пульса
     for (uint8_t i = 0; i < numberOfPulses; i++) {
@@ -223,61 +241,186 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         // Угол впрыска для каждого пульса по 3D-таблице
         pulses[i].startAngle = computeSecondaryInjectionAngle(i);
 
+        // Диагностика: проверить что длительность не ниже deadtime
+        if (pulseFuelMs > 0.001f && pulseFuelMs < deadtime) {
+            warning(ObdCode::CUSTOM_MULTI_INJECTION_PULSE_TOO_SHORT, 
+              "mi_p%d_below_deadtime: fuelMs=%.2f ms < deadtime=%.2f ms cyl=%d", 
+              i, pulseFuelMs, deadtime, cylinderNumber);
+        }
+
         // Отметить пульс как активный только если есть топливо и валидный угол
         pulses[i].isActive = (pulseFuelMs > 0.05f && !std::isnan(pulses[i].startAngle));
     }
 
-    // 6. Проверить перекрытие окон (минимальный dwell)
+    // 6. Проверить перекрытие окон (минимальный dwell) и все другие условия
     if (!validateInjectionWindows()) {
         // Fallback: если ошибка перекрытия, разрешаем только 1 пульс — single injection
+        // Используем базовую длительность, рассчитанную из полной массы
         numberOfPulses = 1;
         pulses[0].splitRatio = 100.0f;
-        // Используем базовую длительность как сумму двух пульсов
-        pulses[0].fuelMs = getEngineState()->injectionDuration;
+        floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+        pulses[0].fuelMs = singlePulseFuelMs;
         pulses[0].isActive = true;
+        
+        if (engineConfiguration->isVerboseMultiInjection) {
+            efiPrintf("mi_fallback_to_single: baseMass=%.3f g singlePulseMs=%.2f ms cyl=%d", 
+              baseFuelMass, singlePulseFuelMs, cylinderNumber);
+        }
+        
         return updateInjectionAngle();
     }
 
     // Всё ок!
+    if (engineConfiguration->isVerboseMultiInjection) {
+        efiPrintf("mi_update_ok: baseMass=%.3f g p0[%.1f° %.2fms %.1f°] p1[%.1f° %.2fms %.1f°] cyl=%d",
+          baseFuelMass,
+          pulses[0].startAngle, pulses[0].fuelMs, pulses[0].durationAngle,
+          pulses[1].startAngle, pulses[1].fuelMs, pulses[1].durationAngle,
+          cylinderNumber);
+    }
+    
     return true;
 }
 
 
 /**
- * Validates multi-injection windows to ensure minimum dwell between pulses
- * Dwell = angle between end of Pulse 0 and start of Pulse 1
+ * Comprehensive validation for multi-injection windows
+ * Checks multiple error conditions and generates diagnostics
  * 
- * @returns true if dwell requirement met, false if overlap detected
+ * Validation checks:
+ * 1. Minimum dwell between pulses (configurated in table)
+ * 2. Pulse 1 start angle not before Pulse 0 start angle (correct ordering)
+ * 3. Pulse durations not below injector dead time
+ * 4. Pulse durations within acceptable range (0.05-100 ms)
+ * 5. Injection timing safety (starts/ends not later than 15° before ignition)
+ * 
+ * @returns true if all validations pass, false if any fail (triggers fallback)
  */
 bool InjectionEvent::validateInjectionWindows() {
   if (getNumberOfPulses() < 2) {
     return true;
   }
+
+  const auto& pulse0 = getPulse(0);
+  const auto& pulse1 = getPulse(1);
+
+  // === DIAGNOSTIC: Get engine state info ===
+  float rpm = Sensor::getOrZero(SensorType::Rpm);
+  float ignitionAngle = getEngineState()->timingAdvance[cylinderNumber];
   
+  // Safety margin before ignition (in degrees): injection should end by 15° before TDC
+  const float SAFE_MARGIN_BEFORE_IGNITION = 15.0f;
+  float safeEndAngle = normalizeAngle(ignitionAngle - SAFE_MARGIN_BEFORE_IGNITION);
+
   // Get minimum dwell angle from table
   float minDwell = interpolate3d(
     engineConfiguration->minDwellAngleTable,
     engineConfiguration->multiInjectionLoadBins,
     getFuelingLoad(),
     engineConfiguration->multiInjectionRpmBins,
-    Sensor::getOrZero(SensorType::Rpm)
+    rpm
   );
-  
-  // Clamp to [5°, 50°]
   minDwell = std::clamp(minDwell, 5.0f, 50.0f);
+
+  // === CHECK 1: Pulse ordering (Pulse 1 should start after Pulse 0 start) ===
+  float angleDelta = pulse1.startAngle - pulse0.startAngle;
+  if (angleDelta < 0) angleDelta += 720.0f;
   
-  // Check dwell between Pulse 0 and Pulse 1
-  float pulse0End = getPulse(0).startAngle + getPulse(0).durationAngle;
-  pulse0End = normalizeAngle(pulse0End);
-  
-  float pulse1Start = getPulse(1).startAngle;
-  
-  // Calculate dwell (angle between end of Pulse 0 and start of Pulse 1)
-  float dwell = pulse1Start - pulse0End;
+  if (pulse1.startAngle < pulse0.startAngle && angleDelta > 360.0f) {
+    // Pulse 1 starts before Pulse 0 in the cycle
+    warning(ObdCode::CUSTOM_MULTI_INJECTION_WRONG_ORDER, 
+      "mi_p1_before_p0: p0=%.1f° p1=%.1f°", pulse0.startAngle, pulse1.startAngle);
+    return false;
+  }
+
+  // === CHECK 2: Minimum dwell between Pulse 0 and Pulse 1 ===
+  float pulse0End = normalizeAngle(pulse0.startAngle + pulse0.durationAngle);
+  float dwell = pulse1.startAngle - pulse0End;
   if (dwell < 0) dwell += 720.0f;
-  
-  // Validate minimum dwell
-  return (dwell >= minDwell);
+
+  if (dwell < minDwell) {
+    warning(ObdCode::CUSTOM_MULTI_INJECTION_INSUFFICIENT_DWELL, 
+      "mi_dwell_low: dwell=%.1f° min=%.1f° (p0_end=%.1f° p1_start=%.1f°)", 
+      dwell, minDwell, pulse0End, pulse1.startAngle);
+    return false;
+  }
+
+  // === CHECK 3: Pulse durations valid (vs dead time) ===
+  // Enforce stricter minimum: require each pulse to be at least DEADTIME_MULTIPLIER * deadtime
+  float deadtime = engine->module<InjectorModelPrimary>()->getDeadtime();
+  float minPulseMs = deadtime * DEADTIME_MULTIPLIER;
+
+  for (uint8_t i = 0; i < 2; i++) {
+    const auto& pulse = getPulse(i);
+
+    // Check if pulse is too short (< minPulseMs means unreliable delivery)
+    if (pulse.fuelMs > 0.001f && pulse.fuelMs < minPulseMs) {
+      warning(ObdCode::CUSTOM_MULTI_INJECTION_PULSE_TOO_SHORT,
+        "mi_p%d_below_deadtime_threshold: fuelMs=%.2f ms < min(%.2f ms = %.2fx%.2f ms)", 
+        i, pulse.fuelMs, minPulseMs, DEADTIME_MULTIPLIER, deadtime);
+      return false;
+    }
+
+    // Check if pulse duration exceeds max (hardware/scheduling limit)
+    if (pulse.durationAngle > MAX_INJECTION_DURATION) {
+      warning(ObdCode::CUSTOM_MULTI_INJECTION_PULSE_TOO_LONG,
+        "mi_p%d_long: durationAngle=%.1f° max=%.1f°", i, pulse.durationAngle, MAX_INJECTION_DURATION);
+      return false;
+    }
+  }
+
+  // === CHECK 4: Injection timing safety (starts/ends before ignition) ===
+  for (uint8_t i = 0; i < 2; i++) {
+    const auto& pulse = getPulse(i);
+    
+    // Calculate pulse end angle
+    float pulseStart = pulse.startAngle;
+    float pulseEnd = normalizeAngle(pulse.startAngle + pulse.durationAngle);
+    
+    // Check if pulse starts too late (after safe margin before ignition)
+    // In this check, we want to ensure injection completes well before spark
+    // "Late" means starting after the safe margin point
+    if (pulseStart > safeEndAngle) {
+      float delta = pulseStart - ignitionAngle;
+      if (delta < 0) delta += 720.0f;
+      if (delta < SAFE_MARGIN_BEFORE_IGNITION) {
+        warning(ObdCode::CUSTOM_MULTI_INJECTION_STARTS_TOO_LATE, 
+          "mi_p%d_late_start: starts=%.1f° ign=%.1f° margin=%.1f° (need >=%.1f°)", 
+          i, pulseStart, ignitionAngle, delta, SAFE_MARGIN_BEFORE_IGNITION);
+        return false;
+      }
+    }
+
+    // Check if pulse ends too late (overlaps with ignition safety window)
+    if (pulseEnd > safeEndAngle) {
+      float delta = pulseEnd - ignitionAngle;
+      if (delta < 0) delta += 720.0f;
+      if (delta < SAFE_MARGIN_BEFORE_IGNITION) {
+        warning(ObdCode::CUSTOM_MULTI_INJECTION_ENDS_TOO_LATE, 
+          "mi_p%d_late_end: ends=%.1f° ign=%.1f° margin=%.1f° (need >=%.1f°)", 
+          i, pulseEnd, ignitionAngle, delta, SAFE_MARGIN_BEFORE_IGNITION);
+        return false;
+      }
+    }
+  }
+
+  // === CHECK 5: Overlap detection (strict) ===
+  float pulse1Start = pulse1.startAngle;
+  if (pulse0End > pulse1Start && pulse0End - pulse1Start < 720.0f) {
+    warning(ObdCode::CUSTOM_MULTI_INJECTION_OVERLAP, 
+      "mi_overlap: p0_end=%.1f° p1_start=%.1f°", pulse0End, pulse1Start);
+    return false;
+  }
+
+  // All checks passed
+  if (engineConfiguration->isVerboseMultiInjection) {
+    efiPrintf("mi_valid: p0[%.1f°,%.2fms,%.1f°] p1[%.1f°,%.2fms,%.1f°] dwell=%.1f° rpm=%.0f",
+      pulse0.startAngle, pulse0.fuelMs, pulse0.durationAngle,
+      pulse1.startAngle, pulse1.fuelMs, pulse1.durationAngle,
+      dwell, rpm);
+  }
+
+  return true;
 }
 
 #endif // EFI_ENGINE_CONTROL
