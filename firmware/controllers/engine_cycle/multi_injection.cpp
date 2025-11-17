@@ -94,7 +94,11 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
   
   if (pulseIndex == 1) {
     // Pulse 1: Use secondary injection angle table
-    float baseAngle = interpolate3d(
+    // Note: secondInjectionAngleTable contains BTDC angles (0-720)
+    // where large values = earlier injection (more advance)
+    // We need to convert BTDC to absolute engine cycle angle
+    
+    float btdcAngle = interpolate3d(
       engineConfiguration->secondInjectionAngleTable,      // 16×16 table
       engineConfiguration->multiInjectionLoadBins,         // Load axis
       getFuelingLoad(),                                    // Current load
@@ -102,9 +106,17 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
       Sensor::getOrZero(SensorType::Rpm)                   // Current RPM
     );
     
-    // Validate base angle from table
-    if (baseAngle < 5.0f || baseAngle > 720.0f) {
-      baseAngle = 100.0f;  // Fallback to safe default (100° BTDC)
+    // Validate BTDC angle from table
+    if (btdcAngle < 5.0f || btdcAngle > 720.0f) {
+      btdcAngle = 100.0f;  // Fallback to safe default (100° BTDC)
+    }
+    
+    // Convert BTDC to absolute engine cycle angle
+    // If table says 100° BTDC (100° before TDC), 
+    // in absolute cycle this is: 720° - 100° = 620°
+    float baseAngle = 720.0f - btdcAngle;
+    if (baseAngle < 0) {
+      baseAngle += 720.0f;
     }
     
     // Get engine rotation data for angle calculations
@@ -120,14 +132,18 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
     }
     
     // Apply injection timing mode correction
+    // These modes define what the table angle represents:
+    // - START: angle is START of injection
+    // - CENTER: angle is CENTER of injection, so shift start back by duration/2
+    // - END: angle is END of injection, so shift start back by full duration
     auto mode = engineConfiguration->injectionTimingMode;
     float correctedAngle = baseAngle;
     
     if (mode == InjectionTimingMode::Center) {
-      // Pulse 1 centered at table angle: shift BACK by half duration
+      // Pulse 1 centered at table angle: shift START back by half duration
       correctedAngle -= durationAngle * 0.5f;
     } else if (mode == InjectionTimingMode::End) {
-      // Pulse 1 ends at table angle: shift BACK by full duration
+      // Pulse 1 ends at table angle: shift START back by full duration
       correctedAngle -= durationAngle;
     }
     // START mode: no correction (pulse starts at table angle)
