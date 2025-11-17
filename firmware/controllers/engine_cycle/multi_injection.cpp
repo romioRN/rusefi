@@ -35,6 +35,15 @@ static float normalizeAngle(float angle) {
   return angle;
 }
 
+// Helper: runtime verbose control for multi-injection logging
+// The engine configuration currently doesn't expose a dedicated
+// `isVerboseMultiInjection` flag in the generated configuration struct.
+// Provide a local stub so we can gate verbose prints. This returns
+// false by default; it can be extended later to consult a user setting.
+static inline bool isVerboseMultiInjection() {
+  return false;
+}
+
 /**
  * Calculates fuel split ratio from 3D interpolation table
  * Ratio determines percentage of fuel delivered in each pulse
@@ -262,7 +271,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         pulses[0].fuelMs = singlePulseFuelMs;
         pulses[0].isActive = true;
         
-        if (engineConfiguration->isVerboseMultiInjection) {
+        if (isVerboseMultiInjection()) {
             efiPrintf("mi_fallback_to_single: baseMass=%.3f g singlePulseMs=%.2f ms cyl=%d", 
               baseFuelMass, singlePulseFuelMs, cylinderNumber);
         }
@@ -271,7 +280,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     }
 
     // Всё ок!
-    if (engineConfiguration->isVerboseMultiInjection) {
+    if (isVerboseMultiInjection()) {
         efiPrintf("mi_update_ok: baseMass=%.3f g p0[%.1f° %.2fms %.1f°] p1[%.1f° %.2fms %.1f°] cyl=%d",
           baseFuelMass,
           pulses[0].startAngle, pulses[0].fuelMs, pulses[0].durationAngle,
@@ -413,7 +422,7 @@ bool InjectionEvent::validateInjectionWindows() {
   }
 
   // All checks passed
-  if (engineConfiguration->isVerboseMultiInjection) {
+  if (isVerboseMultiInjection()) {
     efiPrintf("mi_valid: p0[%.1f°,%.2fms,%.1f°] p1[%.1f°,%.2fms,%.1f°] dwell=%.1f° rpm=%.0f",
       pulse0.startAngle, pulse0.fuelMs, pulse0.durationAngle,
       pulse1.startAngle, pulse1.fuelMs, pulse1.durationAngle,
