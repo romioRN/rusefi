@@ -229,6 +229,49 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     // Get deadtime for validation
     float deadtime = engine->module<InjectorModelPrimary>()->getDeadtime();
 
+  // Quick handle: if split table fully directs fuel to one pulse (100% or 0%),
+  // treat as single injection to avoid double deadtime and unnecessary scheduling.
+  float splitForPulse0 = computeSplitRatio(0); // percent for pulse0
+  if (!std::isnan(splitForPulse0)) {
+    // Treat near-100 as all fuel to first pulse
+    if (splitForPulse0 >= 99.999f) {
+      numberOfPulses = 1;
+      pulses[0].splitRatio = 100.0f;
+      floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+      pulses[0].fuelMs = singlePulseFuelMs;
+      pulses[0].isActive = (singlePulseFuelMs > 0.05f);
+      // Use standard single-injection angle calculation
+      return updateInjectionAngle();
+    }
+
+    // Treat near-0 as all fuel to second pulse but schedule as single pulse
+    if (splitForPulse0 <= 0.001f) {
+      numberOfPulses = 1;
+      pulses[0].splitRatio = 100.0f; // all fuel now in the single scheduled pulse
+      floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+      pulses[0].fuelMs = singlePulseFuelMs;
+      pulses[0].isActive = (singlePulseFuelMs > 0.05f);
+
+      // Compute start angle using secondary injection table semantics (pulse1 angle)
+      // We need the duration value available for timing-mode correction used by computeSecondaryInjectionAngle,
+      // so temporarily set up pulses[1] and numberOfPulses=2 for the helper, then read the computed angle.
+      PulseBackup backup;
+      // save current pulses[1]
+      backup.save(pulses[1]);
+      uint8_t previousNumberOfPulses = numberOfPulses;
+      // temporarily expose pulse[1] to the helper
+      numberOfPulses = 2;
+      pulses[1].fuelMs = singlePulseFuelMs;
+      float secAngle = computeSecondaryInjectionAngle(1);
+      // restore
+      pulses[1] = backup.restore();
+      numberOfPulses = previousNumberOfPulses;
+
+      pulses[0].startAngle = secAngle;
+      return updateInjectionAngle();
+    }
+  }
+
     // 5. Вычислить параметры для каждого пульса
     for (uint8_t i = 0; i < numberOfPulses; i++) {
         float ratio = computeSplitRatio(i);                           // Процент топливного объёма этого пульса
