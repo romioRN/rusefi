@@ -255,16 +255,15 @@ bool InjectionEvent::updateMultiInjectionAngles() {
       // Compute start angle using secondary injection table semantics (pulse1 angle)
       // We need the duration value available for timing-mode correction used by computeSecondaryInjectionAngle,
       // so temporarily set up pulses[1] and numberOfPulses=2 for the helper, then read the computed angle.
-      PulseBackup backup;
-      // save current pulses[1]
-      backup.save(pulses[1]);
+      // Save current pulse[1] state
+      InjectionPulse savedPulse1 = pulses[1];
       uint8_t previousNumberOfPulses = numberOfPulses;
       // temporarily expose pulse[1] to the helper
       numberOfPulses = 2;
       pulses[1].fuelMs = singlePulseFuelMs;
       float secAngle = computeSecondaryInjectionAngle(1);
       // restore
-      pulses[1] = backup.restore();
+      pulses[1] = savedPulse1;
       numberOfPulses = previousNumberOfPulses;
 
       pulses[0].startAngle = secAngle;
