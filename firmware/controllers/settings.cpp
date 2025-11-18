@@ -89,23 +89,31 @@ static void printMultiInjectionAngles() {
       }
     } else {
       // Multi-injection mode
-      for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
-        const auto& pulse = event.getPulse(pulseIdx);
-        float pulseMass = fuelMass * (pulse.splitRatio / 100.0f);
-        
-        efiPrintf("  Pulse %d: start=%.1f° dur=%.2f ms (%.1f°) ratio=%.1f%% mass=%.3f g %s",
-          pulseIdx,
-          pulse.startAngle, 
-          pulse.fuelMs,
-          pulse.durationAngle,
-          pulse.splitRatio,
-          pulseMass,
-          pulse.isActive ? "[ACTIVE]" : "[INACTIVE]");
+		// Precompute single-pulse duration for diagnostics
+		float singlePulseMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(fuelMass);
+
+		for (uint8_t pulseIdx = 0; pulseIdx < event.getNumberOfPulses(); pulseIdx++) {
+				const auto& pulse = event.getPulse(pulseIdx);
+				float pulseMass = fuelMass * (pulse.splitRatio / 100.0f);
+
+				efiPrintf("  Pulse %d: start=%.1f° dur=%.2f ms (%.1f°) ratio=%.1f%% mass=%.3f g %s",
+					pulseIdx,
+					pulse.startAngle, 
+					pulse.fuelMs,
+					pulse.durationAngle,
+					pulse.splitRatio,
+					pulseMass,
+					pulse.isActive ? "[ACTIVE]" : "[INACTIVE]");
         
         // Diagnostic checks
-        if (pulse.fuelMs > 0.001f && pulse.fuelMs < deadtime) {
-          efiPrintf("    ⚠ WARNING: Duration (%.2f ms) < deadtime (%.2f ms)", pulse.fuelMs, deadtime);
-        }
+				if (pulse.fuelMs > 0.001f && pulse.fuelMs < deadtime) {
+					efiPrintf("    ⚠ WARNING: Duration (%.2f ms) < deadtime (%.2f ms)", pulse.fuelMs, deadtime);
+				}
+
+				// Diagnostic: print what the injector model computes for this pulse mass and compare
+				float modelPulseMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(pulseMass);
+				efiPrintf("    model_dur=%.3f ms single_dur_for_full_mass=%.3f ms deadtime=%.3f ms",
+					modelPulseMs, singlePulseMs, deadtime);
         
         if (pulse.durationAngle > 120.0f) {
           efiPrintf("    ⚠ WARNING: Duration angle (%.1f°) > max limit (120°)", pulse.durationAngle);
