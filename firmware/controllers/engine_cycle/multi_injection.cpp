@@ -41,6 +41,11 @@ static bool multiInjectionModeActive[12] = {};  // Default all false (single mod
 static uint8_t multiInjectionValidationFailureCount[12] = {};  // Counts consecutive validation failures
 constexpr uint8_t MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE = 2;  // Allow 2-3 failed cycles
 
+// Per-cylinder smoothed injection mass to reduce jitter in calculated durations
+static float smoothedInjectionMass[12] = {};
+// Smoothing factor alpha for exponential moving average (0..1). Higher = faster response, lower = smoother.
+constexpr float MASS_SMOOTHING_ALPHA = 0.4f;
+
 // Helper: get current validation failure count for diagnostics
 static inline uint8_t getMultiInjectionValidationFailureCount(uint8_t cylinderNumber) {
   return (cylinderNumber < 12) ? multiInjectionValidationFailureCount[cylinderNumber] : 0;
@@ -231,6 +236,19 @@ bool InjectionEvent::updateMultiInjectionAngles() {
 
     // 2. Получить базовую МАССУ топлива для этого цилиндра (не длительность!)
     float baseFuelMass = getEngineState()->injectionMass[cylinderNumber];
+    // Apply light exponential smoothing to baseFuelMass to reduce jitter in calculated durations.
+    // Angles still come from tables each cycle; smoothing only affects durations calculation.
+    float smoothedMass = baseFuelMass;
+    if (cylinderNumber < 12) {
+      float prev = smoothedInjectionMass[cylinderNumber];
+      if (std::isnan(prev) || prev <= 0.0f) {
+        smoothedInjectionMass[cylinderNumber] = baseFuelMass;
+        smoothedMass = baseFuelMass;
+      } else {
+        smoothedMass = prev * (1.0f - MASS_SMOOTHING_ALPHA) + baseFuelMass * MASS_SMOOTHING_ALPHA;
+        smoothedInjectionMass[cylinderNumber] = smoothedMass;
+      }
+    }
     if (std::isnan(baseFuelMass) || baseFuelMass <= 0) {
         warning(ObdCode::CUSTOM_MULTI_INJECTION_INVALID_CONFIG, "mi_invalid_mass: baseMass=%.3f g", baseFuelMass);
         numberOfPulses = 1;
@@ -324,7 +342,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     
     for (uint8_t i = 0; i < numberOfPulses; i++) {
         float ratio = computeSplitRatio(i);                           // Процент топливного объёма этого пульса
-        float pulseMass = baseFuelMass * (ratio / 100.0f);            // Масса для этого пульса
+        float pulseMass = smoothedMass * (ratio / 100.0f);            // Масса для этого пульса (smoothed for duration calc)
         
         // Рассчитать длительность этого пульса через injectorModel
         floatms_t pulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(pulseMass);
