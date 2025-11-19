@@ -19,7 +19,8 @@
 
 #define MAX_INJECTION_DURATION 120.0f  // Maximum pulse duration in crankshaft degrees
 // Multiplier used to require pulse duration to exceed dead time by this factor
-constexpr float DEADTIME_MULTIPLIER = 2f;
+// Use 2.5x as a conservative enforcement factor (must be a valid float literal)
+constexpr float DEADTIME_MULTIPLIER = 2.5f;
 
 #if EFI_ENGINE_CONTROL
 
