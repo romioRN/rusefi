@@ -81,7 +81,7 @@ static void printMultiInjectionAngles() {
     efiPrintf("--- Cylinder %d (mass: %.3f g) ---", i, fuelMass);
     
     if (event.getNumberOfPulses() < 2) {
-      efiPrintf("  Single injection mode (fallback or configuration)");
+      efiPrintf("  Single injection mode (hysteresis or validation failure tolerance exceeded)");
       if (event.getNumberOfPulses() >= 1) {
         const auto& pulse = event.getPulse(0);
         efiPrintf("  Pulse 0: start=%.1f° dur=%.2f ms (%.1f°) ratio=%.1f%%", 

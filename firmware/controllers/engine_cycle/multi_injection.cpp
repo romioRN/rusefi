@@ -22,7 +22,29 @@
 // Use 2.5x as a conservative enforcement factor (must be a valid float literal)
 constexpr float DEADTIME_MULTIPLIER = 2.1f;
 
+// Hysteresis thresholds for single <-> multi injection mode transitions
+// Prevent oscillation when split ratio hovers near 0% or 100%
+// If active in multi-mode (true), stay multi until split < HYSTERESIS_LOW
+// If active in single-mode (false), enter multi only when split > HYSTERESIS_LOW and < HYSTERESIS_HIGH
+constexpr float MULTI_INJECTION_HYSTERESIS_LOW = 5.0f;    // Switch to multi if split between 5-95%
+constexpr float MULTI_INJECTION_HYSTERESIS_HIGH = 95.0f;  // Switch back to single if split > 95% or < 5%
+
 #if EFI_ENGINE_CONTROL
+
+// Per-cylinder hysteresis state: track if each cylinder is in multi-injection mode
+// index = cylinder number (0-11), value = true if last state was multi-injection
+static bool multiInjectionModeActive[12] = {};  // Default all false (single mode)
+
+// Per-cylinder validation failure tolerance counter
+// Allows multi-injection to tolerate brief validation failures before falling back to single
+// Prevents premature fallback due to transient dwell/timing violations
+static uint8_t multiInjectionValidationFailureCount[12] = {};  // Counts consecutive validation failures
+constexpr uint8_t MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE = 2;  // Allow 2-3 failed cycles
+
+// Helper: get current validation failure count for diagnostics
+static inline uint8_t getMultiInjectionValidationFailureCount(uint8_t cylinderNumber) {
+  return (cylinderNumber < 12) ? multiInjectionValidationFailureCount[cylinderNumber] : 0;
+}
 
 /**
  * Normalizes crankshaft angle to 0-720° range
@@ -234,49 +256,72 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     // Get deadtime for validation
     float deadtime = engine->module<InjectorModelPrimary>()->getDeadtime();
 
-    // === QUICK OPTIMIZATION: Early exit for 100%/0% split ===
-    // If split table fully directs fuel to one pulse, treat as single injection.
-    // This avoids double deadtime, unnecessary scheduling, and speeds up computation.
+    // === HYSTERESIS-BASED MODE SELECTION ===
+    // Use hysteresis to prevent oscillation when split ratio hovers near 0% or 100%
+    // This prevents the "jitter" on oscilloscope when table values are near boundary
     float splitForPulse0 = computeSplitRatio(0); // percent for pulse0
+    bool wasMultiModeActive = (cylinderNumber < 12) ? multiInjectionModeActive[cylinderNumber] : false;
+    
     if (!std::isnan(splitForPulse0)) {
-        // === Case 1: 100% to first pulse ===
-        if (splitForPulse0 >= 99.999f) {
+        bool shouldEnterMultiMode = false;
+        
+        if (wasMultiModeActive) {
+            // Currently in multi mode: stay in multi unless split reaches hysteresis boundary
+            // Exit multi-mode only if split < LOW or > HIGH threshold
+            if (splitForPulse0 < MULTI_INJECTION_HYSTERESIS_LOW || splitForPulse0 > MULTI_INJECTION_HYSTERESIS_HIGH) {
+                shouldEnterMultiMode = false;  // Exit multi mode
+            } else {
+                shouldEnterMultiMode = true;   // Stay in multi mode (hysteresis prevents exit)
+            }
+        } else {
+            // Currently in single mode: enter multi only if split is solidly in the middle
+            // Require split to be within HYSTERESIS_LOW to HYSTERESIS_HIGH range
+            if (splitForPulse0 > MULTI_INJECTION_HYSTERESIS_LOW && splitForPulse0 < MULTI_INJECTION_HYSTERESIS_HIGH) {
+                shouldEnterMultiMode = true;   // Enter multi mode
+            } else {
+                shouldEnterMultiMode = false;  // Stay in single mode
+            }
+        }
+        
+        // Update hysteresis state for this cylinder
+        if (cylinderNumber < 12) {
+            multiInjectionModeActive[cylinderNumber] = shouldEnterMultiMode;
+        }
+        
+        // If hysteresis logic says to use single mode, route all fuel to appropriate pulse
+        if (!shouldEnterMultiMode) {
             numberOfPulses = 1;
             pulses[0].splitRatio = 100.0f;
             floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
             pulses[0].fuelMs = singlePulseFuelMs;
             pulses[0].isActive = (singlePulseFuelMs > 0.05f);
-            // Use standard single-injection angle calculation (pulse 0)
-            return updateInjectionAngle();
-        }
-
-        // === Case 2: 0% to first pulse (100% to second) ===
-        if (splitForPulse0 <= 0.001f) {
-            numberOfPulses = 1;
-            pulses[0].splitRatio = 100.0f; // all fuel in the scheduled pulse
-            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
-            pulses[0].fuelMs = singlePulseFuelMs;
-            pulses[0].isActive = (singlePulseFuelMs > 0.05f);
-
-            // Use secondary injection angle (from table) instead of primary
-            // Temporarily expose pulse[1] state for the angle calculator
-            InjectionPulse savedPulse1 = pulses[1];
-            uint8_t previousNumberOfPulses = numberOfPulses;
-            numberOfPulses = 2;
-            pulses[1].fuelMs = singlePulseFuelMs;
-            float secAngle = computeSecondaryInjectionAngle(1);
-            pulses[1] = savedPulse1;
-            numberOfPulses = previousNumberOfPulses;
-
-            pulses[0].startAngle = secAngle;
+            
+            // Decide which injection angle to use based on which side of the hysteresis we're on
+            if (splitForPulse0 <= MULTI_INJECTION_HYSTERESIS_LOW) {
+                // Split was very low (toward 0%) → use secondary angle (pulse 1)
+                InjectionPulse savedPulse1 = pulses[1];
+                uint8_t previousNumberOfPulses = numberOfPulses;
+                numberOfPulses = 2;
+                pulses[1].fuelMs = singlePulseFuelMs;
+                float secAngle = computeSecondaryInjectionAngle(1);
+                pulses[1] = savedPulse1;
+                numberOfPulses = previousNumberOfPulses;
+                pulses[0].startAngle = secAngle;
+            } else {
+                // Split was high (toward 100%) or invalid → use primary angle (pulse 0)
+                return updateInjectionAngle();
+            }
+            
             return updateInjectionAngle();
         }
     }
 
     // === MULTI-INJECTION MODE: Both pulses active ===
-    // Only reach here if split is between ~0.001 and ~99.999 (true multi-injection)
+    // Only reach here if hysteresis logic says to use multi-injection
     
     // 5. Вычислить параметры для каждого пульса
+    float minPulseMs = deadtime * DEADTIME_MULTIPLIER;  // Minimum acceptable pulse duration
+    
     for (uint8_t i = 0; i < numberOfPulses; i++) {
         float ratio = computeSplitRatio(i);                           // Процент топливного объёма этого пульса
         float pulseMass = baseFuelMass * (ratio / 100.0f);            // Масса для этого пульса
@@ -285,6 +330,49 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         floatms_t pulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(pulseMass);
         
         pulses[i].fuelMs = pulseFuelMs;
+        
+        // EARLY VALIDATION: Check if pulse duration violates minimum threshold
+        // If in multi-mode and pulse too short, treat as validation failure (increment counter)
+        // Don't instant fallback; let tolerance counter decide
+        if (pulseFuelMs > 0.001f && pulseFuelMs < minPulseMs) {
+            if (wasMultiModeActive && cylinderNumber < 12) {
+                // Increment failure counter for this reason
+                multiInjectionValidationFailureCount[cylinderNumber]++;
+                
+                if (multiInjectionValidationFailureCount[cylinderNumber] > MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE) {
+                    // Tolerance exceeded due to short pulse. Fallback to single.
+                    numberOfPulses = 1;
+                    pulses[0].splitRatio = 100.0f;
+                    floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+                    pulses[0].fuelMs = singlePulseFuelMs;
+                    pulses[0].isActive = true;
+                    multiInjectionValidationFailureCount[cylinderNumber] = 0;
+                    multiInjectionModeActive[cylinderNumber] = false;
+                    
+                    if (isVerboseMultiInjection()) {
+                        efiPrintf("mi_pulse_short: cyl=%d p%d %.2f ms < min %.2f ms, fallback after %d cycles",
+                          cylinderNumber, i, pulseFuelMs, minPulseMs, multiInjectionValidationFailureCount[cylinderNumber]);
+                    }
+                    
+                    return updateInjectionAngle();
+                }
+                
+                // Still within tolerance. Continue with warning but don't fallback yet.
+                if (isVerboseMultiInjection()) {
+                    efiPrintf("mi_pulse_short_tolerate: cyl=%d p%d %.2f ms < min %.2f ms (tolerance count: %d)",
+                      cylinderNumber, i, pulseFuelMs, minPulseMs, multiInjectionValidationFailureCount[cylinderNumber]);
+                }
+            } else {
+                // Not in multi-mode already. This shouldn't happen, but fallback anyway.
+                numberOfPulses = 1;
+                pulses[0].splitRatio = 100.0f;
+                floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+                pulses[0].fuelMs = singlePulseFuelMs;
+                pulses[0].isActive = true;
+                return updateInjectionAngle();
+            }
+        }
+        
         pulses[i].splitRatio = ratio;
 
         // Расчёт длительности в градусах КВ
@@ -310,20 +398,61 @@ bool InjectionEvent::updateMultiInjectionAngles() {
 
     // 6. Проверить перекрытие окон (минимальный dwell) и все другие условия
     if (!validateInjectionWindows()) {
-        // Fallback: если ошибка перекрытия, разрешаем только 1 пульс — single injection
-        // Используем базовую длительность, рассчитанную из полной массы
-        numberOfPulses = 1;
-        pulses[0].splitRatio = 100.0f;
-        floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
-        pulses[0].fuelMs = singlePulseFuelMs;
-        pulses[0].isActive = true;
+        // Validation failed. Decide whether to fallback or tolerate based on hysteresis.
+        bool shouldFallback = true;
         
-        if (isVerboseMultiInjection()) {
-            efiPrintf("mi_fallback_to_single: baseMass=%.3f g singlePulseMs=%.2f ms cyl=%d", 
-              baseFuelMass, singlePulseFuelMs, cylinderNumber);
+        if (wasMultiModeActive && cylinderNumber < 12) {
+            // We were in multi-mode and validation just failed.
+            // Increment failure counter and only fallback if tolerance exceeded.
+            multiInjectionValidationFailureCount[cylinderNumber]++;
+            
+            if (multiInjectionValidationFailureCount[cylinderNumber] <= MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE) {
+                // We're still within tolerance. Tolerate this failure, don't fallback yet.
+                shouldFallback = false;
+                if (isVerboseMultiInjection()) {
+                    efiPrintf("mi_validate_tolerate: cyl=%d failures=%d (tolerance=%d), staying in multi-mode",
+                      cylinderNumber, 
+                      multiInjectionValidationFailureCount[cylinderNumber],
+                      MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE);
+                }
+            } else {
+                // Tolerance exceeded. Fallback to single injection.
+                shouldFallback = true;
+                if (isVerboseMultiInjection()) {
+                    efiPrintf("mi_validate_exceeded: cyl=%d failures=%d > tolerance=%d, falling back to single",
+                      cylinderNumber, 
+                      multiInjectionValidationFailureCount[cylinderNumber],
+                      MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE);
+                }
+            }
+        } else {
+            // We were in single-mode already. Any validation failure confirms we should stay single.
+            shouldFallback = true;
         }
         
-        return updateInjectionAngle();
+        if (shouldFallback) {
+            // Fallback: use single injection
+            numberOfPulses = 1;
+            pulses[0].splitRatio = 100.0f;
+            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+            pulses[0].fuelMs = singlePulseFuelMs;
+            pulses[0].isActive = true;
+            
+            // Reset failure counter and mode flag on fallback
+            if (cylinderNumber < 12) {
+                multiInjectionValidationFailureCount[cylinderNumber] = 0;
+                multiInjectionModeActive[cylinderNumber] = false;
+            }
+            
+            return updateInjectionAngle();
+        }
+        // If we didn't fallback, continue with current multi-injection configuration
+        // (validation failed but we're tolerating it)
+    } else {
+        // Validation PASSED. Reset failure counter when in multi-mode.
+        if (cylinderNumber < 12) {
+            multiInjectionValidationFailureCount[cylinderNumber] = 0;
+        }
     }
 
     // Всё ок! Multi-injection режим активен
