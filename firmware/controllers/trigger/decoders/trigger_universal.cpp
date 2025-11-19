@@ -143,9 +143,9 @@ void configureQuickStartSenderWheel(TriggerWaveform *s) {
 	s->setTriggerSynchronizationGap(0.545);
 	s->setSecondTriggerSynchronizationGap(1.596);
 
-	s->addToothRiseFall(104, /* width*/ 90);
-	s->addToothRiseFall(194, /* width*/ 10);
-	s->addToothRiseFall(360, /* width*/ 75);
+	s->addToothRiseFall(95, /* width*/ 80);
+	s->addToothRiseFall(165, /* width*/ 15);
+	s->addToothRiseFall(360, /* width*/ 80);
 }
 
 static void commonSymmetrical(TriggerWaveform* s, int count, float gapFrom, float gapTo) {
