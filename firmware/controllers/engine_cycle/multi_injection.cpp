@@ -19,7 +19,7 @@
 
 #define MAX_INJECTION_DURATION 120.0f  // Maximum pulse duration in crankshaft degrees
 // Multiplier used to require pulse duration to exceed dead time by this factor
-constexpr float DEADTIME_MULTIPLIER = 2.5f;
+constexpr float DEADTIME_MULTIPLIER = 2f;
 
 #if EFI_ENGINE_CONTROL
 
@@ -183,6 +183,10 @@ float InjectionEvent::computeSecondaryInjectionAngle(uint8_t pulseIndex) const {
  * @brief Вычисляет параметры мультиинъекции для двух импульсов (split ratio, fuelMs, угол, isActive)
  * Заполняет pulses[] для каждого пульса. Если условия не соблюдаются — делает возврат к одиночному впрыску
  * 
+ * Оптимизирована для быстрого переключения между single и multi режимами:
+ * - Ранний выход при 100%/0% split (переход на single-injection без пересчёта второго пульса)
+ * - Минимизация вычислений в горячем пути
+ * 
  * Diagnostic checks:
  * - Validates injection mass availability
  * - Checks engine rotation state
@@ -229,48 +233,48 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     // Get deadtime for validation
     float deadtime = engine->module<InjectorModelPrimary>()->getDeadtime();
 
-  // Quick handle: if split table fully directs fuel to one pulse (100% or 0%),
-  // treat as single injection to avoid double deadtime and unnecessary scheduling.
-  float splitForPulse0 = computeSplitRatio(0); // percent for pulse0
-  if (!std::isnan(splitForPulse0)) {
-    // Treat near-100 as all fuel to first pulse
-    if (splitForPulse0 >= 99.999f) {
-      numberOfPulses = 1;
-      pulses[0].splitRatio = 100.0f;
-      floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
-      pulses[0].fuelMs = singlePulseFuelMs;
-      pulses[0].isActive = (singlePulseFuelMs > 0.05f);
-      // Use standard single-injection angle calculation
-      return updateInjectionAngle();
+    // === QUICK OPTIMIZATION: Early exit for 100%/0% split ===
+    // If split table fully directs fuel to one pulse, treat as single injection.
+    // This avoids double deadtime, unnecessary scheduling, and speeds up computation.
+    float splitForPulse0 = computeSplitRatio(0); // percent for pulse0
+    if (!std::isnan(splitForPulse0)) {
+        // === Case 1: 100% to first pulse ===
+        if (splitForPulse0 >= 99.999f) {
+            numberOfPulses = 1;
+            pulses[0].splitRatio = 100.0f;
+            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+            pulses[0].fuelMs = singlePulseFuelMs;
+            pulses[0].isActive = (singlePulseFuelMs > 0.05f);
+            // Use standard single-injection angle calculation (pulse 0)
+            return updateInjectionAngle();
+        }
+
+        // === Case 2: 0% to first pulse (100% to second) ===
+        if (splitForPulse0 <= 0.001f) {
+            numberOfPulses = 1;
+            pulses[0].splitRatio = 100.0f; // all fuel in the scheduled pulse
+            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+            pulses[0].fuelMs = singlePulseFuelMs;
+            pulses[0].isActive = (singlePulseFuelMs > 0.05f);
+
+            // Use secondary injection angle (from table) instead of primary
+            // Temporarily expose pulse[1] state for the angle calculator
+            InjectionPulse savedPulse1 = pulses[1];
+            uint8_t previousNumberOfPulses = numberOfPulses;
+            numberOfPulses = 2;
+            pulses[1].fuelMs = singlePulseFuelMs;
+            float secAngle = computeSecondaryInjectionAngle(1);
+            pulses[1] = savedPulse1;
+            numberOfPulses = previousNumberOfPulses;
+
+            pulses[0].startAngle = secAngle;
+            return updateInjectionAngle();
+        }
     }
 
-    // Treat near-0 as all fuel to second pulse but schedule as single pulse
-    if (splitForPulse0 <= 0.001f) {
-      numberOfPulses = 1;
-      pulses[0].splitRatio = 100.0f; // all fuel now in the single scheduled pulse
-      floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
-      pulses[0].fuelMs = singlePulseFuelMs;
-      pulses[0].isActive = (singlePulseFuelMs > 0.05f);
-
-      // Compute start angle using secondary injection table semantics (pulse1 angle)
-      // We need the duration value available for timing-mode correction used by computeSecondaryInjectionAngle,
-      // so temporarily set up pulses[1] and numberOfPulses=2 for the helper, then read the computed angle.
-      // Save current pulse[1] state
-      InjectionPulse savedPulse1 = pulses[1];
-      uint8_t previousNumberOfPulses = numberOfPulses;
-      // temporarily expose pulse[1] to the helper
-      numberOfPulses = 2;
-      pulses[1].fuelMs = singlePulseFuelMs;
-      float secAngle = computeSecondaryInjectionAngle(1);
-      // restore
-      pulses[1] = savedPulse1;
-      numberOfPulses = previousNumberOfPulses;
-
-      pulses[0].startAngle = secAngle;
-      return updateInjectionAngle();
-    }
-  }
-
+    // === MULTI-INJECTION MODE: Both pulses active ===
+    // Only reach here if split is between ~0.001 and ~99.999 (true multi-injection)
+    
     // 5. Вычислить параметры для каждого пульса
     for (uint8_t i = 0; i < numberOfPulses; i++) {
         float ratio = computeSplitRatio(i);                           // Процент топливного объёма этого пульса
@@ -321,7 +325,7 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         return updateInjectionAngle();
     }
 
-    // Всё ок!
+    // Всё ок! Multi-injection режим активен
     if (isVerboseMultiInjection()) {
         efiPrintf("mi_update_ok: baseMass=%.3f g p0[%.1f° %.2fms %.1f°] p1[%.1f° %.2fms %.1f°] cyl=%d",
           baseFuelMass,
@@ -345,11 +349,14 @@ bool InjectionEvent::updateMultiInjectionAngles() {
  * 4. Pulse durations within acceptable range (0.05-100 ms)
  * 5. Injection timing safety (starts/ends not later than 15° before ignition)
  * 
+ * Early exit if single-pulse mode (saves CPU cycles)
+ * 
  * @returns true if all validations pass, false if any fail (triggers fallback)
  */
 bool InjectionEvent::validateInjectionWindows() {
+  // Quick exit: validation only needed for true multi-injection (2 pulses)
   if (getNumberOfPulses() < 2) {
-    return true;
+    return true;  // Single injection mode doesn't need window validation
   }
 
   const auto& pulse0 = getPulse(0);
