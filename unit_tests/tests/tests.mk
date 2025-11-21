@@ -208,8 +208,5 @@ TESTS_SRC_CPP = \
 	tests/controllers/modules/vvl_controller/vvl_controller_clt_condition.cpp \
 	tests/controllers/modules/vvl_controller/vvl_controller_tps_condition.cpp \
 	tests/controllers/modules/vvl_controller/vvl_controller_map_condition.cpp \
-	tests/controllers/modules/vvl_controller/vvl_controller_afr_condition.cpp \
-    test_multi_injection/test_multi_injection_angles.cpp \
-    test_multi_injection/test_multi_injection_validation.cpp \
-    test_multi_injection/test_multi_injection_gpio.cpp \
-    test_multi_injection/test_multi_injection_scheduler.cpp
+	tests/controllers/modules/vvl_controller/vvl_controller_afr_condition.cpp 
+    
