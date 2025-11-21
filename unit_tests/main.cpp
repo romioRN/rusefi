@@ -38,6 +38,8 @@ GTEST_API_ int main(int argc, char **argv) {
 //	setVerboseTrigger(true);
 // --gtest_filter=*TEST_NAME*
 	//::testing::GTEST_FLAG(filter) = "*AllTriggersFixture*";
+
+  ::testing::GTEST_FLAG(filter) = "MultiInjection*";
 	int result = RUN_ALL_TESTS();
 	// windows ERRORLEVEL in Jenkins batch file seems to want negative value to detect failure
 	int returnCode = result == 0 ? 0 : -1;
