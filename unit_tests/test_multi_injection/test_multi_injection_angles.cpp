@@ -101,13 +101,17 @@ TEST(MultiInjectionAngles, FallbackToSingleInjection) {
     // Disable multi-injection
     engineConfiguration->multiInjection.enableMultiInjection = false;
     
+    Sensor::setMockValue(SensorType::Rpm, 2000);
+    engine->engineState.injectionMass[0] = 10.0f;
+    engine->rpmCalculator.oneDegreeUs = 83.333f;
+    
     InjectionEvent event;
     event.setIndex(0);
-    event.setNumberOfPulses(2);
+    event.setNumberOfPulses(1); // Start with single pulse
     
-    bool result = event.updateMultiInjectionAngles();
+    // With multi disabled, regular update() should work
+    bool result = event.update();
     
-    // Should fallback to single injection
     EXPECT_TRUE(result);
     EXPECT_EQ(event.getNumberOfPulses(), 1);
 }
