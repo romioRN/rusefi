@@ -245,9 +245,24 @@ static void handleFuel(efitick_t nowNt, float currentPhase, float nextPhase) {
 	// For multi-injection: when engine updates injection mass (due to VE/load changes),
 	// rebuild fuel schedule so that multi-injection angles (from tables) and durations 
 	// (from injector model) are recalculated with fresh values.
-	if (getEngineState()->shouldUpdateInjectionTiming && engineConfiguration->multiInjection.enableMultiInjection) {
-		fs->addFuelEvents();
-	}
+	//if (getEngineState()->shouldUpdateInjectionTiming && engineConfiguration->multiInjection.enableMultiInjection) {
+	//	fs->addFuelEvents();
+	//}
+
+
+static int lastRevolution = -1;
+  int currentRevolution = getRevolutionCounter();
+  
+  if (getEngineState()->shouldUpdateInjectionTiming && 
+      engineConfiguration->multiInjection.enableMultiInjection &&
+      currentRevolution != lastRevolution &&  // ← Новый оборот!
+      currentPhase < 10.0f) {  // ← Начало оборота (0-10°)
+    
+    fs->addFuelEvents();
+    lastRevolution = currentRevolution;
+  }
+
+
 
 #if FUEL_MATH_EXTREME_LOGGING
 	if (printFuelDebug) {
