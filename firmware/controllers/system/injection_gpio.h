@@ -32,6 +32,10 @@ int16_t getOverlappingCounter() const { return overlappingCounter; }
 
 int8_t injectorIndex;
 
+int16_t getOverlappingCounter() const {
+        return overlappingCounter;
+    }
+
 private:
 // Use a wider integer for atomic operations to avoid ABI/atomic-size issues
 int16_t overlappingCounter;
