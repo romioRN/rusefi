@@ -8,27 +8,28 @@
 #include "fuel_schedule.h"
 #include "engine_test_helper.h"
 
-TEST(MultiInjectionScheduler, SchedulePulseValidation) {
+TEST(MultiInjectionScheduler, BasicSchedulingTest) {
     EngineTestHelper eth(engine_type_e::TEST_ENGINE);
     
     engineConfiguration->multiInjection.enableMultiInjection = true;
     Sensor::setMockValue(SensorType::Rpm, 2000);
     
+    engine->engineState.injectionMass[0] = 10.0f;
     engine->rpmCalculator.oneDegreeUs = 83.333f;
     
     InjectionEvent event;
     event.setIndex(0);
     event.setNumberOfPulses(2);
     
-    // Setup valid pulse
-    event.getPulse(0).startAngle = 300.0f;
-    event.getPulse(0).fuelMs = 3.0f;
-    event.getPulse(0).isActive = true;
+    // Let updateMultiInjectionAngles fill the pulses
+    bool result = event.updateMultiInjectionAngles();
     
+    EXPECT_TRUE(result);
+    
+    // Now try to schedule a pulse - should not crash
     efitick_t nowNt = getTimeNowNt();
-    float currentPhase = 280.0f;
+    float currentPhase = 0.0f;
     
-    // Should successfully schedule
     EXPECT_NO_THROW(event.schedulePulse(0, nowNt, currentPhase));
 }
 
@@ -39,12 +40,11 @@ TEST(MultiInjectionScheduler, InactivePulseNotScheduled) {
     event.setIndex(0);
     event.setNumberOfPulses(2);
     
-    // Inactive pulse
-    event.getPulse(0).isActive = false;
+    // Don't set up pulses - they will be inactive by default
     
     efitick_t nowNt = getTimeNowNt();
     
-    // Should not crash, just return early
+    // Should not crash when trying to schedule inactive pulse
     EXPECT_NO_THROW(event.schedulePulse(0, nowNt, 0.0f));
 }
 
@@ -54,6 +54,12 @@ TEST(MultiInjectionScheduler, OnTriggerToothMultiMode) {
     engineConfiguration->multiInjection.enableMultiInjection = true;
     engineConfiguration->cylindersCount = 4;
     Sensor::setMockValue(SensorType::Rpm, 2000);
+    
+    // Setup injection mass for all cylinders
+    for (int i = 0; i < 4; i++) {
+        engine->engineState.injectionMass[i] = 10.0f;
+    }
+    engine->rpmCalculator.oneDegreeUs = 83.333f;
     
     FuelSchedule schedule;
     schedule.addFuelEvents();
@@ -66,4 +72,46 @@ TEST(MultiInjectionScheduler, OnTriggerToothMultiMode) {
     
     // Should not crash
     EXPECT_NO_THROW(schedule.onTriggerTooth(nowNt, currentPhase, nextPhase));
+}
+
+TEST(MultiInjectionScheduler, MultiModeSwitching) {
+    EngineTestHelper eth(engine_type_e::TEST_ENGINE);
+    
+    Sensor::setMockValue(SensorType::Rpm, 2000);
+    engine->engineState.injectionMass[0] = 10.0f;
+    engine->rpmCalculator.oneDegreeUs = 83.333f;
+    
+    InjectionEvent event;
+    event.setIndex(0);
+    
+    // Test single mode
+    engineConfiguration->multiInjection.enableMultiInjection = false;
+    event.setNumberOfPulses(1);
+    bool singleResult = event.update();
+    EXPECT_TRUE(singleResult);
+    
+    // Test multi mode
+    engineConfiguration->multiInjection.enableMultiInjection = true;
+    event.setNumberOfPulses(2);
+    bool multiResult = event.update();
+    EXPECT_TRUE(multiResult);
+}
+
+TEST(MultiInjectionScheduler, ZeroRPMHandling) {
+    EngineTestHelper eth(engine_type_e::TEST_ENGINE);
+    
+    engineConfiguration->multiInjection.enableMultiInjection = true;
+    Sensor::setMockValue(SensorType::Rpm, 0); // Zero RPM
+    
+    engine->engineState.injectionMass[0] = 10.0f;
+    
+    InjectionEvent event;
+    event.setIndex(0);
+    event.setNumberOfPulses(2);
+    
+    // Should handle gracefully
+    bool result = event.updateMultiInjectionAngles();
+    
+    // Should return false or fallback to single injection
+    EXPECT_FALSE(result);
 }
