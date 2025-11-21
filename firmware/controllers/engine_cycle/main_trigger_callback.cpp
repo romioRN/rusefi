@@ -252,7 +252,7 @@ static void handleFuel(efitick_t nowNt, float currentPhase, float nextPhase) {
 
 static int lastRevolution = -1;
   int currentRevolution = getRevolutionCounter();
-  
+ /*
   if (getEngineState()->shouldUpdateInjectionTiming && 
       engineConfiguration->multiInjection.enableMultiInjection &&
       currentRevolution != lastRevolution &&  // ← Новый оборот!
@@ -261,8 +261,25 @@ static int lastRevolution = -1;
     fs->addFuelEvents();
     lastRevolution = currentRevolution;
   }
+*/
 
-
+if (getEngineState()->shouldUpdateInjectionTiming && 
+      engineConfiguration->multiInjection.enableMultiInjection) {
+    
+    // Check if any cylinder's fuel mass changed significantly
+    bool needsUpdate = false;
+    for (size_t i = 0; i < engineConfiguration->cylindersCount; i++) {
+      float currentMass = engine->engineState.injectionMass[i];
+      if (std::fabs(currentMass - lastInjectionMass[i]) > MASS_CHANGE_THRESHOLD) {
+        needsUpdate = true;
+        lastInjectionMass[i] = currentMass;
+      }
+    }
+    
+    if (needsUpdate) {
+      fs->addFuelEvents();
+    }
+  }
 
 #if FUEL_MATH_EXTREME_LOGGING
 	if (printFuelDebug) {

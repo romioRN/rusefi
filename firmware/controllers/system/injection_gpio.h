@@ -42,6 +42,8 @@ scheduling_s m_multiInjectCloseScheduling;
 // Scheduled end time for the multi-injection (in nanoseconds for scheduler precision)
 efitick_t m_multiInjectEndNt;
 
+efitick_t m_lastOpenTime = 0;
+
 // Close callback for scheduled close event
 static void multiInjectCloseCallback(InjectorOutputPin* pin);
 };

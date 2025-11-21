@@ -90,6 +90,23 @@ void InjectorOutputPin::open(efitick_t nowNt, floatus_t durationUs) {
     return;
   }
 
+if (overlappingCounter > 0) {
+        efitick_t timeSinceLastOpen = nowNt - m_lastOpenTime;
+        if (timeSinceLastOpen > MS2NT(15)) {  // > 15мс - точно что-то не так
+            warning(ObdCode::CUSTOM_ERR_INJECTOR, 
+                "Injector %d hung open for %.2f ms, forcing close", 
+                injectorIndex, 
+                NT2US(timeSinceLastOpen) / 1000.0f);
+            
+            // Аварийное закрытие
+            setLow();
+            overlappingCounter = 0;
+            m_multiInjectEndNt = 0;
+        }
+    }
+    
+    m_lastOpenTime = nowNt;
+
   // Calculate scheduled close time in nanoseconds (nanosecond precision)
   efitick_t durationNt = US2NT((int32_t)durationUs);
   efitick_t desiredCloseNt = nowNt + durationNt;
