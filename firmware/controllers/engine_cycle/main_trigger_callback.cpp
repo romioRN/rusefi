@@ -252,7 +252,7 @@ static void handleFuel(efitick_t nowNt, float currentPhase, float nextPhase) {
 
 static int lastRevolution = -1;
   int currentRevolution = getRevolutionCounter();
- /*
+ 
   if (getEngineState()->shouldUpdateInjectionTiming && 
       engineConfiguration->multiInjection.enableMultiInjection &&
       currentRevolution != lastRevolution &&  // ← Новый оборот!
@@ -261,8 +261,8 @@ static int lastRevolution = -1;
     fs->addFuelEvents();
     lastRevolution = currentRevolution;
   }
-*/
 
+/*
 if (getEngineState()->shouldUpdateInjectionTiming && 
       engineConfiguration->multiInjection.enableMultiInjection) {
     
@@ -280,7 +280,7 @@ if (getEngineState()->shouldUpdateInjectionTiming &&
       fs->addFuelEvents();
     }
   }
-
+*/
 #if FUEL_MATH_EXTREME_LOGGING
 	if (printFuelDebug) {
 		efiPrintf("handleFuel [%.1f, %.1f) %d", currentPhase, nextPhase, getRevolutionCounter());
