@@ -1918,6 +1918,7 @@ end_struct
 	
 	multi_injection_s multiInjection;
 	
+	
 	uint8_t[16 x 16] multiInjectionSplitRatioTable;Split ratio table by RPM and Load;"%", 1, 0, 0, 100, 0
     int16_t[16 x 16] secondInjectionAngleTable;Second injection angle table by RPM and Load;"deg", 1, 0, 0, 720, 0
     uint8_t[16 x 16] minDwellAngleTable;Minimum dwell between injections table;"deg", 1, 0, 5, 50, 0
@@ -1926,7 +1927,27 @@ end_struct
     uint16_t[16] multiInjectionLoadBins;Load bins for multi-injection tables;"%", 1, 0, 0, 300, 0
 
 
-! historically 'unusedOftenChangesDuringFirmwareUpdate' was here - now that's just an anchor reminding where to insert new fields
+; *** EGT RPM Limiting Configuration ***
+
+struct egtLimit_s
+	bool enabled;Enable EGT-based RPM limiting;, 1, 0, 0, 1, 0
+	int16_t maxEgtTemp;Maximum allowed EGT temperature;"C", 1, 0, 0, 1000, 0
+	uint16_t egtLimitRpm;RPM where EGT limit starts to be applied;"rpm", 1, 0, 0, 20000, 0
+	uint16_t egtLimitRange;RPM control range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
+	float egtLimitDelay;Time delay before limit activates (hysteresis);"sec", 1, 0, 0, 5, 1
+	int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 1, 0, 0, 30, 0
+end_struct
+
+struct egtLimitState_s
+	int16_t currentEgt;Current EGT temperature reading;"C", 1, 0, 0, 1000, 0
+	bool isActive;Is EGT limit currently active?;, 1, 0, 0, 1, 0
+	uint8_t limitPercent;Current limiting percentage;"percent", 1, 0, 0, 100, 0
+	float timeOverLimit;Time spent over limit;"sec", 1, 0, 0, 10000, 1
+end_struct
+ 
+egtLimit_s egtLimit; EGT-based RPM limiting configuration
+
+egtLimitState_s egtLimitState;EGT limiter current state! historically 'unusedOftenChangesDuringFirmwareUpdate' was here - now that's just an anchor reminding where to insert new fields
 
 ! end of engine_configuration_s
 end_struct
