@@ -1927,7 +1927,7 @@ end_struct
     uint16_t[16] multiInjectionLoadBins;Load bins for multi-injection tables;"%", 1, 0, 0, 300, 0
 
 
-; *** EGT RPM Limiting Configuration ***
+! *** EGT RPM Limiting Configuration ***
 
 struct egtLimit_s
 	bool enabled;Enable EGT-based RPM limiting;, 1, 0, 0, 1, 0
