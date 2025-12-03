@@ -39,6 +39,7 @@ CONTROLLERS_SRC_CPP = \
 	$(CONTROLLERS_DIR)/engine_cycle/aux_valves.cpp \
 	$(CONTROLLERS_DIR)/engine_cycle/fuel_schedule.cpp \
 	$(CONTROLLERS_DIR)/engine_cycle/multi_injection.cpp \
+    $(CONTROLLERS_DIR)/egtLimiter.cpp \
 	$(CONTROLLERS_DIR)/flash_main.cpp \
 	$(CONTROLLERS_DIR)/storage.cpp \
 	$(CONTROLLERS_DIR)/storage_flash.cpp \

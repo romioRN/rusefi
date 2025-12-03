@@ -115,7 +115,7 @@ static void prepareCylinderIgnitionSchedule(angle_t dwellAngleDuration, floatms_
     uint8_t limitPercent = egtLimiter.getLimitingPercent();
     float retardAmount = (limitPercent / 100.0f) * 
                         engineConfiguration->egtLimit.maxIgnitionRetard;
-    finalIgnitionTiming -= retardAmount;  // Retard timing (move negative = later)
+    finalIgnitionTiming -= retardAmount;
   }
 
 	// Clamp the final ignition timing to the configured limits

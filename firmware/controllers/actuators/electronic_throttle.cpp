@@ -38,6 +38,7 @@
 #include "pch.h"
 
 #include "electronic_throttle_impl.h"
+#include "egtLimiter.h"
 
 #if EFI_ELECTRONIC_THROTTLE_BODY
 
@@ -377,6 +378,11 @@ expected<percent_t> EtbController::getSetpointEtb() {
 
 	targetPosition = clampF(minPosition, targetPosition, maxPosition);
 	m_adjustedTarget = targetPosition;
+
+  uint8_t egtLimiterPosition = egtLimiter.getDesiredThrottlePosition();
+  if (egtLimiterPosition < targetPosition) {
+    targetPosition = egtLimiterPosition;  // Используем более закрытый дроссель
+  }
 
 	return targetPosition;
 }

@@ -1,28 +1,27 @@
 #pragma once
 
-#include "rusefi_types.h"
 #include "periodic_controller.h"
+#include "engine.h"
 
-/**
- * @brief EGT-based RPM Limiter
- * 
- * Controls RPM by monitoring Exhaust Gas Temperature
- * Similar to knock control and temperature-based limiting
- */
 class EgtLimiter : public PeriodicController {
+private:
+    uint64_t limitActivationTime = 0;
+    
+    // Throttle control variables
+    uint8_t etbDesiredPosition = 100;  // 0-100%
+    
 public:
     EgtLimiter();
     
     void onPeriodicCallback() override;
+    void updateEgtReading();
+    void updateThrottleControl();      // ← НОВАЯ ФУНКЦИЯ
     
     bool isLimitActive() const;
     uint8_t getLimitingPercent() const;
     int16_t getCurrentEgt() const;
-
-private:
-    efitick_t limitActivationTime = 0;
+    uint8_t getDesiredThrottlePosition() const;  // ← НОВАЯ ФУНКЦИЯ
     
-    void updateEgtReading();
     uint8_t calculateLimitingCurve(uint16_t rpm) const;
 };
 

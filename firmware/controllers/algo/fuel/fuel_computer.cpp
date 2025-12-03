@@ -7,22 +7,37 @@
 #include "table_helper.h"
 #include "fuel_math.h"
 #include "fuel_computer.h"
+#include "egtLimiter.h" 
+
 
 #if EFI_ENGINE_CONTROL
 
 mass_t FuelComputerBase::getCycleFuel(mass_t airmass, float rpm, float load) {
-	load = getTargetLambdaLoadAxis(load);
+  load = getTargetLambdaLoadAxis(load);
 
-	float stoich = getStoichiometricRatio();
-	float lambda = getTargetLambda(rpm, load);
-	float afr = stoich * lambda;
+  float stoich = getStoichiometricRatio();
+  float lambda = getTargetLambda(rpm, load);  // ← Lambda из таблицы!
+  float afr = stoich * lambda;
 
-	afrTableYAxis = load;
-	targetLambda = lambda;
-	targetAFR = afr;
-	stoichiometricRatio = stoich;
+  afrTableYAxis = load;
+  targetLambda = lambda;
+  targetAFR = afr;
+  stoichiometricRatio = stoich;
 
-	return airmass / afr;
+  // Apply EGT limiting - MODIFY LAMBDA (не топливо!)
+  float targetLambda_adjusted = lambda;
+  if (egtLimiter.isLimitActive()) {
+    uint8_t limitPercent = egtLimiter.getLimitingPercent();
+    float lambdaReduction = (limitPercent / 100.0f) * 0.15f;
+    targetLambda_adjusted = lambda - lambdaReduction;  // ← Вычитаем!
+    
+    if (targetLambda_adjusted < 0.7f) {
+      targetLambda_adjusted = 0.7f;
+    }
+  }
+  
+  float adjustedAfr = stoich * targetLambda_adjusted;
+  return airmass / adjustedAfr;
 }
 
 float FuelComputer::getStoichiometricRatio() const {

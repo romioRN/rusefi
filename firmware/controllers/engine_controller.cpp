@@ -437,6 +437,11 @@ void commonInitEngineController() {
 	initNewSensors();
 #endif /* EFI_UNIT_TEST */
 
+#if EFI_ENGINE_CONTROL
+  initEgtLimiter();                           // Initialize controller
+  addPeriodicController(&egtLimiter);         // Register periodic task
+#endif /* EFI_ENGINE_CONTROL */
+
 	initSensors();
 
 	initAccelEnrichment();

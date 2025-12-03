@@ -1930,19 +1930,34 @@ end_struct
 ! *** EGT RPM Limiting Configuration ***
 
 struct egtLimit_s
-	bool enabled;Enable EGT-based RPM limiting;, 1, 0, 0, 1, 0
-	int16_t maxEgtTemp;Maximum allowed EGT temperature;"C", 1, 0, 0, 1000, 0
-	uint16_t egtLimitRpm;RPM where EGT limit starts to be applied;"rpm", 1, 0, 0, 20000, 0
-	uint16_t egtLimitRange;RPM control range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
-	float egtLimitDelay;Time delay before limit activates (hysteresis);"sec", 1, 0, 0, 5, 1
-	int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 1, 0, 0, 30, 0
+	bool enabled;Enable EGT-based limiting system;, 1, 0, 0, 1, 0
+	int16_t maxEgtTemp;Maximum allowed EGT temperature;"C", 1, 0, 600, 1000, 0
+	uint16_t egtLimitRpm;RPM threshold where EGT limit starts;"rpm", 1, 0, 3000, 20000, 0
+	uint16_t egtLimitRange;RPM range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
+	float egtLimitDelay;Hysteresis delay before activating limit;"sec", 1, 0, 0, 5, 1
+	
+	; === ЗАЖИГАНИЕ ===
+	int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 1, 0, 3, 30, 0
+	
+	; === ДРОССЕЛЬ ===
+	uint8_t throttleCutLevel2;Throttle position when EGT limited (Medium)"%", 1, 0, 10, 100, 0
+	uint8_t throttleCutLevel3;Throttle position when EGT critical (Emergency)"%", 1, 0, 1, 50, 0
+	
+	; === ТОПЛИВО ===
+	float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);, 1, 0.01, 0.05, 0.2, 2
+	bool fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;, 1, 0, 0, 1, 0
 end_struct
 
 struct egtLimitState_s
 	int16_t currentEgt;Current EGT temperature reading;"C", 1, 0, 0, 1000, 0
-	bool isActive;Is EGT limit currently active?;, 1, 0, 0, 1, 0
+	bool isActive;Is EGT limit currently active;, 1, 0, 0, 1, 0
 	uint8_t limitPercent;Current limiting percentage;"percent", 1, 0, 0, 100, 0
 	float timeOverLimit;Time spent over limit;"sec", 1, 0, 0, 10000, 1
+	
+	; === ДЛЯ МОНИТОРИНГА ===
+	int8_t appliedIgnitionRetard;Currently applied ignition retard;"deg", 1, 0, -30, 0, 0
+	uint8_t appliedThrottlePosition;Currently applied throttle limit;"%", 1, 0, 0, 100, 0
+	float appliedLambdaReduction;Currently applied lambda reduction;, 1, 0, 0, 0.3, 2
 end_struct
  
 egtLimit_s egtLimit; EGT-based RPM limiting configuration
