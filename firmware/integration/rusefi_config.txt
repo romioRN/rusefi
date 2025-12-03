@@ -1936,14 +1936,14 @@ struct egtLimit_s
     uint16_t egtLimitRange;RPM range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
     float egtLimitDelay;Hysteresis delay before activating limit;"sec", 1, 0, 0, 5, 1
 
-    ; === ЗАЖИГАНИЕ ===
+    
     int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 1, 0, 3, 30, 0
 
-    ; === ДРОССЕЛЬ ===
+    
     uint8_t throttleCutLevel2;Throttle position when EGT limited (Medium)"%", 1, 0, 10, 100, 0
     uint8_t throttleCutLevel3;Throttle position when EGT critical (Emergency)"%", 1, 0, 1, 50, 0
 
-    ; === ТОПЛИВО ===
+    
     float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);, 1, 0.01, 0.05, 0.2, 2
     uint8_t fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;, 1, 0, 0, 1, 0
 end_struct
@@ -1954,7 +1954,7 @@ struct egtLimitState_s
     uint8_t limitPercent;Current limiting percentage;"percent", 1, 0, 0, 100, 0
     float timeOverLimit;Time spent over limit;"sec", 1, 0, 0, 10000, 1
 
-    ; === ДЛЯ МОНИТОРИНГА ===
+   
     int8_t appliedIgnitionRetard;Currently applied ignition retard;"deg", 1, 0, -30, 0, 0
     uint8_t appliedThrottlePosition;Currently applied throttle limit;"%", 1, 0, 0, 100, 0
     float appliedLambdaReduction;Currently applied lambda reduction;, 1, 0, 0, 0.3, 2
