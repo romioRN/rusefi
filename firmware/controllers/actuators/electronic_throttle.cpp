@@ -379,7 +379,7 @@ expected<percent_t> EtbController::getSetpointEtb() {
 	targetPosition = clampF(minPosition, targetPosition, maxPosition);
 	m_adjustedTarget = targetPosition;
 
-  uint8_t egtLimiterPosition = egtLimiter.getDesiredThrottlePosition();
+  uint8_t egtLimiterPosition = egtLimiter.getAppliedThrottlePosition();
   if (egtLimiterPosition < targetPosition) {
     targetPosition = egtLimiterPosition;  // Используем более закрытый дроссель
   }
