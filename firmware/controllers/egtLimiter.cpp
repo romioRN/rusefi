@@ -18,16 +18,6 @@ void EgtLimiter::init() {
     m_appliedIgnitionRetard = 0;
     m_appliedThrottlePosition = 100;
     m_appliedLambdaReduction = 0;
-
-    auto &st = engine->engineState.egtLimitState;
-    st.currentEgt = 0;
-    st.isActive = false;
-    st.limitPercent = 0;
-    st.timeOverLimit = 0;
-    st.appliedIgnitionRetard = 0;
-    st.appliedThrottlePosition = 100;
-    st.appliedLambdaReduction = 0;
-    st.criticalEgtReached = false;
 }
 
 void EgtLimiter::update(float dtSeconds) {
@@ -38,41 +28,20 @@ void EgtLimiter::update(float dtSeconds) {
         m_appliedIgnitionRetard = 0;
         m_appliedThrottlePosition = 100;
         m_appliedLambdaReduction = 0;
-
-        auto &st = engine->engineState.egtLimitState;
-        st.isActive = false;
-        st.limitPercent = 0;
-        st.timeOverLimit = 0;
-        st.appliedIgnitionRetard = 0;
-        st.appliedThrottlePosition = 100;
-        st.appliedLambdaReduction = 0;
-        st.criticalEgtReached = false;
-
         return;
     }
 
     computeLimits(dtSeconds);
-
-    // синхронизируем m_* в engineState (для OutputChannels)
-    auto &st = engine->engineState.egtLimitState;
-    st.currentEgt = static_cast<int16_t>(m_currentEgt);
-    st.isActive = m_isActive;
-    st.limitPercent = m_limitPercent;
-    st.timeOverLimit = m_timeOverLimit;
-    st.appliedIgnitionRetard = static_cast<int8_t>(m_appliedIgnitionRetard);
-    st.appliedThrottlePosition = m_appliedThrottlePosition;
-    st.appliedLambdaReduction = m_appliedLambdaReduction;
 }
 
 void EgtLimiter::computeLimits(float dtSeconds) {
-    // 1. Обновление EGT
     // TODO: реальное чтение датчика, пока заглушка
     m_currentEgt = 0.0f;
 
     int16_t maxEgt = engineConfiguration->egtLimit.maxEgtTemp;
     bool egtExceeded = m_currentEgt > maxEgt;
 
-    static efitime_t activationTime = 0;
+    static efitick_t activationTime = 0;   // было efitime_t
 
     if (egtExceeded && !m_isActive) {
         activationTime = getTimeNowNt();
@@ -90,7 +59,7 @@ void EgtLimiter::computeLimits(float dtSeconds) {
     m_isActive = shouldActivate;
 
     if (shouldActivate) {
-        uint16_t rpm = getRpm();
+        uint16_t rpm = engine->rpmCalculator.getRpm();   // вместо getRpm()
         uint16_t limitRpm = engineConfiguration->egtLimit.egtLimitRpm;
         uint16_t limitRange = engineConfiguration->egtLimit.egtLimitRange;
 
@@ -117,18 +86,11 @@ void EgtLimiter::computeLimits(float dtSeconds) {
     // дроссель
     if (m_currentEgt <= maxEgt) {
         m_appliedThrottlePosition = 100;
-        engine->engineState.egtLimitState.criticalEgtReached = false;
     } else if (m_currentEgt <= (maxEgt + 50)) {
         m_appliedThrottlePosition = engineConfiguration->egtLimit.throttleCutLevel2;
-        engine->engineState.egtLimitState.criticalEgtReached = false;
     } else if (m_currentEgt > (maxEgt + 100)) {
         m_appliedThrottlePosition = engineConfiguration->egtLimit.throttleCutLevel3;
-
-        if (engineConfiguration->egtLimit.fuelCutAtCriticalEgt) {
-            engine->engineState.egtLimitState.criticalEgtReached = true;
-        } else {
-            engine->engineState.egtLimitState.criticalEgtReached = false;
-        }
+        // флаг fuelCutAtCriticalEgt ты можешь использовать там, где режешь топливо
     }
 
     // зажигание
