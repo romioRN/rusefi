@@ -1936,14 +1936,18 @@ struct egtLimit_s
     uint16_t egtLimitRange;RPM range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
     float egtLimitDelay;Hysteresis delay before activating limit;"sec", 1, 0, 0, 5, 1
 
+    ; ignition
     int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 1, 0, 3, 30, 0
 
+    ; throttle
     uint8_t throttleCutLevel2;Throttle position when EGT limited (Medium)"%", 1, 0, 10, 100, 0
     uint8_t throttleCutLevel3;Throttle position when EGT critical (Emergency)"%", 1, 0, 1, 50, 0
 
+    ; fuel
     float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);
-    uint8_t fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;, 1, 0, 0, 1, 0
+    uint8_t fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;
 end_struct
+
 
 struct egtLimitState_s
     int16_t currentEgt;Current EGT temperature reading;"C", 1, 0, 0, 1000, 0
