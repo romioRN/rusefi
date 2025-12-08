@@ -1948,15 +1948,16 @@ end_struct
 
 struct egtLimitState_s
     int16_t currentEgt;Current EGT temperature reading;"C", 1, 0, 0, 1000, 0
-    uint8_t isActive;Is EGT limit currently active;, 1, 0, 0, 1, 0
+
+    uint8_t isActive;Is EGT limit currently active;
     uint8_t limitPercent;Current limiting percentage;"percent", 1, 0, 0, 100, 0
     float timeOverLimit;Time spent over limit;"sec", 1, 0, 0, 10000, 1
 
-   
     int8_t appliedIgnitionRetard;Currently applied ignition retard;"deg", 1, 0, -30, 0, 0
     uint8_t appliedThrottlePosition;Currently applied throttle limit;"%", 1, 0, 0, 100, 0
     float appliedLambdaReduction;Currently applied lambda reduction;, 1, 0, 0, 0.3, 2
 end_struct
+
  
 egtLimit_s egtLimit; EGT-based RPM limiting configuration
 
