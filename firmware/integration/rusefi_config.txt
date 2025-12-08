@@ -1941,7 +1941,7 @@ struct egtLimit_s
     uint8_t throttleCutLevel2;Throttle position when EGT limited (Medium)"%", 1, 0, 10, 100, 0
     uint8_t throttleCutLevel3;Throttle position when EGT critical (Emergency)"%", 1, 0, 1, 50, 0
 
-    float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);, 1, 0, 0.05, 0.2, 2
+    float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);
     uint8_t fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;, 1, 0, 0, 1, 0
 end_struct
 
