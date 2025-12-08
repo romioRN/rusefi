@@ -3,158 +3,180 @@
 #include "sensor_reader.h"
 #include "rusefi_hw_enums.h"
 
-
+// Глобальный экземпляр, как у других контроллеров
 EgtLimiter egtLimiter;
 
-
-EgtLimiter::EgtLimiter() : PeriodicController("EGT Limiter") {
-    // 10ms period
-}
-
-
 void initEgtLimiter() {
-    // Initialize EGT limiter settings from configuration
-    egtLimiter.configure();
+    egtLimiter.init();
 }
 
+EgtLimiter::EgtLimiter() {
+}
 
-void EgtLimiter::onPeriodicCallback() {
-    // Skip if disabled
+void EgtLimiter::init() {
+    limitActivationTime = 0;
+    etbDesiredPosition = 100;
+
+    engine->engineState.egtLimitState.currentEgt = 0;
+    engine->engineState.egtLimitState.isActive = false;
+    engine->engineState.egtLimitState.limitPercent = 0;
+    engine->engineState.egtLimitState.timeOverLimit = 0;
+    engine->engineState.egtLimitState.appliedIgnitionRetard = 0;
+    engine->engineState.egtLimitState.appliedThrottlePosition = 100;
+    engine->engineState.egtLimitState.appliedLambdaReduction = 0;
+    engine->engineState.egtLimitState.criticalEgtReached = false;
+}
+
+void EgtLimiter::update(float dtSeconds) {
+    // Выключено – всё сбрасываем
     if (!engineConfiguration->egtLimit.enabled) {
         engine->engineState.egtLimitState.isActive = false;
         engine->engineState.egtLimitState.limitPercent = 0;
-        etbDesiredPosition = 100;  // Keep throttle fully open
+        engine->engineState.egtLimitState.timeOverLimit = 0;
+        engine->engineState.egtLimitState.appliedIgnitionRetard = 0;
+        engine->engineState.egtLimitState.appliedThrottlePosition = 100;
+        engine->engineState.egtLimitState.appliedLambdaReduction = 0;
+        engine->engineState.egtLimitState.criticalEgtReached = false;
+        etbDesiredPosition = 100;
         return;
     }
-    
-    // Update EGT reading
+
     updateEgtReading();
-    
+
     int16_t currentEgt = engine->engineState.egtLimitState.currentEgt;
     int16_t maxEgt = engineConfiguration->egtLimit.maxEgtTemp;
     bool egtExceeded = currentEgt > maxEgt;
-    
-    // Handle activation delay
+
+    // задержка активации
     if (egtExceeded && !engine->engineState.egtLimitState.isActive) {
         limitActivationTime = getTimeNowNt();
     }
-    
-    // Check if delay time passed
+
     float timeSinceActivation = 0;
     if (limitActivationTime > 0) {
         timeSinceActivation = (getTimeNowNt() - limitActivationTime) / 1e6f;
     }
-    
-    // Activate if EGT still exceeded AND delay passed
-    bool shouldActivate = egtExceeded && 
-                         (timeSinceActivation >= engineConfiguration->egtLimit.egtLimitDelay);
-    
+
+    bool shouldActivate =
+        egtExceeded &&
+        (timeSinceActivation >= engineConfiguration->egtLimit.egtLimitDelay);
+
     engine->engineState.egtLimitState.isActive = shouldActivate;
-    
+
     if (shouldActivate) {
-        engine->engineState.egtLimitState.limitPercent = 
-            calculateLimitingCurve(getRpm());
-        engine->engineState.egtLimitState.timeOverLimit += 0.01f;
+        uint8_t limitPercent = calculateLimitingCurve(getRpm());
+        engine->engineState.egtLimitState.limitPercent = limitPercent;
+        engine->engineState.egtLimitState.timeOverLimit += dtSeconds;
     } else {
         engine->engineState.egtLimitState.limitPercent = 0;
     }
-    
-    // Clear if EGT drops below threshold (hysteresis 50°C)
+
+    // гистерезис 50°C
     if (currentEgt < (maxEgt - 50)) {
         limitActivationTime = 0;
         engine->engineState.egtLimitState.isActive = false;
+        engine->engineState.egtLimitState.limitPercent = 0;
     }
-    
-    // ← ДОБАВЛЯЕМ УПРАВЛЕНИЕ ДРОССЕЛЕМ
-    updateThrottleControl();
-}
 
+    // обновляем дроссель и остальные эффекты
+    updateThrottleControl();
+    updateIgnitionRetard();
+    updateLambdaReduction();
+}
 
 void EgtLimiter::updateEgtReading() {
-    // TODO: Implement based on your sensor type
-    // Placeholder implementation
+    // TODO: сюда повесить реальное чтение EGT
+    // пока заглушка
     engine->engineState.egtLimitState.currentEgt = 0;
-    
-    // Examples for different sensor types:
-    // 1. MAX31855 thermocouple via SPI:
-    //    engine->engineState.egtLimitState.currentEgt = readEgtFromSpi(0);
-    
-    // 2. AEM X-Series via CAN:
-    //    engine->engineState.egtLimitState.currentEgt = readEgtFromCan();
-    
-    // 3. Analog input via ADC:
-    //    engine->engineState.egtLimitState.currentEgt = convertAdcToEgt(getAdcValue(EGT_CHANNEL));
 }
 
-
-// ← НОВАЯ ФУНКЦИЯ: УПРАВЛЕНИЕ ДРОССЕЛЕМ
 void EgtLimiter::updateThrottleControl() {
     int16_t currentEgt = engine->engineState.egtLimitState.currentEgt;
     int16_t maxEgt = engineConfiguration->egtLimit.maxEgtTemp;
-    
-    // ЗОНА 1: Нормально (EGT < maxEgtTemp)
+
+    // зона 1 – норма
     if (currentEgt <= maxEgt) {
-        etbDesiredPosition = 100;  // ✅ Дроссель ПОЛНОСТЬЮ открыт
+        etbDesiredPosition = 100;
+        engine->engineState.egtLimitState.appliedThrottlePosition = 100;
+        engine->engineState.egtLimitState.criticalEgtReached = false;
         return;
     }
-    
-    // ЗОНА 2: Среднее ограничение (maxEgtTemp < EGT < maxEgtTemp+50°C)
+
+    // зона 2 – среднее ограничение
     if (currentEgt <= (maxEgt + 50)) {
-        // 🟡 СРЕДНЕЕ ОГРАНИЧЕНИЕ
-        // Закрываем дроссель до параметра из конфигурации
         etbDesiredPosition = engineConfiguration->egtLimit.throttleCutLevel2;
+        engine->engineState.egtLimitState.appliedThrottlePosition = etbDesiredPosition;
+        engine->engineState.egtLimitState.criticalEgtReached = false;
         return;
     }
-    
-    // ЗОНА 3: Экстренное отключение (EGT > maxEgtTemp+100°C)
+
+    // зона 3 – критика
     if (currentEgt > (maxEgt + 100)) {
-        // 🔴 ЭКСТРЕННОЕ ОГРАНИЧЕНИЕ
-        // Закрываем дроссель до минимума
         etbDesiredPosition = engineConfiguration->egtLimit.throttleCutLevel3;
-        
-        // Дополнительно: режем топливо
+        engine->engineState.egtLimitState.appliedThrottlePosition = etbDesiredPosition;
+
         if (engineConfiguration->egtLimit.fuelCutAtCriticalEgt) {
-            // Сигнал для fuel_computer.cpp
             engine->engineState.egtLimitState.criticalEgtReached = true;
+        } else {
+            engine->engineState.egtLimitState.criticalEgtReached = false;
         }
+
         return;
     }
 }
 
+void EgtLimiter::updateIgnitionRetard() {
+    uint8_t limitPercent = engine->engineState.egtLimitState.limitPercent;
+    if (limitPercent == 0) {
+        engine->engineState.egtLimitState.appliedIgnitionRetard = 0;
+        return;
+    }
+
+    float maxRetard = static_cast<float>(engineConfiguration->egtLimit.maxIgnitionRetard);
+    float applied = (limitPercent / 100.0f) * maxRetard;
+    engine->engineState.egtLimitState.appliedIgnitionRetard = static_cast<int8_t>(-applied);
+}
+
+void EgtLimiter::updateLambdaReduction() {
+    uint8_t limitPercent = engine->engineState.egtLimitState.limitPercent;
+    if (limitPercent == 0) {
+        engine->engineState.egtLimitState.appliedLambdaReduction = 0;
+        return;
+    }
+
+    float maxRed = engineConfiguration->egtLimit.lambdaReductionMax;
+    float applied = (limitPercent / 100.0f) * maxRed;
+    engine->engineState.egtLimitState.appliedLambdaReduction = applied;
+}
 
 bool EgtLimiter::isLimitActive() const {
     return engine->engineState.egtLimitState.isActive;
 }
 
-
 uint8_t EgtLimiter::getLimitingPercent() const {
     return engine->engineState.egtLimitState.limitPercent;
 }
-
 
 int16_t EgtLimiter::getCurrentEgt() const {
     return engine->engineState.egtLimitState.currentEgt;
 }
 
-
-// ← НОВАЯ ФУНКЦИЯ: ПОЛУЧИТЬ ЖЕЛАЕМУЮ ПОЗИЦИЮ ДРОССЕЛЯ
 uint8_t EgtLimiter::getDesiredThrottlePosition() const {
     return etbDesiredPosition;
 }
 
-
 uint8_t EgtLimiter::calculateLimitingCurve(uint16_t rpm) const {
     uint16_t limitRpm = engineConfiguration->egtLimit.egtLimitRpm;
     uint16_t limitRange = engineConfiguration->egtLimit.egtLimitRange;
-    
+
     if (rpm < limitRpm) {
         return 0;
     }
-    
+
     if (rpm >= (limitRpm + limitRange)) {
         return 100;
     }
-    
+
     uint16_t rpmInRange = rpm - limitRpm;
     return (rpmInRange * 100) / limitRange;
 }
