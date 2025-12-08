@@ -60,6 +60,7 @@
 #include "vr_pwm.h"
 #include "adc_subscription.h"
 #include "gc_generic.h"
+#include "egtLimiter.h"
 
 #if EFI_TUNER_STUDIO
 #include "tunerstudio.h"
@@ -439,7 +440,7 @@ void commonInitEngineController() {
 
 #if EFI_ENGINE_CONTROL
   initEgtLimiter();                           // Initialize controller
-  addPeriodicController(&egtLimiter);         // Register periodic task
+  
 #endif /* EFI_ENGINE_CONTROL */
 
 	initSensors();
