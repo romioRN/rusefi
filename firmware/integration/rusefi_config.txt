@@ -1930,19 +1930,19 @@ end_struct
 ! *** EGT RPM Limiting Configuration ***
 
 struct egtLimit_s
-    uint8_t enabled;Enable EGT-based limiting system;, 0, 1, 0, 0
-    int16_t maxEgtTemp;Maximum allowed EGT temperature;"C", 600, 1000, 800, 0
-    uint16_t egtLimitRpm;RPM threshold where EGT limit starts;"rpm", 3000, 20000, 5500, 0
-    uint16_t egtLimitRange;RPM range for smooth limiting;"rpm", 100, 1000, 200, 0
-    float egtLimitDelay;Hysteresis delay before activating limit;"sec", 0, 5, 1.0, 0
+    uint8_t enabled;Enable EGT-based limiting system;, 1, 0, 0, 1, 0
+    int16_t maxEgtTemp;Maximum allowed EGT temperature;"C", 1, 0, 600, 1000, 0
+    uint16_t egtLimitRpm;RPM threshold where EGT limit starts;"rpm", 1, 0, 3000, 20000, 0
+    uint16_t egtLimitRange;RPM range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
+    float egtLimitDelay;Hysteresis delay before activating limit;"sec", 1, 0, 0, 5, 1
 
-    int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 3, 30, 12, 0
+    int8_t maxIgnitionRetard;Maximum ignition retard when at limit;"deg", 1, 0, 3, 30, 0
 
-    uint8_t throttleCutLevel2;Throttle position when EGT limited (Medium)"%", 10, 100, 50, 0
-    uint8_t throttleCutLevel3;Throttle position when EGT critical (Emergency)"%", 1, 50, 10, 0
+    uint8_t throttleCutLevel2;Throttle position when EGT limited (Medium)"%", 1, 0, 10, 100, 0
+    uint8_t throttleCutLevel3;Throttle position when EGT critical (Emergency)"%", 1, 0, 1, 50, 0
 
-    float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);, 0.05, 0.2, 0.15, 0
-    uint8_t fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;, 0, 1, 1, 0
+    float lambdaReductionMax;Maximum lambda reduction (0.15 = 15%);, 1, 0, 0.05, 0.2, 2
+    uint8_t fuelCutAtCriticalEgt;Enable fuel cut at critical EGT;, 1, 0, 0, 1, 0
 end_struct
 
 
