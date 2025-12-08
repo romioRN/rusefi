@@ -1,6 +1,6 @@
 #pragma once
 
-#include "periodic_controller.h"
+
 #include "engine.h"
 
 class EgtLimiter : public PeriodicController {
