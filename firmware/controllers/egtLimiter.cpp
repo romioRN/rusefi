@@ -59,7 +59,7 @@ void EgtLimiter::computeLimits(float dtSeconds) {
     m_isActive = shouldActivate;
 
     if (shouldActivate) {
-        uint16_t rpm = engine->rpmCalculator.getRpm();   // вместо getRpm()
+        uint32_t rpm = engine->rpmCalculator.getRaw();
         uint16_t limitRpm = engineConfiguration->egtLimit.egtLimitRpm;
         uint16_t limitRange = engineConfiguration->egtLimit.egtLimitRange;
 
