@@ -1955,9 +1955,8 @@ struct egtLimitState_s
 
     int8_t appliedIgnitionRetard;Currently applied ignition retard;"deg", 1, 0, -30, 0, 0
     uint8_t appliedThrottlePosition;Currently applied throttle limit;"%", 1, 0, 0, 100, 0
-    float appliedLambdaReduction;Currently applied lambda reduction;, 1, 0, 0, 0.3, 2
+    float appliedLambdaReduction;Currently applied lambda reduction;
 end_struct
-
  
 egtLimit_s egtLimit; EGT-based RPM limiting configuration
 
