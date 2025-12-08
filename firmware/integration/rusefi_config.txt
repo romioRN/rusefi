@@ -1930,7 +1930,7 @@ end_struct
 ! *** EGT RPM Limiting Configuration ***
 
 struct egtLimit_s
-    uint8_t enabled;Enable EGT-based limiting system;
+    bit enabled, "Enabled", "Disabled";Enable EGT-based limiting system
     int16_t maxEgtTemp;Maximum allowed EGT temperature;"C", 1, 0, 600, 1000, 0
     uint16_t egtLimitRpm;RPM threshold where EGT limit starts;"rpm", 1, 0, 3000, 20000, 0
     uint16_t egtLimitRange;RPM range for smooth limiting;"rpm", 1, 0, 100, 1000, 0
