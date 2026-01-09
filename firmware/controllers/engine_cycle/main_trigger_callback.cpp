@@ -228,15 +228,6 @@ static void handleFuel(efitick_t nowNt, float currentPhase, float nextPhase) {
 
 	LimpState limitedFuelState = getLimpManager()->allowInjection();
 
-	// === EGT LIMITER FAIL-SAFE: Emergency fuel cut if EGT sensor error or critical temperature ===
-	// Check if EGT limiter is in emergency mode (sensor error or critical temp)
-	if (egtLimiter.isActive() && egtLimiter.getAppliedThrottlePosition() == 0) {
-		// EGT limiter has cut throttle to 0% - this indicates emergency shutdown
-		// Force fuel cut to prevent injector hang in critical situation
-		engine->outputChannels.fuelCutReason = (int8_t)FuelCutReason::Limp;  // Mark as limp/emergency
-		return;  // Stop fuel delivery immediately
-	}
-
 	// todo: eliminate state copy logic by giving limpManager it's owm limp_manager.txt and leveraging LiveData
 	engine->outputChannels.fuelCutReason = (int8_t)limitedFuelState.reason;
 	bool limitedFuel = !limitedFuelState.value;

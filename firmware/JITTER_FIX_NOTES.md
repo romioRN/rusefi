@@ -99,6 +99,13 @@ MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE = 2  // Unchanged
 ## Files Modified
 - `controllers/engine_cycle/multi_injection.cpp` — 4 replacements in constant definitions and smoothing logic
 
+## Note on EGT Limiter Integration
+The EGT limiter fail-safe was previously added in:
+- `controllers/egtLimiter.cpp` — Real sensor integration + critical temperature detection
+- `controllers/electronic_throttle.cpp` — Throttle cut when EGT error detected (line 382)
+
+The EGT limiter architecture provides fail-safe through throttle cut rather than direct fuel cut. When throttle reaches 0%, fuel delivery is naturally prevented through the normal engine management logic. This is cleaner than trying to force fuel cuts at multiple points.
+
 ## Monitoring Points
 Enable in `isVerboseMultiInjection()` to see:
 - When smoothing threshold is triggered (`baseFuelMass < MIN_MASS_FOR_SMOOTHING`)
