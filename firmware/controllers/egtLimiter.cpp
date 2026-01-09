@@ -54,7 +54,7 @@ void EgtLimiter::computeLimits(float dtSeconds) {
         for (size_t i = 0; i < sizeof(egtSensorTypes) / sizeof(egtSensorTypes[0]); i++) {
             auto egtReading = Sensor::get(egtSensorTypes[i]);
             if (egtReading) {
-                float val = egtReading.value();
+                float val = egtReading.value_or(0.0f);
                 if (val > maxEgtValue && val > 0) {
                     maxEgtValue = val;  // Track hottest temperature
                 }
@@ -77,9 +77,7 @@ void EgtLimiter::computeLimits(float dtSeconds) {
         m_isActive = true;  // Mark as active to indicate emergency state
         
         // Log critical error for diagnostics
-        if (isVerboseMultiInjection()) {
-            efiPrintf("EGT SENSOR ERROR: egt=%.1f C, triggering emergency fuel cut-off to prevent injector hang", m_currentEgt);
-        }
+        warning(ObdCode::CUSTOM_EGT_SENSOR_ERROR, "EGT SENSOR ERROR: egt=%.1f C, fuel cut-off", m_currentEgt);
         return;  // Skip normal processing, maintain emergency state until sensor recovers
     }
 
