@@ -19,8 +19,9 @@
 
 #define MAX_INJECTION_DURATION 120.0f  // Maximum pulse duration in crankshaft degrees
 // Multiplier used to require pulse duration to exceed dead time by this factor
-// Use 2.5x as a conservative enforcement factor (must be a valid float literal)
-constexpr float DEADTIME_MULTIPLIER = 2.1f;
+// Reduced to 1.5x to avoid premature fallback on small pulses (~1ms range)
+// Balance between injector reliability and smooth operation at light load
+constexpr float DEADTIME_MULTIPLIER = 1.5f;
 
 // Hysteresis thresholds for single <-> multi injection mode transitions
 // Prevent oscillation when split ratio hovers near 0% or 100%
@@ -43,8 +44,12 @@ constexpr uint8_t MULTI_INJECTION_VALIDATION_FAILURE_TOLERANCE = 2;  // Allow 2-
 
 // Per-cylinder smoothed injection mass to reduce jitter in calculated durations
 static float smoothedInjectionMass[12] = {};
-// Smoothing factor alpha for exponential moving average (0..1). Higher = faster response, lower = smoother.
-constexpr float MASS_SMOOTHING_ALPHA = 0.4f;
+// Smoothing factor alpha for exponential moving average (0..1). 
+// Lowered to 0.25 for smoother operation on small pulses (1ms range).
+// Faster response but still reduces high-frequency jitter.
+constexpr float MASS_SMOOTHING_ALPHA = 0.25f;
+// Minimum mass threshold below which smoothing is bypassed (avoid over-smoothing tiny pulses)
+constexpr float MIN_MASS_FOR_SMOOTHING = 0.0001f;
 
 // Helper: get current validation failure count for diagnostics
 static inline uint8_t getMultiInjectionValidationFailureCount(uint8_t cylinderNumber) {
@@ -240,13 +245,20 @@ bool InjectionEvent::updateMultiInjectionAngles() {
     // Angles still come from tables each cycle; smoothing only affects durations calculation.
     float smoothedMass = baseFuelMass;
     if (cylinderNumber < 12) {
-      float prev = smoothedInjectionMass[cylinderNumber];
-      if (std::isnan(prev) || prev <= 0.0f) {
-        smoothedInjectionMass[cylinderNumber] = baseFuelMass;
+      // For very small masses (< MIN_MASS_FOR_SMOOTHING), bypass smoothing to avoid over-filtering
+      // This prevents sluggish response on light load small pulses
+      if (baseFuelMass < MIN_MASS_FOR_SMOOTHING) {
         smoothedMass = baseFuelMass;
+        smoothedInjectionMass[cylinderNumber] = baseFuelMass;
       } else {
-        smoothedMass = prev * (1.0f - MASS_SMOOTHING_ALPHA) + baseFuelMass * MASS_SMOOTHING_ALPHA;
-        smoothedInjectionMass[cylinderNumber] = smoothedMass;
+        float prev = smoothedInjectionMass[cylinderNumber];
+        if (std::isnan(prev) || prev <= 0.0f) {
+          smoothedInjectionMass[cylinderNumber] = baseFuelMass;
+          smoothedMass = baseFuelMass;
+        } else {
+          smoothedMass = prev * (1.0f - MASS_SMOOTHING_ALPHA) + baseFuelMass * MASS_SMOOTHING_ALPHA;
+          smoothedInjectionMass[cylinderNumber] = smoothedMass;
+        }
       }
     }
     if (std::isnan(baseFuelMass) || baseFuelMass <= 0) {
@@ -310,7 +322,8 @@ bool InjectionEvent::updateMultiInjectionAngles() {
         if (!shouldEnterMultiMode) {
             numberOfPulses = 1;
             pulses[0].splitRatio = 100.0f;
-            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+            // Use smoothedMass for single-pulse duration to maintain consistency
+            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(smoothedMass);
             pulses[0].fuelMs = singlePulseFuelMs;
             pulses[0].isActive = (singlePulseFuelMs > 0.05f);
             
@@ -361,7 +374,8 @@ bool InjectionEvent::updateMultiInjectionAngles() {
                     // Tolerance exceeded due to short pulse. Fallback to single.
                     numberOfPulses = 1;
                     pulses[0].splitRatio = 100.0f;
-                    floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+                    // Use smoothedMass for consistency in single-pulse calculation
+                    floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(smoothedMass);
                     pulses[0].fuelMs = singlePulseFuelMs;
                     pulses[0].isActive = true;
                     multiInjectionValidationFailureCount[cylinderNumber] = 0;
@@ -384,7 +398,8 @@ bool InjectionEvent::updateMultiInjectionAngles() {
                 // Not in multi-mode already. This shouldn't happen, but fallback anyway.
                 numberOfPulses = 1;
                 pulses[0].splitRatio = 100.0f;
-                floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+                // Use smoothedMass for consistency
+                floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(smoothedMass);
                 pulses[0].fuelMs = singlePulseFuelMs;
                 pulses[0].isActive = true;
                 return updateInjectionAngle();
@@ -452,7 +467,8 @@ bool InjectionEvent::updateMultiInjectionAngles() {
             // Fallback: use single injection
             numberOfPulses = 1;
             pulses[0].splitRatio = 100.0f;
-            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(baseFuelMass);
+            // Use smoothedMass for consistency in fallback
+            floatms_t singlePulseFuelMs = engine->module<InjectorModelPrimary>()->getInjectionDuration(smoothedMass);
             pulses[0].fuelMs = singlePulseFuelMs;
             pulses[0].isActive = true;
             
