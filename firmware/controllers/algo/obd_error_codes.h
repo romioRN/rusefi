@@ -2179,7 +2179,7 @@ enum class ObdCode : uint16_t {
 
 	/**
 	 * Coil did not receive discharge/fire signal in safe time
-	 */
+	 */ 
 	CUSTOM_Ignition_Coil_Overcharge_1 = 9351,
 	CUSTOM_Ignition_Coil_Overcharge_2 = 9352,
 	CUSTOM_Ignition_Coil_Overcharge_3 = 9353,
