@@ -1,6 +1,6 @@
 #include "global.h"
 #include "rusefi_enums.h"
-// was generated automatically by rusEFI tool  from rusefi_enums.h // by enum_to_string.jar tool on Mon Oct 27 13:11:54 UTC 2025
+// was generated automatically by rusEFI tool  from rusefi_enums.h // by enum_to_string.jar tool on Sat Jan 24 04:28:30 UTC 2026
 // see also gen_config_and_enums.bat
 
 
@@ -74,6 +74,17 @@ case MsIoBoxVss::OFF:
   return "OFF";
 case MsIoBoxVss::VR12:
   return "VR12";
+  }
+ return NULL;
+}
+const char *getRotationalCutMode(RotationalCutMode value){
+switch(value) {
+case RotationalCutMode::Both:
+  return "Both";
+case RotationalCutMode::Fuel:
+  return "Fuel";
+case RotationalCutMode::Spark:
+  return "Spark";
   }
  return NULL;
 }
@@ -324,6 +335,8 @@ case B500KBPS:
   return "B500KBPS";
 case B50KBPS:
   return "B50KBPS";
+case B666KBPS:
+  return "B666KBPS";
 case B83KBPS:
   return "B83KBPS";
   }
@@ -1055,6 +1068,8 @@ const char *getVvt_mode_e(vvt_mode_e value){
 switch(value) {
 case VVT_BARRA_3_PLUS_1:
   return "VVT_BARRA_3_PLUS_1";
+case VVT_BMW_N63TU:
+  return "VVT_BMW_N63TU";
 case VVT_BOSCH_QUICK_START:
   return "VVT_BOSCH_QUICK_START";
 case VVT_CHRYSLER_PHASER:
@@ -1113,8 +1128,6 @@ case VVT_TOYOTA_3_TOOTH:
   return "VVT_TOYOTA_3_TOOTH";
 case VVT_TOYOTA_4_1:
   return "VVT_TOYOTA_4_1";
-case VVT_UNUSED_17:
-  return "VVT_UNUSED_17";
   }
  return NULL;
 }

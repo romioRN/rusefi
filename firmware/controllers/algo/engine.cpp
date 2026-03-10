@@ -118,7 +118,7 @@ trigger_type_e getVvtTriggerType(vvt_mode_e vvtMode) {
 		return trigger_type_e::TT_TOYOTA_3_TOOTH_UZ;
 	case VVT_NISSAN_MR:
 		return trigger_type_e::TT_NISSAN_MR18_CAM_VVT;
-	case VVT_UNUSED_17:
+	case VVT_BMW_N63TU:
 	case VVT_MITSUBISHI_4G63:
 		return trigger_type_e::TT_MITSU_4G63_CAM;
 	case VVT_HR12DDR_IN:
@@ -291,9 +291,7 @@ extern bool kAcRequestState;
 }
 
 Engine::Engine() {
-	// Everything else has default initializers setup in generated file
-	engineState.lua.fuelMult = 1;
-	ignitionState.luaTimingMult = 1;
+	resetLua();
 }
 
 int Engine::getGlobalConfigurationVersion() const {
@@ -316,6 +314,7 @@ void Engine::resetLua() {
 	engineState.lua.luaDisableEtb = false;
 	engineState.lua.luaIgnCut = false;
 	engineState.lua.luaFuelCut = false;
+	engineState.lua.engineTorque = NAN;
 	engineState.lua.disableDecelerationFuelCutOff = false;
 #if EFI_BOOST_CONTROL
 	module<BoostController>().unmock().resetLua();
@@ -545,15 +544,6 @@ bool Engine::isInShutdownMode() const {
 		return true;
 #endif /* EFI_MAIN_RELAY_CONTROL */
 	return false;
-}
-
-bool Engine::isMainRelayEnabled() const {
-#if EFI_MAIN_RELAY_CONTROL
-	return enginePins.mainRelay.getLogicValue();
-#else
-	// if no main relay control, we assume it's always turned on
-	return true;
-#endif /* EFI_MAIN_RELAY_CONTROL */
 }
 
 injection_mode_e getCurrentInjectionMode() {

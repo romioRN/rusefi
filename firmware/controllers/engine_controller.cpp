@@ -218,6 +218,8 @@ char * getPinNameByAdcChannel(const char *msg, adc_channel_e hwChannel, char *bu
 		snprintf(buffer, bufferSize, "%s%d", name ? name : "null", getAdcChannelPin(hwChannel));
 	}
 #else
+  UNUSED(msg);
+  UNUSED(hwChannel);
 	snprintf(buffer, bufferSize, "NONE");
 #endif /* HAL_USE_ADC */
 	return buffer;
@@ -585,6 +587,9 @@ bool validateConfigOnStartUpOrBurn() {
 		ensureArrayIsAscendingOrDefault("STFT Rpm", config->fuelTrimRpmBins);
 		ensureArrayIsAscendingOrDefault("STFT Load", config->fuelTrimLoadBins);
 
+		ensureArrayIsAscendingOrDefault("knock rpm", config->maxKnockRetardRpmBins);
+		ensureArrayIsAscendingOrDefault("knock tps", config->maxKnockRetardLoadBins);
+
 		ensureArrayIsAscendingOrDefault("TC slip", engineConfiguration->tractionControlSlipBins);
 		ensureArrayIsAscendingOrDefault("TC speed", engineConfiguration->tractionControlSpeedBins);
 
@@ -702,9 +707,13 @@ bool validateConfigOnStartUpOrBurn() {
 		ensureArrayIsAscending("Oil pressure protection", config->minimumOilPressureBins);
 	}
 
-	ConfigurationWizard::onConfigOnStartUpOrBurn();
 
 	return true;
+}
+
+bool validateConfigOnStartUpOrBurn(bool isRunningOnBurn) {
+	ConfigurationWizard::onConfigOnStartUpOrBurn(isRunningOnBurn);
+	return validateConfigOnStartUpOrBurn();
 }
 
 #if !EFI_UNIT_TEST

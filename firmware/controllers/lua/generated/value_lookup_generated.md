@@ -10,6 +10,15 @@ set rpm_hard_limit X
 ### engineSnifferRpmThreshold
 Engine sniffer would be disabled above this rpm\nset engineSnifferRpmThreshold X
 
+### ltitEnabled
+Enable LTIT (Long Term Idle Trim) learning
+
+### useMetricOnInterface
+
+
+### useLambdaOnInterface
+
+
 ### multisparkMaxRpm
 Disable multispark above this engine speed.
 
@@ -30,9 +39,6 @@ Voltage when the idle valve is closed.\nYou probably don't have one of these!
 
 ### idlePositionMax
 Voltage when the idle valve is open.\nYou probably don't have one of these!\n1 volt = 1000 units
-
-### ltitEnabled
-Enable LTIT (Long Term Idle Trim) learning
 
 ### ltitEmaAlpha
 EMA filter constant for LTIT (0-255)
@@ -203,7 +209,7 @@ kPa/psi value at low volts
 kPa/psi value at high volts
 
 ### clt.config.tempC_1
-these values are in Celcius
+
 
 ### clt.config.tempC_2
 
@@ -224,7 +230,7 @@ these values are in Celcius
 Pull-up resistor value on your board
 
 ### iat.config.tempC_1
-these values are in Celcius
+
 
 ### iat.config.tempC_2
 
@@ -336,6 +342,9 @@ Inhibit operation of this fan while the engine is not running.
 
 ### disableFan2WhenStopped
 Inhibit operation of this fan while the engine is not running.
+
+### wizardPanelToShow
+
 
 ### driveWheelRevPerKm
 Number of revolutions per kilometer for the wheels your vehicle speed sensor is connected to. Use an online calculator to determine this based on your tire size.
@@ -459,9 +468,6 @@ Use 11 bit (standard) or 29 bit (extended) IDs for rusEFI verbose CAN format.
 
 ### useStepperIdle
 This setting should only be used if you have a stepper motor idle valve and a stepper motor driver installed.
-
-### enabledStep1Limiter
-
 
 ### lambdaProtectionEnable
 
@@ -670,9 +676,6 @@ If enabled we use four Push-Pull outputs to directly drive stepper idle air valv
 ### verboseCan2
 Print incoming and outgoing second bus CAN messages in rusEFI console
 
-### vinIsEmpty
-
-
 ### boostPid.pFactor
 
 
@@ -778,12 +781,6 @@ Maximum % that the long term fuel trim can add
 ### ltft.maxRemove
 Maximum % that the long term fuel trim can remove
 
-### tps2SecondaryMin
-
-
-### tps2SecondaryMax
-
-
 ### widebandOnSecondBus
 Select which bus the wideband controller is attached to.
 
@@ -797,7 +794,7 @@ Write SD card log even when powered by USB
 Second harmonic (aka double) is usually quieter background noise
 
 ### yesUnderstandLocking
-
+Unlocking only via rusEFI console using 'unlock PICODEBUG' command. Use 'reset to default firmware' if pincode is lost.
 
 ### silentTriggerError
 Sometimes we have a performance issue while printing error
@@ -845,7 +842,7 @@ This is the Cut Mode normally used
 
 
 ### camSyncOnSecondCrankRevolution
-
+When we sync cam sensor is that first or second full engine revolution of the four stroke cycle?
 
 ### limitTorqueReductionTime
 
@@ -971,7 +968,16 @@ set warningPeriod X
 
 
 ### torqueReductionArmingApp
-Pedal position to realize that we need to reduce torque when the trigger pin is uuuh triggered
+Pedal position to realize that we need to reduce torque when the trigger pin is triggered
+
+### referenceTorqueForGenerator
+null
+
+### referenceMapForGenerator
+null
+
+### referenceVeForGenerator
+null
 
 ### tachPulseDuractionMs
 Duration in ms or duty cycle depending on selected mode
@@ -1023,12 +1029,6 @@ Output Max Duty Cycle
 
 ### airTaperRpmRange
 RPM range above upper limit for extra air taper
-
-### tps2Min
-Closed throttle#2. todo: extract these two fields into a structure\nSee also tps2_1AdcChannel
-
-### tps2Max
-Full throttle#2. tpsMax value as 10 bit ADC value. Not Voltage!\nSee also tps1_1AdcChannel
 
 ### tachPulsePerRev
 
@@ -1289,7 +1289,7 @@ Delay to allow fuel pressure to build before firing the priming pulse.
 This is the pressure at which your injector flow is known.\nFor example if your injectors flow 400cc/min at 3.5 bar, enter 350kpa/50.7psi here.\nThis is gauge pressure/in reference to atmospheric.
 
 ### auxTempSensor1.config.tempC_1
-these values are in Celcius
+
 
 ### auxTempSensor1.config.tempC_2
 
@@ -1310,7 +1310,7 @@ these values are in Celcius
 Pull-up resistor value on your board
 
 ### auxTempSensor2.config.tempC_1
-these values are in Celcius
+
 
 ### auxTempSensor2.config.tempC_2
 
@@ -1672,9 +1672,6 @@ Crank angle ATDC of first lobe peak
 ### kLinePeriodUs
 
 
-### rpmSoftLimitWindowSize
-Window that the correction will be added throughout (example, if rpm limit is 7000, and rpmSoftLimitWindowSize is 200, the corrections activate at 6800RPM, creating a 200rpm window)
-
 ### rpmSoftLimitTimingRetard
 Degrees of timing REMOVED from actual timing during soft RPM limit window
 
@@ -1703,7 +1700,7 @@ How long it takes to remove initial IAC adder to return to normal idle.
 Scale the reported vehicle speed value from CAN. Example: Parameter set to 1.1, CAN VSS reports 50kph, ECU will report 55kph instead.
 
 ### oilTempSensor.config.tempC_1
-these values are in Celcius
+
 
 ### oilTempSensor.config.tempC_2
 
@@ -1724,7 +1721,7 @@ these values are in Celcius
 Pull-up resistor value on your board
 
 ### fuelTempSensor.config.tempC_1
-these values are in Celcius
+
 
 ### fuelTempSensor.config.tempC_2
 
@@ -1745,7 +1742,7 @@ these values are in Celcius
 Pull-up resistor value on your board
 
 ### ambientTempSensor.config.tempC_1
-these values are in Celcius
+
 
 ### ambientTempSensor.config.tempC_2
 
@@ -1766,7 +1763,7 @@ these values are in Celcius
 Pull-up resistor value on your board
 
 ### compressorDischargeTemperature.config.tempC_1
-these values are in Celcius
+
 
 ### compressorDischargeTemperature.config.tempC_2
 
@@ -1990,8 +1987,47 @@ Retard timing to remove from actual final timing (after all corrections) due to 
 ### vvlController.deactivationRpmWindow
 
 
+### rotationalIdleController.enabled
+rotational idle enable feature
+
+### rotationalIdleController.auto_engage
+Automatic engagement of rotational idle
+
+### rotationalIdleController.max_tps
+Engage rotational idle under this Driver Intent.
+
+### rotationalIdleController.auto_engage_clt_enable
+Rotational Idle Auto engage CLT
+
+### rotationalIdleController.auto_engage_clt
+Rotational Idle Auto engage CLT.
+
 ### tcu_shiftTime
 
+
+### cel_battery_min_v
+"Minimum Battery Voltage"
+
+### cel_battery_max_v
+"Maximum Battery Voltage"
+
+### cel_map_min_v
+"Minimum MAP V"
+
+### cel_map_max_v
+"Maximum MAP V"
+
+### cel_iat_min_v
+"Minimum IAT V"
+
+### cel_iat_max_v
+"Maximum IAT V"
+
+### cel_tps_min_v
+"Minimum TPS V"
+
+### cel_tps_max_v
+"Maximum TPS V"
 
 ### dynoRpmStep
 @@DYNO_RPM_STEP_TOOLTIP@@
@@ -2034,4 +2070,22 @@ Retard timing to remove from actual final timing (after all corrections) due to 
 
 ### dynoCarFrontalAreaM2
 @@DYNO_CAR_FRONTAL_AREA_TOOLTIP@@
+
+### wizardNumberOfCylinders
+
+
+### wizardFiringOrder
+
+
+### wizardMapSensorType
+
+
+### wizardCrankTrigger
+
+
+### wizardCamTrigger
+
+
+### wizardInjectorFlow
+
 

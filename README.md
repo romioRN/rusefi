@@ -34,7 +34,7 @@ See [the changelog](firmware/CHANGELOG.md)
 # External Links
 
  * [Forum](http://rusefi.com/forum)
- * [Documentation](https://github.com/rusefi/rusefi/wiki)
+ * [Documentation](https://wiki.rusefi.com)
  * [Doxygen documentation](http://rusefi.com/docs/html)
  * [General source code Q&A](http://rusefi.com/forum/viewtopic.php?f=5&t=10)
  * [Facebook](https://www.facebook.com/rusEfiECU)
@@ -52,3 +52,4 @@ Important note - we now use submodules:
 See [gcc_version_check.c](https://github.com/rusefi/rusefi/blob/master/firmware/gcc_version_check.c) for recommended version of GCC.
 
 Check out https://rusefi.com/forum/viewtopic.php?f=5&t=9
+

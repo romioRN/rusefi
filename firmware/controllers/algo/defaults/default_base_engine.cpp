@@ -142,6 +142,16 @@ void defaultsOrFixOnBurn() {
 	  engineConfiguration->afrExpAverageAlpha = 1;
 	}
 
+	if (engineConfiguration->referenceTorqueForGenerator == 0) {
+  	engineConfiguration->referenceTorqueForGenerator = 250;
+	}
+	if (engineConfiguration->referenceMapForGenerator == 0) {
+  	engineConfiguration->referenceMapForGenerator = 100;
+	}
+	if (engineConfiguration->referenceVeForGenerator == 0) {
+  	engineConfiguration->referenceVeForGenerator = 75;
+	}
+
 	if (engineConfiguration->alternator_iTermMin == 0) {
   	engineConfiguration->alternator_iTermMin = -1000;
 	}
@@ -228,12 +238,14 @@ void setDefaultBaseEngine() {
 	mc33810defaults();
 
  	setRpmTableBin(config->torqueRpmBins);
+ 	// here we assume load is TPS
  	setLinearCurve(config->torqueLoadBins, 0, 100, 1);
 
 	engineConfiguration->fuelAlgorithm = engine_load_mode_e::LM_SPEED_DENSITY;
 	// let's have valid default while we still have the field
 	engineConfiguration->debugMode = DBG_EXECUTOR;
 
+  engineConfiguration->speedometerPulsePerKm = 2485; // GM GMT800 platform
 
 	engineConfiguration->primingDelay = 0.5;
 	// this should not be below default rpm! maybe even make them equal?
@@ -257,7 +269,6 @@ void setDefaultBaseEngine() {
 
   engineConfiguration->tpsAccelFractionDivisor = 1;
 
-  engineConfiguration->rpmSoftLimitWindowSize = 200;
   engineConfiguration->rpmSoftLimitTimingRetard = 4;
 
 	// CLT RPM limit table - just the X axis
@@ -278,6 +289,10 @@ void setDefaultBaseEngine() {
     engineConfiguration->knockRetardReapplyRate = 3;
     engineConfiguration->knockFuelTrim = 0;
     engineConfiguration->knockSuppressMinTps = 10;
+
+  setRpmTableBin(config->maxKnockRetardRpmBins);
+  setLinearCurve(config->maxKnockRetardLoadBins, 0, 100, 1);
+  setTable(config->maxKnockRetardTable, 20);
 
 	// Trigger
 	engineConfiguration->trigger.type = trigger_type_e::TT_TOOTHED_WHEEL_60_2;
@@ -422,6 +437,9 @@ void setDefaultBaseEngine() {
 	setRpmTableBin(config->maximumOilPressureBins);
 
 	engine->engineModules.apply_all([](auto & m) { m.setDefaultConfiguration(); });
+
+	engineConfiguration->useMetricOnInterface = true;
+
   // we invoke this last so that we can validate even defaults
   defaultsOrFixOnBurn();
 }

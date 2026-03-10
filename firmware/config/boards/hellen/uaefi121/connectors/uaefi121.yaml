@@ -11,14 +11,14 @@ pins:
   - pin: 1a
     class: outputs
     ts_name: DC1+
-    function: DC1+ output
+    function: DC1+ output (usually electronic throttle body)
     color: blue
     type: etb
 
   - pin: 2a
     class: outputs
     ts_name: DC1-
-    function: DC1- output
+    function: DC1- output (usually electronic throttle body)
     color: white
     type: etb
 
@@ -95,7 +95,7 @@ pins:
     class: outputs
     meta: MM100_IGN1
     ts_name: Coil 1
-    function: Coil 1
+    function: Coil 1 (5v)
     type: ign
     color: green
 
@@ -217,8 +217,8 @@ pins:
 
   - pin: 34a
     function: CAM Sensor Exhaust
-    meta: MM100_IN_D3
-    class: event_inputs
+    id: [MM100_IN_D3, MM100_IN_D3]
+    class: [switch_inputs, event_inputs]
     ts_name: ___ HALL3
     type: hall
 
@@ -230,8 +230,8 @@ pins:
     type: hall
 
   - pin: 36a
-    meta: MEGA_UAEFI_IN_HALL1
-    class: event_inputs
+    id: [MEGA_UAEFI_IN_HALL1, MEGA_UAEFI_IN_HALL1]
+    class: [switch_inputs, event_inputs]
     function: VSS / HALL1 Sensor
     ts_name: ___ HALL1 / VSS
     type: hall
@@ -276,8 +276,8 @@ pins:
 
   - pin: 42a
     function: FLEX
-    class: event_inputs
-    meta: MM100_IN_VSS
+    class: [switch_inputs, event_inputs]
+    id: [MM100_IN_VSS, MM100_IN_VSS]
     ts_name: FLEX
 
   - pin: 43a
@@ -352,56 +352,56 @@ pins:
 
   - pin: 52a
     function: GNDA HALL1 sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 53a
     function: GNDA HALL2 sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 54a
     function: GNDA HALL3 sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 55a
     function: GNDA DIN sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 56a
     function: GNDA map sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 57a
     function: GNDA tps1 sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 58a
-    function: GNDA tps2 sensor
-    type: gnd
+    function: GNDA for instance for tps2 sensor
+    type: agnd
     color: black
 
   - pin: 59a
     function: GNDA AIN1 sensor
-    type: gnd
+    type: agnd
 
   - pin: 60a
     function: GNDA AIN2 sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 61a
     function: GNDA FLEX/HALL sensor
-    type: gnd
+    type: agnd
     color: black
 
   - pin: 62a
-    function: GNDA KNOCK sensor
-    type: gnd
+    function: Analog ground also known as GNDA
+    type: agnd
     color: black
 
   - pin: 63a
@@ -413,8 +413,8 @@ pins:
     color: blue
 
   - pin: 64a
-    function: GNDA IAT sensor
-    type: gnd
+    function: Analog ground for instance for IAT sensor
+    type: agnd
     color: black
 
   - pin: 65a
@@ -426,18 +426,18 @@ pins:
     color: grey
 
   - pin: 66a
-    function: GNDA CLT sensor
-    type: gnd
+    function: Analog ground for instance for CLT sensor
+    type: agnd
     color: black
 
-  - pin: 67a
-    class: analog_inputs
-    ts_name: KNOCK2
-    function: KNOCK2 UNUSED sensor
+#  - pin: 67a
+#    class: analog_inputs
+#    ts_name: KNOCK2
+#    function: KNOCK2 UNUSED sensor
 
   - pin: 68a
-    function: GNDA KNOCK2 sensor
-    type: gnd
+    function: Analog GND / sensor ground
+    type: agnd
 
   - pin: 71a
     function: +5v HALL1 sensor
@@ -492,7 +492,7 @@ pins:
   - pin: 81a
     class: analog_inputs
     ts_name: KNOCK
-    function: KNOCK sensor
+    function: KNOCK sensor (other sensor pin goes to analog ground)
 
   - pin: 82a
     function: CAN bus high
@@ -702,7 +702,7 @@ info:
   name: uaEFI 121
   cid: main
   order: 0
-  board_url: https://github.com/rusefi/rusefi/wiki/uaefi121
+  board_url: https://wiki.rusefi.com/uaefi121
   directory: hellen/uaefi121
   image:
     file: 121pin.jpg

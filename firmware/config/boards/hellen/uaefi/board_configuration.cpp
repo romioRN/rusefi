@@ -12,6 +12,9 @@
 #include "hellen_leds_100.cpp"
 #include "board_overrides.h"
 #include "connectors/generated_board_pin_names.h"
+#ifndef EFI_BOOTLOADER
+#include "AemXSeriesLambda.h"
+#endif // EFI_BOOTLOADER
 
 static void setInjectorPins() {
 	engineConfiguration->injectionPins[0] = Gpio::MM100_INJ1;
@@ -63,12 +66,9 @@ static void uaefi_boardConfigOverrides() {
 }
 
 bool validateBoardConfig() {
-#ifndef HW_HELLEN_UAEFI121
-  // this same file is used for both uaefi and uaefi121
   if (engineConfiguration->can2RxPin != Gpio::B12) {
 	  setHellenCan2();
   }
-#endif
   return true;
 }
 
@@ -98,10 +98,8 @@ static void uaefi_boardDefaultConfiguration() {
 
 	engineConfiguration->canTxPin = Gpio::MM100_CAN_TX;
 	engineConfiguration->canRxPin = Gpio::MM100_CAN_RX;
-#ifndef HW_HELLEN_UAEFI121
-  // this same file is used for both uaefi and uaefi121
+
 	setHellenCan2();
-#endif
 
 #if (EFI_CAN_BUS_COUNT >= 3)
 	engineConfiguration->can3TxPin = Gpio::MM100_CAN3_TX;
@@ -188,13 +186,26 @@ int getBoardMetaDcOutputsCount() {
     return 2;
 }
 
+static void uaefi_slowCallback() {
+#ifndef EFI_BOOTLOADER
+extern AemXSeriesWideband aem1;
+  if (aem1.hasSeenRx) {
+    Gpio green = getRunningLedPin();
+		auto greenPort = getBrainPinPort(green);
+		auto greenPin = getBrainPinIndex(green);
+    palClearPad(greenPort, greenPin); // Hellen has inverted LED control
+  }
+#endif // EFI_BOOTLOADER
+}
+
 void setup_custom_board_overrides() {
 	custom_board_DefaultConfiguration = uaefi_boardDefaultConfiguration;
 	custom_board_ConfigOverrides = uaefi_boardConfigOverrides;
+	custom_board_periodicSlowCallback = uaefi_slowCallback;
 }
 
 int boardGetAnalogInputDiagnostic(adc_channel_e hwChannel, float voltage) {
-	/* we do not check voltage for valid ragne yet */
+	/* we do not check voltage for valid range yet */
 	(void)voltage;
 
 	switch (hwChannel) {

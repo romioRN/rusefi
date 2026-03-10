@@ -88,6 +88,7 @@ void setGmSbc() {
 	engineConfiguration->ignitionMode = IM_ONE_COIL;
 	engineConfiguration->globalTriggerAngleOffset = 24;
 
+    // this is used to tell HEI that we are always in charge of timing advance
     gppwm_channel *ignOverride = &engineConfiguration->gppwm[0];
    	ignOverride->pwmFrequency = 0;
    	strcpy(engineConfiguration->gpPwmNote[0], "ign ovrrd B");
@@ -104,6 +105,11 @@ void setGmSbc() {
 	  engineConfiguration->camInputs[1] = Gpio::Unassigned;
 	  engineConfiguration->ignitionPins[1] = Gpio::Unassigned;
 #endif // HW_HELLEN_UAEFI121
+
+#ifdef HW_HELLEN_SUPER_UAEFI
+	engineConfiguration->triggerInputPins[0] = Gpio::MM100_IN_D2; // HALL2
+	engineConfiguration->camInputs[1] = Gpio::Unassigned;
+#endif // HW_HELLEN_SUPER_UAEFI
 
 #if HW_PROTEUS
     // tan wire with a black trace - "HEI B", plug pin B

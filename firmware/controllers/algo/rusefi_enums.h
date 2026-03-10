@@ -109,7 +109,8 @@ typedef enum  __attribute__ ((__packed__)) {
 	 */
 	VVT_HONDA_K_EXHAUST = 16,
 
-	VVT_UNUSED_17 = 17,
+	VVT_BMW_N63TU = 17,
+
 	// also 4G92/93/94
 	VVT_MITSUBISHI_4G63 = 18,
 
@@ -136,6 +137,7 @@ typedef enum  __attribute__ ((__packed__)) {
   VVT_CUSTOM_1 = 29,
 
   VVT_CUSTOM_2 = 30,
+
 } vvt_mode_e;
 
 typedef enum __attribute__ ((__packed__)) {
@@ -658,7 +660,8 @@ typedef enum __attribute__ ((__packed__)) {
 	B125KBPS = 4, // 125kbps
 	B250KBPS = 5, // 250kbps
 	B500KBPS = 6, // 500kbps
-	B1MBPS = 7, // 1Mbps
+	B666KBPS = 7, // 666kbps
+	B1MBPS = 8, // 1Mbps
 } can_baudrate_e;
 
 typedef enum __attribute__ ((__packed__)) {
@@ -854,6 +857,12 @@ enum class SelectedGear : uint8_t {
 	Manual2 = 9,
 	Manual1 = 10,
 	Low = 11,
+};
+
+enum class RotationalCutMode : uint8_t {
+	Spark = 0,
+	Fuel = 1,
+	Both = 2,
 };
 
 #define SC_Exhaust_First 1

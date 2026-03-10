@@ -77,8 +77,9 @@ std::optional<setup_custom_board_config_type> custom_board_OnConfigurationChange
  * This is useful to compare old/current (activeConfiguration) and new/future (engineConfiguration) configurations in order to apply new settings.
  *
  * todo: place this field next to 'engineConfiguration'?
+ * todo: not great that it's a global variable which we have to clean, move to 'engine' somewhere?
  */
-static bool hasRememberedConfiguration = false;
+bool hasRememberedConfiguration = false;
 #if EFI_ACTIVE_CONFIGURATION_IN_FLASH
 #include "flash_int.h"
 engine_configuration_s & activeConfiguration = reinterpret_cast<persistent_config_container_s*>(getFlashAddrFirstCopy())->persistentConfiguration.engineConfiguration;
@@ -109,6 +110,7 @@ static void wipeStrings() {
 	fillAfterString(engineConfiguration->engineMake, sizeof(vehicle_info_t));
 	fillAfterString(engineConfiguration->engineCode, sizeof(vehicle_info_t));
 	fillAfterString(engineConfiguration->vehicleName, sizeof(vehicle_info_t));
+	fillAfterString(engineConfiguration->vinNumber, sizeof(vin_number_t));
 }
 
 void onBurnRequest() {
@@ -119,7 +121,7 @@ void onBurnRequest() {
 }
 
 /**
- * this hook is about https://github.com/rusefi/rusefi/wiki/Custom-Firmware and https://github.com/rusefi/rusefi/wiki/Canned-Tune-Process
+ * this hook is about https://wiki.rusefi.com/Custom-Firmware and https://wiki.rusefi.com/Canned-Tune-Process
  * todo: why two hooks? is one already dead?
  */
 void boardBeforeTuneDefaults() {
@@ -528,6 +530,7 @@ static void setDefaultEngineConfiguration() {
 	setLinearCurve(config->iacCoastingRpmBins, 0, 8000, 1);
 
 #if !EFI_UNIT_TEST
+  // todo: remove from *engine* defaults, move into boards?
 	engineConfiguration->analogInputDividerCoefficient = 2;
 #endif
 
@@ -564,6 +567,7 @@ static void setDefaultEngineConfiguration() {
 
 	setEgoSensor(ES_14Point7_Free);
 
+	// todo: remove from *engine* defaults, move into boards?
 	engineConfiguration->adcVcc = 3.0;
 
 	engineConfiguration->map.sensor.type = MT_MPX4250;

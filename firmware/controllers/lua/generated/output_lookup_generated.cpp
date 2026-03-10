@@ -118,6 +118,9 @@ float getOutputValueByHash(const int hash) {
 // internalVref
 		case -1221814987:
 			return engine->outputChannels.internalVref;
+// internalVbat
+		case -1221832529:
+			return engine->outputChannels.internalVbat;
 // coolant
 		case -746111499:
 			return engine->outputChannels.coolant;
@@ -1039,29 +1042,17 @@ float getOutputValueByHash(const int hash) {
 // fan2radiatorFanStatus
 		case -1778606949:
 			return engine->module<FanControl2>()->radiatorFanStatus;
-// fan1isPrime
-		case -2088993020:
+// isPrime
+		case -1429286498:
 			return engine->module<FuelPumpController>()->isPrime;
-// fan1engineTurnedRecently
-		case -2137243687:
+// engineTurnedRecently
+		case -1270448973:
 			return engine->module<FuelPumpController>()->engineTurnedRecently;
-// fan1isFuelPumpOn
-		case -1297204398:
+// isFuelPumpOn
+		case -344048084:
 			return engine->module<FuelPumpController>()->isFuelPumpOn;
-// fan1ignitionOn
-		case -35327159:
-			return engine->module<FuelPumpController>()->ignitionOn;
-// fan2isPrime
-		case 1874744293:
-			return engine->module<FuelPumpController>()->isPrime;
-// fan2engineTurnedRecently
-		case -777438630:
-			return engine->module<FuelPumpController>()->engineTurnedRecently;
-// fan2isFuelPumpOn
-		case 34424019:
-			return engine->module<FuelPumpController>()->isFuelPumpOn;
-// fan2ignitionOn
-		case -2092849014:
+// ignitionOn
+		case -381519965:
 			return engine->module<FuelPumpController>()->ignitionOn;
 // lua.fuelAdd
 		case 1649801578:
@@ -1069,6 +1060,9 @@ float getOutputValueByHash(const int hash) {
 // lua.fuelMult
 		case -1390672637:
 			return engine->engineState.lua.fuelMult;
+// lua.engineTorque
+		case 958239307:
+			return engine->engineState.lua.engineTorque;
 // lua.clutchUpState
 		case -427776066:
 			return engine->engineState.lua.clutchUpState;
@@ -1401,6 +1395,15 @@ float getOutputValueByHash(const int hash) {
 // isBelowTemperatureThreshold
 		case 319978869:
 			return engine->shiftTorqueReductionController.isBelowTemperatureThreshold;
+// trqRedCutXaxisValue
+		case 468022861:
+			return engine->shiftTorqueReductionController.trqRedCutXaxisValue;
+// trqRedTimeXaxisValue
+		case 1227553104:
+			return engine->shiftTorqueReductionController.trqRedTimeXaxisValue;
+// trqRedIgnRetXaxisValue
+		case 892591242:
+			return engine->shiftTorqueReductionController.trqRedIgnRetXaxisValue;
 // isNitrousArmed
 		case 595683774:
 			return engine->module<NitrousController>()->isNitrousArmed;

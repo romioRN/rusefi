@@ -17,7 +17,7 @@
 
 #if EFI_SIMULATOR || EFI_UNIT_TEST
 #include "fifo_buffer.h"
-extern fifo_buffer<CANTxFrame, 1024> txCanBuffer;
+extern fifo_buffer<CANTxFrame, TEST_CAN_BUFFER_SIZE> txCanBuffer;
 #endif // EFI_SIMULATOR
 
 /**
@@ -83,7 +83,7 @@ public:
 	}
 
     void setArray(const uint8_t *data, size_t len) {
-        for (size_t i = 0; i < std::min(len, size_t(8)); i++) {
+        for (size_t i = 0; i < std::min(len, sizeof(m_frame.data8)); i++) {
             m_frame.data8[i] = data[i];
         }
     }
@@ -119,7 +119,7 @@ class CanTxTyped final : public CanTxMessage
 public:
 	explicit CanTxTyped(CanCategory p_category, uint32_t p_id, bool p_isExtended, size_t canChannel) : CanTxMessage(p_category, p_id, sizeof(TData), canChannel, p_isExtended) { }
 
-#if EFI_CAN_SUPPORT
+#if HAS_CAN_FRAME
 	/**
 	 * Access members of the templated type.
 	 *
@@ -134,7 +134,7 @@ public:
 	TData& get() {
 		return *reinterpret_cast<TData*>(&m_frame.data8);
 	}
-#endif // EFI_CAN_SUPPORT
+#endif // HAS_CAN_FRAME
 };
 
 template <typename TData>

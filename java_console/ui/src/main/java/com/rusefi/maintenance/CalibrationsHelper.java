@@ -1,9 +1,7 @@
 package com.rusefi.maintenance;
 
 import com.devexperts.logging.Logging;
-import com.opensr5.ConfigurationImage;
-import com.opensr5.ConfigurationImageMetaVersion0_0;
-import com.opensr5.ConfigurationImageWithMeta;
+import com.opensr5.*;
 import com.opensr5.ini.IniFileModel;
 import com.opensr5.ini.field.*;
 import com.rusefi.ConnectivityContext;
@@ -16,6 +14,7 @@ import com.rusefi.core.ui.AutoupdateUtil;
 import com.rusefi.io.UpdateOperationCallbacks;
 import com.rusefi.maintenance.migration.migrators.ComposedTuneMigrator;
 import com.rusefi.maintenance.migration.TuneMigrationContext;
+import com.rusefi.tune.ConfigurationImageGetterSetter2;
 import com.rusefi.tune.xml.Constant;
 import com.rusefi.tune.xml.Msq;
 import com.rusefi.ui.basic.MigrateSettingsCheckboxState;
@@ -265,6 +264,7 @@ public class CalibrationsHelper {
         );
     }
 
+    // right now we only load first page, one day soon LTFT would ask for other pages!
     private static Optional<CalibrationsInfo> readCalibrationsInfo(
         final BinaryProtocol binaryProtocol,
         final UpdateOperationCallbacks callbacks) {
@@ -495,7 +495,7 @@ public class CalibrationsHelper {
                 final Optional<IniField> fieldToUpdate = newIniFile.findIniField(migratedFieldName);
                 if (fieldToUpdate.isPresent()) {
                     try {
-                        fieldToUpdate.get().setValue(mergedImage, migratedValue);
+                        ConfigurationImageGetterSetter2.setValue(fieldToUpdate.get(), mergedImage, migratedValue);
                     } catch (Throwable e) {
                         log.error(
                             String.format("We failed to set value %s for ini-field %s", migratedValue, fieldToUpdate),
