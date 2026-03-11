@@ -141,8 +141,8 @@ void configureQuickStartSenderWheel(TriggerWaveform *s) {
 	s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::Fall);
 
 	// our preference is to sync not too close to crank sync point
-	s->setTriggerSynchronizationGap(0.545);
-	s->setSecondTriggerSynchronizationGap(1.632);
+	s->setTriggerSynchronizationGap(0.967);
+	s->setSecondTriggerSynchronizationGap(0.433);
 
 	s->addToothRiseFall(145, /* width*/ 85);
 	s->addToothRiseFall(210, /* width*/ 30);
