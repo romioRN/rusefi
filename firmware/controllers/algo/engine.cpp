@@ -72,7 +72,6 @@ trigger_type_e getVvtTriggerType(vvt_mode_e vvtMode) {
 	switch (vvtMode) {
 	case VVT_CUSTOM_1:
 	case VVT_CUSTOM_2:
-	case VVT_CUSTOM_3:
 	case VVT_CUSTOM_4:
 	case VVT_CUSTOM_5:
 	case VVT_INACTIVE:
@@ -130,6 +129,8 @@ trigger_type_e getVvtTriggerType(vvt_mode_e vvtMode) {
 	    return trigger_type_e::TT_NISSAN_HR_CAM_IN;
 	case VVT_SUBARU_7TOOTH:
 			return trigger_type_e::TT_VVT_SUBARU_7_WITHOUT_6;
+  case VVT_3GR_FSE:
+		  return trigger_type_e::TT_VVT_3GR_FSE; 
 	default:
 	  return getCustomVvtTriggerType(vvtMode);
 	}
