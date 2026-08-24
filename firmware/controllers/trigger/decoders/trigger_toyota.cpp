@@ -91,3 +91,23 @@ void initializeUzCam(TriggerWaveform *s) {
 	s->setTriggerSynchronizationGap4(/*gapIndex*/0, 1.5);
 	s->setTriggerSynchronizationGap4(/*gapIndex*/1, 0.67);
 }
+
+void initialize_3GRfSE_CAM(TriggerWaveform* s) {
+    s->initialize(FOUR_STROKE_CAM_SENSOR, SyncEdge::Fall);
+
+    s->shapeWithoutTdc = true;
+
+    // Fall-to-fall: 145°, 65°, 150°
+    // 65 / 145 = 0.4483
+    s->setTriggerSynchronizationGap2(0.4f, 0.7f);
+
+    // Все углы повернуты на +80°, чтобы последний FALL был ровно на 360°.
+    s->addEvent360(90,  TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+    s->addEvent360(150, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+
+    s->addEvent360(210, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+    s->addEvent360(295, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+
+    s->addEvent360(330, TriggerValue::RISE, TriggerWheel::T_PRIMARY);
+    s->addEvent360(360, TriggerValue::FALL, TriggerWheel::T_PRIMARY);
+}
